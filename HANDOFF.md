@@ -6,7 +6,7 @@ Only one piece is missing: **`js/store.js` still uses sample data**. It needs to
 
 ## Steps
 
-1. The code is on GitHub: **osimmann-creator/winter-arc** (private). The site is the repo root. `animations/` is only the source for the videos.
+1. The code is on GitHub: **osimmann-creator/Winter-Arc**. The site is the repo root. `animations/` is only the source for the videos.
 2. Open ChatGPT (Codex), connect that repo, and paste the prompt below.
 3. As part of setup it creates the nine accounts and gives **Osim** (the commissioner) everyone's username and temporary password **once, privately**. They never go into the repo.
 4. Osim sends each friend the site link plus their username and temporary password. The first time each person signs in, the app makes them pick their own password.
