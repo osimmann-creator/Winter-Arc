@@ -123,34 +123,132 @@ const Logic = (() => {
   }
 
   /* Inside jokes that are true right now → [{ type, key, data, at }].
-     Each key is recorded once (the store ignores repeats).
-     hoat = { username, min }: also the Hoat Guarantee (that person reached the weekly minimum). */
-  function jokes(members, calc, J, now = new Date(), tz, hoat) {
+     Each key is recorded once (the store ignores repeats), so the key decides
+     how often a joke can happen: per week, per tied score, per post, per dry spell.
+     hoat = { username, min }: also the Hoat Guarantee (that person reached the weekly minimum).
+     opts = { min: the weekly minimum, posts: every post (defaults to the season's posts in calc) } */
+  function jokes(members, calc, J, now = new Date(), tz, hoat, opts = {}) {
     const out = [], S = calc.season;
     if (S.status !== 'live' || !J) return out;
     const w = S.idx, by = u => members.find(m => String(m.username || '').toLowerCase() === u);
-    const pts = m => calc.by[m.id].thisWeek;
+    const R = m => calc.by[m.id] || { thisWeek: 0, eliminated: true, strikeWeeks: [], weekPts: [] };
+    const pts = m => R(m).thisWeek;
     const at = now.toISOString();   // stamped when it's first noticed (right after the post that caused it)
-    if (J.coin) {
+    const add = (type, key, data) => out.push({ type, key, data: Object.assign({ week: w }, data), at });
+    const min = opts.min || (hoat && hoat.min) || 7;
+    const cap = typeof CAP !== 'undefined' ? CAP : '\u{1F9E2}';
+    const all = (opts.posts || Object.values(calc.by).flatMap(x => x.posts)).filter(p => new Date(p.at) <= now);
+    const wk = all.filter(p => weekIdx(new Date(p.at), S.start) === w).sort((a, b) => new Date(a.at) - new Date(b.at));
+    const z = zoned(now, tz), inWindow = j => z.day === j.day && z.hour >= j.from && z.hour < j.to;
+    const alive = members.filter(m => !R(m).eliminated);
+    const joinedAt = m => addDays(S.start, 7 * Math.max(0, m.joinedWeek || 0));
+    const logsOf = m => all.filter(p => p.memberId === m.id && !p.voided);
+    /* last among the people still in, with at least one of them ahead (ties for last count) */
+    const inLast = y => { const rivals = alive.filter(m => m.id !== y.id); return !R(y).eliminated && rivals.length > 0 && rivals.every(m => pts(m) >= pts(y)) && rivals.some(m => pts(m) > pts(y)); };
+
+    if (J.coin) {                       // Dean & Jake tied above 0: once per week per tied score
       const [a, b] = J.coin.users.map(by);
-      if (a && b && pts(a) > 0 && pts(a) === pts(b)) out.push({ type: 'coin', key: `coin:${w}:${pts(a)}`, data: { week: w, pts: pts(a), a: a.id, b: b.id }, at });
+      if (a && b && pts(a) > 0 && pts(a) === pts(b)) add('coin', `coin:${w}:${pts(a)}`, { pts: pts(a), a: a.id, b: b.id });
     }
-    if (J.bluehair) {
+    if (J.bluehair) {                   // Connor alone in first: once per week
       const c = by(J.bluehair.users[0]);
-      if (c && pts(c) > 0 && members.every(m => m.id === c.id || pts(m) < pts(c))) out.push({ type: 'bluehair', key: `bluehair:${w}`, data: { week: w, pts: pts(c), who: c.id }, at });
+      if (c && pts(c) > 0 && members.every(m => m.id === c.id || pts(m) < pts(c))) add('bluehair', `bluehair:${w}`, { pts: pts(c), who: c.id });
     }
-    if (J.iron) {
-      const z = zoned(now, tz), y = by(J.iron.users[0]);
-      if (y && z.day === J.iron.day && z.hour >= J.iron.from && z.hour < J.iron.to && !calc.by[y.id].eliminated) {
-        const rivals = members.filter(m => m.id !== y.id && !calc.by[m.id].eliminated);
-        if (rivals.length && rivals.every(m => pts(m) >= pts(y)) && rivals.some(m => pts(m) > pts(y))) out.push({ type: 'iron', key: `iron:${w}`, data: { week: w, pts: pts(y), who: y.id }, at });
+    if (J.iron) {                       // Saturday morning, Ayaad in last: once per week
+      const y = by(J.iron.users[0]);
+      if (y && inWindow(J.iron) && inLast(y)) add('iron', `iron:${w}`, { pts: pts(y), who: y.id });
+    }
+    if (J.liquor) {                     // Saturday morning, Gaurav in last: once per week
+      const g = by(J.liquor.users[0]);
+      if (g && inWindow(J.liquor) && inLast(g)) add('liquor', `liquor:${w}`, { pts: pts(g), who: g.id });
+    }
+    if (J.bag) {                        // Dean, Connor & Dylan all tied above 0: once per week per tied score
+      const ms = J.bag.users.map(by);
+      if (ms.length > 1 && ms.every(Boolean) && pts(ms[0]) > 0 && ms.every(m => pts(m) === pts(ms[0]))) add('bag', `bag:${w}:${pts(ms[0])}`, { pts: pts(ms[0]), who: ms.map(m => m.id) });
+    }
+    if (J.fight) {                      // Dylan tied for first above 0: once per week per tied score
+      const d = by(J.fight.users[0]);
+      if (d && pts(d) > 0 && members.every(m => pts(m) <= pts(d))) {
+        const tied = members.filter(m => m.id !== d.id && pts(m) === pts(d));
+        if (tied.length) add('fight', `fight:${w}:${pts(d)}`, { pts: pts(d), who: d.id, with: tied.map(m => m.id) });
       }
+    }
+    if (J.crashout) {                   // Connor calls cap on someone's post from this week: once per post
+      const c = by(J.crashout.users[0]);
+      if (c) for (const p of wk) if (p.memberId !== c.id && ((p.reactions || {})[cap] || []).includes(c.id)) add('crashout', `crashout:${p.id}`, { post: p.id, on: p.memberId, cat: p.cat, who: c.id });
+    }
+    if (J.satellite) {                  // Connor logs beers with the boys: once per post
+      const c = by(J.satellite.users[0]);
+      if (c) for (const p of wk) if (p.memberId === c.id && p.cat === 'beers' && !p.voided) add('satellite', `satellite:${p.id}`, { post: p.id, who: c.id, with: (p.witnesses || []).slice(0, 8) });
+    }
+    if (J.puke) {                       // Amaan alone in last: again each separate time he drops back there in a week
+      const a = by(J.puke.users[0]);
+      const soleLast = v => alive.length > 1 && alive.every(m => m.id === a.id || v(m) > v(a));
+      if (a && !R(a).eliminated && soleLast(pts)) {
+        const sum = {}, fraud = new Set(wk.filter(p => p.fraud).map(p => p.memberId));
+        alive.forEach(m => { sum[m.id] = 0; });
+        const v = m => (fraud.has(m.id) ? 0 : Math.round(sum[m.id] * 2) / 2);
+        let n = 0, was = false;
+        for (const p of wk) {           // replay the week in order and count the drops into last
+          if (!(p.memberId in sum) || p.voided) continue;
+          sum[p.memberId] += (CATS[p.cat] && CATS[p.cat].pts) || 0;
+          const is = soleLast(v);
+          if (is && !was) n++;
+          was = is;
+        }
+        add('puke', `puke:${w}:${Math.max(1, n)}`, { pts: pts(a), who: a.id });
+      }
+    }
+    if (J.mma) {                        // Amaan's 4th MMA session this week: once per week
+      const a = by(J.mma.users[0]);
+      const n = a ? wk.filter(p => p.memberId === a.id && p.cat === 'mma' && !p.voided).length : 0;
+      if (a && n >= (J.mma.count || 4)) add('mma', `mma:${w}`, { n, who: a.id });
+    }
+    if (J.radiator) {                   // Jake hasn't logged in 4 days: once per dry spell
+      const j = by(J.radiator.users[0]);
+      if (j && !R(j).eliminated) {
+        const last = logsOf(j).sort((a, b) => new Date(b.at) - new Date(a.at))[0];
+        const since = new Date(Math.max(+joinedAt(j), last ? +new Date(last.at) : 0)), days = Math.floor((now - since) / DAY);
+        if (days >= (J.radiator.days || 4)) add('radiator', `radiator:${last ? last.id : 'start'}`, { days, since: since.toISOString(), who: j.id });
+      }
+    }
+    if (J.mom) {                        // Sunday evening, Jake still short of the minimum: once per week
+      const j = by(J.mom.users[0]);
+      if (j && inWindow(J.mom) && !R(j).eliminated && pts(j) < min) add('mom', `mom:${w}`, { pts: pts(j), left: Math.round((min - pts(j)) * 2) / 2, who: j.id });
+    }
+    if (J.nets && S.lastComplete >= 0) { // Jake or Gaurav took a strike last week: once per week
+      const lw = S.lastComplete, missed = J.nets.users.map(by).filter(m => m && (R(m).strikeWeeks || []).includes(lw));
+      if (missed.length) add('nets', `nets:${lw}`, { week: lw, who: missed.map(m => m.id), pts: missed.map(m => R(m).weekPts[lw] || 0) });
+    }
+    if (J.phil) {                       // Philip logs after 3+ days without a log: once per post
+      const ph = by(J.phil.users[0]);
+      if (ph) {
+        const mine = logsOf(ph).sort((a, b) => new Date(a.at) - new Date(b.at));
+        mine.forEach((p, i) => {
+          if (weekIdx(new Date(p.at), S.start) !== w) return;
+          const prev = new Date(Math.max(+joinedAt(ph), i ? +new Date(mine[i - 1].at) : 0)), days = Math.floor((new Date(p.at) - prev) / DAY);
+          if (days >= (J.phil.days || 3)) add('phil', `phil:${p.id}`, { post: p.id, days, who: ph.id });
+        });
+      }
+    }
+    if (J.scared) {                     // nobody has logged a date in 30 days: again every 30 days it goes on
+      const last = Math.max(0, ...all.filter(p => p.cat === 'date' && !p.voided).map(p => +new Date(p.at)));
+      const since = new Date(Math.max(+S.start, last)), days = Math.floor((now - since) / DAY), per = J.scared.days || 30;
+      if (days >= per) add('scared', `scared:${dayKey(since)}:${Math.floor(days / per)}`, { days, since: since.toISOString() });
     }
     if (hoat) {
       const h = by(hoat.username);
-      if (h && pts(h) >= hoat.min) out.push({ type: 'hoat', key: `hoat:${w}`, data: { week: w, pts: pts(h), who: h.id }, at });
+      if (h && pts(h) >= hoat.min) add('hoat', `hoat:${w}`, { pts: pts(h), who: h.id });
     }
     return out;
+  }
+
+  /* Display names: while someone matches an alias (config.js ALIASES), the app shows that name instead. */
+  function alias(m, calc, list) {
+    const R = calc && calc.by[m.id], u = String(m.username || '').toLowerCase();
+    if (!R || !list || calc.season.status !== 'live') return null;
+    const a = list.find(x => x.username === u && R.thisWeek === x.pts);
+    return a ? a.name : null;
   }
 
   /* The post that pushed someone to the weekly minimum, one per week (no stamp in a fraud week). */
@@ -166,5 +264,5 @@ const Logic = (() => {
     return new Set(Object.values(wk).filter(s => s.id && !s.fraud).map(s => s.id));
   }
 
-  return { compute, season, mondayOf, addDays, dayKey, parseDay, weekIdx, draftProblems, zoned, jokes, crossings };
+  return { compute, season, mondayOf, addDays, dayKey, parseDay, weekIdx, draftProblems, zoned, jokes, alias, crossings };
 })();

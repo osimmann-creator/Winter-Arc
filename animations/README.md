@@ -1,6 +1,6 @@
 # Winter Arc animations (Remotion)
 
-This is the source for the Winter Arc mascot, the 18 celebration videos, the 3 inside-joke videos, the opening animation and the app art. Everything is drawn in code (React + SVG) with [Remotion](https://www.remotion.dev), so poses, timing and colors can all be edited.
+This is the source for the Winter Arc mascot, the 17 celebration videos, the 15 inside-joke videos, the opening animation and the app art. Everything is drawn in code (React + SVG) with [Remotion](https://www.remotion.dev), so poses, timing and colors can all be edited.
 
 ## Setup
 
@@ -35,7 +35,9 @@ npx remotion render Gym out/gym.mp4 --codec=h264 --crf=20
 |---|---|
 | `src/hero/Hero.tsx` | The mascot rig: body, poses, face, hands and toga. `pose()` builds a pose, and `Hero` draws it. |
 | `src/scenes/*.tsx` | The celebrations (1080×1920, 30 fps, 4.5 s): Gym, GunShow, LegDay, Atlas, Mirror; Run, FrostMiles, Torch, NightOwl, GooseChase; Jickle, Volo, Soccer, Date, Beers, Reading |
-| `src/scenes/Joke*.tsx` | The inside jokes (about 5.5 s): TheCoin (Dean vs Jake), BlueHair (Connor), TheIron (Ayaad). Names are drawn into these. |
+| `src/scenes/MMA.tsx` | The MMA celebration, Knockout (mma-1) |
+| `src/scenes/Joke*.tsx` | The inside jokes (about 5.5 s): TheCoin (Dean vs Jake), BlueHair (Connor), TheIron (Ayaad), TheBag (Dean, Connor, Dylan), DylanFights, CrashOut and SatelliteHouse (Connor), PukedOn and MMAGuy (Amaan), TheRadiator and JakesMom (Jake), NetsGame (Jake and Gaurav), LiquorRun (Gaurav), PunxsutawneyPhil (Philip), ScaredOfGirls (everyone). Names are drawn into these. |
+| `src/scenes/jokekit.tsx` | Shared bits for the newer jokes: name tags, text bubbles, rooms, clocks, calendars, the cap and the post card |
 | `src/scenes/kit.tsx`, `RunKit.tsx`, `ik.ts` | Shared props (dumbbell, tickets, steam, snow), the themeable running track and gait, and arm IK (`reach`) for putting a hand on a target |
 | `src/fx/` | Shared backgrounds (`Stage`), effects (bursts, speed lines, sparkles), motion helpers and the ribbon end card |
 | `src/app/AppArt.tsx` | App art: mascot poses (stills), the app icon, and the `Intro` opening animation |

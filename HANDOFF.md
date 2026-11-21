@@ -1,6 +1,6 @@
 # Handoff: hosting Winter Arc for the group
 
-The app is finished: screens, rules engine, 21 animations, inside jokes, the Hoat Guarantee stamp and all the sign-in and account screens. It's members only. Everyone's account is made ahead of time, so there is no sign-up page.
+The app is finished: screens, rules engine, 33 videos (17 celebrations, 15 inside jokes and the intro), the Hoat Guarantee stamp and all the sign-in and account screens. It's members only. Everyone's account is made ahead of time, so there is no sign-up page.
 
 Only one piece is missing: **`js/store.js` still uses sample data**. It needs to be replaced with a version backed by real sign-in, a shared database and photo storage. Every screen already calls the `Store` methods described below, so no UI work is needed.
 
@@ -55,7 +55,7 @@ BUILD
    - members: id, user_id (unique), username, name, color, photo_url, role ('member'|'commissioner'), joined_week, created_at
    - posts: id, member_id, cat, at (timestamptz), minutes, miles, caption, photo_url, witnesses (member ids), voided, fraud, created_at
    - reactions: post_id, member_id, emoji. Primary key on all three, so two people reacting at once never overwrite each other. Assemble { emoji: [memberIds] } when returning posts.
-   - events (inside jokes + Hoat Guarantee): id, type ('coin'|'bluehair'|'iron'|'hoat'), key (UNIQUE), at (timestamptz), data (json), created_at
+   - events (inside jokes + Hoat Guarantee): id, type (a key of INSIDE_JOKES in js/config.js, or 'hoat'), key (UNIQUE), at (timestamptz), data (json), created_at
    - event_seen: user_id, event_id (primary key on both)
    - prefs: user_id, sunday_reminder (default true), cap_alerts (default true)
    - Storage for proof photos and profile photos. The app sends data URLs already shrunk to ≤1100 px (avatars ≤480 px). Only signed-in members can read them. Signed URLs are fine; refresh them in listPosts/listMembers.
@@ -75,11 +75,25 @@ BUILD
    - The browser notices them (Logic.jokes in js/logic.js) and calls recordEvent({ type, key, data, at }). Make it insert-or-ignore on the unique key, because two phones can notice the same tie at the same moment, and return the stored row.
    - listEvents() returns every event plus `seen` (true if the caller has a row in event_seen). markSeen(eventId) adds that row. That's what makes each video pop up once per person.
    - The Hoat Guarantee is recorded the same way (type 'hoat', key "hoat:<week>") when Osim reaches the weekly minimum, so it shows up as a feed card for everyone.
-   - Server checks: only signed-in members, type must be one of coin/bluehair/iron/hoat, key must match the type (e.g. "coin:2:6.5", "bluehair:2", "iron:2", "hoat:2"), data is small JSON.
-   - Recommended extra: run the same rules on the server after every new post, and every Saturday at 6 AM America/New_York, so an event is recorded even if nobody has the app open right then. Use the exact rules in Logic.jokes:
+   - Server checks: only signed-in members; type is one of the 15 INSIDE_JOKES keys or 'hoat'; data is small JSON; the key has the type's format (<w> = week index from 0, <pts> = points like 6.5, <post> = a post id):
+     coin:<w>:<pts>  bluehair:<w>  iron:<w>  liquor:<w>  bag:<w>:<pts>  fight:<w>:<pts>  crashout:<post>  satellite:<post>
+     puke:<w>:<n>  mma:<w>  radiator:<post> or radiator:start  mom:<w>  nets:<w>  phil:<post>  scared:<YYYY-MM-DD>:<n>  hoat:<w>
+   - Recommended extra: run the same rules on the server after every new post, reaction or void, and every hour on the hour, so an event is recorded even if nobody has the app open right then (several rules depend on the clock). Use the exact rules in Logic.jokes. "This week" = the current Monday–Sunday week in the group's timezone; "still in" = not eliminated; voided posts never count:
      - coin: Dean and Jake both have more than 0 points this week and exactly the same points. One event per week per tied score.
      - bluehair: Connor has more points this week than everyone else. One per week.
-     - iron: Saturday from 6:00 to 11:59 AM in the group's timezone, Ayaad (not eliminated) has the fewest points among the people still in, and at least one of them has more. One per week.
+     - iron: Saturday from 6:00 to 11:59 AM in the group's timezone, Ayaad (still in) has the fewest points among the people still in, and at least one of them has more. One per week.
+     - liquor: the same as iron, for Gaurav. One per week.
+     - bag: Dean, Connor and Dylan all have more than 0 points this week and exactly the same points. One per week per tied score.
+     - fight: Dylan has more than 0 points, nobody has more than him this week, and at least one other person has exactly the same. One per week per tied score.
+     - crashout: Connor has a 🧢 reaction on someone else's post dated this week. One per post.
+     - satellite: Connor has a beers post dated this week. One per post.
+     - puke: Amaan (still in) is alone in last: everyone else still in has more points than him this week. It fires again each separate time he drops back into last in the same week: replay the week's posts in time order and count how many times he goes from not-alone-in-last to alone-in-last; that count is <n>.
+     - mma: Amaan has 4 or more MMA posts dated this week. One per week.
+     - radiator: Jake (still in) hasn't posted for 4 days (96 hours) since his latest post, or since the start of his first week if he has none. One per dry spell, keyed by that latest post.
+     - mom: Sunday from 6:00 PM to 11:59 PM in the group's timezone, Jake (still in) is under the weekly minimum this week. One per week.
+     - nets: Jake or Gaurav took a strike in the week that just ended (<w> is that week). One per week; data.who lists who missed.
+     - phil: Philip posts something dated this week at least 3 days (72 hours) after his previous post, or after the start of his first week if it's his first. One per post.
+     - scared: nobody has a date post in the last 30 days, counting from the later of the season start and the most recent date post (that day is the YYYY-MM-DD). <n> = whole 30-day stretches so far, so it fires again every 30 days the drought goes on.
      - hoat: Osim has at least the weekly minimum this week. One per week.
    - People are matched by username, so renaming someone in the app doesn't break them.
 
@@ -88,7 +102,7 @@ BUILD
 8. Rules to enforce on the server (database policies or server functions, never only the UI):
    - Nothing is readable without signing in. The sign-in screen needs no data.
    - Members can only edit their own name, colour and photo. Role, username and joined_week are server-controlled.
-   - addPost: member_id = the caller; cat in gym, run, jickle, volo, soccer, date, beers, reading; a photo or at least one witness who is a member; gym minutes >= 45, run miles >= 2; caption ≤ 140 characters; voided = fraud = false; `at` no later than now + 5 minutes and no earlier than Monday 00:00 of the current week in the group's timezone.
+   - addPost: member_id = the caller; cat in gym, run, mma, jickle, volo, soccer, date, beers, reading; a photo or at least one witness who is a member; gym minutes >= 45, run miles >= 2; caption ≤ 140 characters; voided = fraud = false; `at` no later than now + 5 minutes and no earlier than Monday 00:00 of the current week in the group's timezone.
    - deletePost: only the author.
    - toggleReaction: only as yourself; emoji in 🔥 💪 👏 😂 🧢; return the updated post.
    - Everything under "Commissioner only" above: only the current commissioner.
@@ -108,7 +122,9 @@ DONE WHEN
 - Each of the nine people can sign in with their username and temporary password, is made to pick their own password, and stays signed in after reloading or opening from the home screen.
 - Wrong passwords show the friendly message, and repeated failures are throttled.
 - Two phones see each other's posts and reactions within a few seconds.
-- When Dean and Jake are tied above 0, The Coin pops up once on each phone and the feed shows the card with the tied points. When Connor leads the week, Blue Hair does the same. On Saturday morning with Ayaad in last, The Iron does the same.
+- When Dean and Jake are tied above 0, The Coin pops up once on each phone and the feed shows the card with the tied points. When Connor leads the week, Blue Hair does the same. On Saturday morning with Ayaad in last, The Iron does the same. The other 12 inside jokes in INSIDE_JOKES work the same way, each with its own rule (step 6).
+- MMA is an activity worth 1.5 points, and the server accepts it.
+- While Dylan has exactly 4 points in the week, the app shows him as "La4" (display only; his real name stays in the database).
 - When Osim reaches 7 points in a week, the red HOAT GUARANTEE stamp slams onto his screen, stays on his ring card, and a Hoat Guarantee card appears in everyone's feed.
 - Only the commissioner sees and can use Void, season settings, Members (reset password, make commissioner, remove) and Add a friend; the server rejects those calls from anyone else.
 ```
@@ -117,7 +133,9 @@ DONE WHEN
 
 ## Notes
 
-- **Names are baked into the inside-joke videos** (DEAN vs JAKE, CONNOR, AYAAD). The rules and feed cards use whatever names people have in the app.
+- **Names are baked into the inside-joke videos** (DEAN, JAKE, CONNOR, AYAAD, DYLAN, AMAAN, GAURAV and PHIL). The rules and feed cards use whatever names people have in the app.
+- **La4:** while Dylan is on exactly 4 points in a week, the app calls him La4 everywhere (board, feed, roasts). It's display only; `ALIASES` in js/config.js.
+- **Already hosted before the new jokes?** Paste this into Codex: "Update the server for the new Winter Arc version: accept event types bag, fight, crashout, satellite, puke, mma, radiator, mom, nets, liquor, phil and scared with the key formats in HANDOFF.md step 6, add mma to the allowed post categories, and add the new rules to the server-side joke runner (run it after every post, reaction or void and every hour)."
 - **Season settings** live in `js/config.js` and in the group row. They're 17 weeks from Monday Nov 2, 2026, 7 points a week and 2 strikes. Osim can change them in Account → Commissioner. Weeks run Monday 00:00 to Sunday 11:59 PM (New York time).
 - **Temporary passwords** only ever appear once: in the setup chat for the first nine, or on Osim's screen after Reset password or Add a friend.
 - **No money is shown anywhere.**

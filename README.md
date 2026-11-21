@@ -61,10 +61,26 @@ Each one pops up full screen once for everyone, the moment it happens:
 | **The Coin** | Dean and Jake are tied on points this week (above 0). Lands on its edge. | Yes, with the tied score |
 | **Blue Hair** | Connor has the most points this week. | Yes |
 | **The Iron** | Saturday 6 AM to noon (New York time) and Ayaad is in last. | Yes |
+| **The Liquor Run** | Same as The Iron, but Gaurav is in last. He takes an hour to pick a bottle. | Yes |
+| **The Bag** | Dean, Connor and Dylan are all tied this week (above 0). | Yes |
+| **Dylan Starts Fights** | Dylan is tied for first this week. | Yes |
+| **Crash Out KNR** | Connor calls cap (🧢) on someone's post from this week. Once per post. | Yes |
+| **Satellite House** | Connor logs beers with the boys, then flies home to his house in orbit. Once per post. | Yes |
+| **Puked On** | Amaan is alone in last this week. Again each time he drops back into last. | Yes |
+| **MMA Guy** | Amaan logs his 4th MMA session of the week. It is not cool. | Yes |
+| **The Radiator** | Jake hasn't logged anything for 4 days. Once per dry spell. | Yes |
+| **Jake's Mom** | Sunday from 6 PM and Jake is still under 7. | Yes |
+| **The Nets Game** | Jake or Gaurav missed 7 last week. Plays on Monday. | Yes, naming who missed |
+| **Punxsutawney Phil** | Philip logs something after 3+ days without a log. He sees his shadow. Once per post. | Yes |
+| **Scared of Girls** | Nobody has logged a date in 30 days. Again every 30 days it goes on. | Yes |
+
+If a few of the same joke are waiting (say Connor capped three posts overnight), it plays once.
+
+**La4:** while Dylan has exactly 4 points in a week, the app calls him La4 everywhere: the board, the feed, the roasts. It's display only (`ALIASES` in `js/config.js`).
 
 **Hoat Guarantee:** whenever Osim reaches 7 points in a week, a red rubber stamp with a thumbs up slams onto his screen. It then sits on his ring card, and a Hoat Guarantee card goes to the feed for everyone (tap the stamp to replay it).
 
-The rules live in `INSIDE_JOKES` and `HOAT` in `js/config.js` and match people by username. All three videos are in the Me tab gallery too.
+The settings live in `INSIDE_JOKES` and `HOAT` in `js/config.js` and match people by username; the exact rules are in `Logic.jokes` in `js/logic.js`. All 15 videos are in the Me tab gallery too.
 
 **Roast of the day:** the banner at the top of Home roasts whoever a joke fits right now, using live points (183 jokes in `js/jokes.js`). Everyone sees the same one each day. Tap it for another.
 
@@ -77,7 +93,7 @@ The commissioner sets the season in Account → Commissioner:
 - points needed each week
 - strikes before you're out
 
-`js/config.js` holds the defaults (starts Monday Nov 2, 2026, 17 weeks, 7 points, 2 strikes), plus `CATS`, the activities and their points.
+`js/config.js` holds the defaults (starts Monday Nov 2, 2026, 17 weeks, 7 points, 2 strikes), plus `CATS`, the activities and their points. MMA is worth 1.5, like gym and run.
 
 Rules the app enforces when you log:
 
@@ -97,7 +113,7 @@ Gym and Run have five each:
 - Gym: Beast Mode, Gun Show, Leg Day, Atlas Mode, Mirror Check
 - Run: Speed Demon, Frost Miles, Torch Bearer, Night Owl, Goose Chase
 
-Everything else has one. Each log picks one at random and never repeats the last one.
+Everything else has one (MMA's is Knockout). Each log picks one at random and never repeats the last one.
 
 To add another:
 
@@ -110,4 +126,4 @@ They all show in the gallery on the Me tab.
 
 `Store.mode` is `'demo'` in the preview. That shows the "Sample data" chip, the preview hint and "Or just pick someone" on the sign-in screen, "Switch person" and "Reset sample data". In live mode all of those disappear and the same screens talk to the real backend.
 
-The sample week is set up so the extras show straight away: Dean and Jake are tied at 6.5, Connor leads with 8.5, Ayaad is last, and Osim sits at 5.5, so logging one gym session gets him his stamp.
+The sample week is set up so the extras show straight away: Dean and Jake are tied at 6.5, Connor leads with 9.5, Ayaad is last, Dylan is on 4 (so he shows as La4), and Osim sits at 5.5, so logging one gym session gets him his stamp. The feed also has Satellite House, Crash Out KNR and The Nets Game cards (Jake missed 7 last week). To set off others, use Switch person: as Connor, call cap on a post; as Amaan, log MMA until it's your 4th this week.

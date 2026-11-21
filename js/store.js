@@ -18,11 +18,14 @@
      user   { id, username, mustChangePassword }               sign-in
      member { id, userId, username, name, color, photo?, joinedWeek,
               role: 'member'|'commissioner' }
-     post   { id, memberId, cat, at (ISO), minutes?, miles?, caption?,
+     post   { id, memberId, cat (a key of CATS: gym, run, mma, jickle, volo,
+              soccer, date, beers, reading), at (ISO), minutes?, miles?, caption?,
               photo? (URL), witnesses: [memberId],
               reactions: { [emoji]: [memberId] }, voided, fraud }
-     event  { id, type: 'coin'|'bluehair'|'iron'|'hoat', key (unique), at, data }
-              inside jokes + the Hoat Guarantee (config.js); `seen` is per person
+     event  { id, type, key (unique), at, data }   type: a key of INSIDE_JOKES
+              in config.js (coin, bluehair, iron, bag, fight, crashout, satellite,
+              puke, mma, radiator, mom, nets, liquor, phil, scared) or 'hoat'.
+              Inside jokes + the Hoat Guarantee; `seen` is per person
      prefs  { sundayReminder: bool, capAlerts: bool }
 
    Methods (async unless marked sync). Throw Error('friendly message') to
@@ -62,7 +65,7 @@
      demoRoster(), demoSignInAs(memberId), resetDemo()
    ===================================================================== */
 const Store = (() => {
-  const KEY = 'wa.demo.v4';
+  const KEY = 'wa.demo.v5';
   const PASS = 'winterarc';
   let S = null;
   const subs = new Set();
@@ -72,9 +75,9 @@ const Store = (() => {
   /* three weeks of sample activity: two finished weeks and this one so far */
   const PLAN = [
     { osim: 'gym gym run run beers', amaan: 'gym gym gym run reading', ayaad: 'gym run beers', connor: 'gym gym run run date', dean: 'gym gym run run beers', dylan: 'run run gym reading beers jickle', gaurav: 'gym run volo soccer reading', jake: 'gym gym gym run volo jickle', philip: 'gym gym run run reading beers' },
-    { osim: 'gym gym gym run reading jickle volo', amaan: 'gym gym run run beers', ayaad: 'gym gym run run reading', connor: 'gym gym gym run run', dean: 'date gym gym', dylan: 'gym gym run run reading', gaurav: 'gym gym run run beers', jake: 'gym run run run beers', philip: 'gym gym gym run soccer jickle' },
-    // this week: Osim 5.5 (one gym from his stamp), Connor leads, Dean = Jake, Ayaad last
-    { osim: 'gym run beers reading jickle', amaan: 'gym gym run run reading', ayaad: 'gym', connor: 'gym gym run date', dean: 'gym gym run beers reading', dylan: 'run gym reading', gaurav: 'gym beers soccer', jake: 'run run gym reading volo jickle', philip: 'gym gym run reading' },
+    { osim: 'gym gym gym run reading jickle volo', amaan: 'gym gym run run beers', ayaad: 'gym gym run run reading', connor: 'gym gym gym run run', dean: 'date gym gym', dylan: 'gym gym run run reading', gaurav: 'gym gym run run beers', jake: 'gym run run beers', philip: 'gym gym gym run soccer jickle' },   // Jake misses 7 -> The Nets Game
+    // this week: Osim 5.5 (one gym from his stamp), Connor leads, Dean = Jake, Ayaad last, Dylan on 4 (so he's "La4")
+    { osim: 'gym run beers reading jickle', amaan: 'mma gym run run reading', ayaad: 'gym', connor: 'gym gym run date beers', dean: 'gym gym run beers reading', dylan: 'run gym reading', gaurav: 'gym beers soccer', jake: 'run run gym reading volo jickle', philip: 'gym gym run reading' },
   ];
   const CAPS = {
     gym: ['Chest day. Mirror selfie withheld for everyone’s safety.', 'Leg day survived. Stairs are a problem now.', 'Back and bis. Pump is unreal.', 'Hit a bench PR, no spotter needed.'],
@@ -85,6 +88,7 @@ const Store = (() => {
     date: ['Dinner downtown. She laughed at my jokes.', 'Mini golf date. I let her win. (I did not.)'],
     beers: ['Thursday beers with the fellas.', 'The fellas showed up. Good night.'],
     reading: ['20 pages of Meditations.', 'Finished chapter 6. No spoilers.'],
+    mma: ['Rolled for an hour. Undefeated in my head.', 'Pads, sprawls, more pads.'],
   };
   const EMO = ['\u{1F525}', '\u{1F4AA}', '\u{1F44F}', '\u{1F602}'];
   const COLORS = ['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F'];
@@ -121,7 +125,19 @@ const Store = (() => {
         });
       });
     });
-    return { v: 4, seedMonday: Logic.dayKey(curMon), group, accounts, members, posts, events: [], seen: {}, prefs: {}, session: null };
+    const jv = posts.find(p => p.id === 'p_2_jake_4');   // Connor calls cap on Jake's volo
+    if (jv) (jv.reactions[CAP] = jv.reactions[CAP] || []).push('m_connor');
+    // Already-seen feed cards for a few of the inside jokes this sample week sets off (the rest pop up)
+    const cfg = { seasonStart: group.seasonStart, seasonWeeks: group.seasonWeeks, weeklyMin: group.weeklyMin, strikesOut: group.strikesOut };
+    const events = Logic.jokes(members, Logic.compute(members, posts, cfg, now), INSIDE_JOKES, now, group.timezone, null, { min: cfg.weeklyMin, posts })
+      .filter(e => ['satellite', 'crashout', 'nets'].includes(e.type))
+      .map((e, i) => {
+        const src = e.data.post && posts.find(p => p.id === e.data.post);
+        const t = src ? +new Date(src.at) + 6e4 : +curMon + 7 * 36e5;   // just after the post that set it off, or Monday 7 AM
+        return Object.assign(e, { id: 'e_seed' + i, at: new Date(Math.max(+curMon + 6e4, Math.min(+now - 6e4, t))).toISOString() });
+      });
+    const seen = {}; accounts.forEach(a => { seen[a.id] = events.map(e => e.id); });
+    return { v: 5, seedMonday: Logic.dayKey(curMon), group, accounts, members, posts, events, seen, prefs: {}, session: null };
   }
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(S)); }
@@ -157,7 +173,7 @@ const Store = (() => {
       let saved = null;
       try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { saved = null; }
       const cur = Logic.dayKey(Logic.mondayOf(new Date()));
-      S = saved && saved.v === 4 && saved.seedMonday === cur ? saved : seed();
+      S = saved && saved.v === 5 && saved.seedMonday === cur ? saved : seed();
       save();
     },
     config() { const g = S && S.group; return Object.assign({}, CONFIG, g ? { seasonStart: g.seasonStart, seasonWeeks: g.seasonWeeks, weeklyMin: g.weeklyMin, strikesOut: g.strikesOut } : {}); },

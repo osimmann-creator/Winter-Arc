@@ -42,6 +42,13 @@ const Art = (() => {
     reading: `<path d="M4 16 Q18 10 32 16 Q46 10 60 16 V54 Q46 48 32 54 Q18 48 4 54 Z" fill="#7254DC" ${st}/>
       <path d="M8 14 Q20 8 32 14 V50 Q20 44 8 50 Z M56 14 Q44 8 32 14 V50 Q44 44 56 50 Z" fill="#FFFDF6" ${st}/>
       <path d="M13 21 Q20 18 27 21 M13 28 Q20 25 27 28 M13 35 Q20 32 26 35 M37 21 Q44 18 51 21 M37 28 Q44 25 51 28 M38 35 Q44 32 51 35" stroke="#B9AFC7" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+    mma: `<path d="M17 41 H47 V55 C47 58 45 59 42 59 H22 C19 59 17 58 17 55 Z" fill="#FFFDF6" ${st}/>
+      <rect x="14" y="44" width="36" height="9" rx="3.5" fill="#962830" ${st}/><path d="M37 46 V51" stroke="#FFFDF6" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
+      <path d="M18 42 C13 36 12 26 14 19 C16 10 24 5 33 5 C43 5 51 11 52 21 C53 30 50 37 46 42 Z" fill="#D9434A" ${st}/>
+      <path d="M15 27 C9 26 6 32 9 37 C11 41 17 42 21 39" fill="#D9434A" ${st}/>
+      <path d="M22 17 C23 21 23 24 22 27 M30 14 C31 19 31 23 30 27 M38 15 C39 20 39 23 38 27 M45 18 C46 22 46 25 45 28" stroke="#962830" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M21 31 C28 34 38 34 47 31" stroke="#962830" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="25" cy="11" rx="6" ry="3" fill="#fff" opacity=".6" transform="rotate(-25 25 11)"/>`,
     shield: `<path d="M32 5 L55 13 V30 C55 44 45 54 32 59 C19 54 9 44 9 30 V13 Z" fill="#7254DC" ${st}/>
       <path d="M32 11 L49 17 V30 C49 40 42 48 32 52 Z" fill="#514BA9" opacity=".55"/>
       <path d="M21 32 L29 40 L44 23" stroke="#fff" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,

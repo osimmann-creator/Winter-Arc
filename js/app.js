@@ -48,6 +48,17 @@ const App = (() => {
     S.posts = S.me ? await Store.listPosts() : [];
     S.events = S.me ? await Store.listEvents() : [];
     S.calc = Logic.compute(S.members, S.posts, cfg(), new Date());
+    applyAliases();
+  }
+  /** Name swaps from config.js ALIASES (Dylan is "La4" at exactly 4 points). Display only: realName keeps the real one. */
+  function applyAliases() {
+    if (typeof ALIASES === 'undefined') return;
+    S.members = S.members.map(m => {
+      const real = m.realName || m.name, a = Logic.alias(m, S.calc, ALIASES);
+      return Object.assign({}, m, { realName: real, name: a || real, aliased: !!a });
+    });
+    const swap = list => list.map(m => S.members.find(x => x.id === m.id) || m);   // the leaderboards hold member objects too
+    if (S.calc) Object.assign(S.calc, { weekRank: swap(S.calc.weekRank), allRank: swap(S.calc.allRank), alive: swap(S.calc.alive) });
   }
   /** In the app proper (tabs showing), as opposed to the sign-in screens. */
   const inApp = () => !!(S.me && !(S.auth && S.auth.mustChangePassword));
@@ -371,7 +382,7 @@ const App = (() => {
     <h2>Profile</h2>
     <div class="prow">
       <button type="button" class="avpick sm" data-act="pick-avatar" aria-label="Change profile photo">${bigAv(m.name, ac.color, m.photo, 78)}<span class="cam">${ic('camera')}</span></button>
-      <div class="pcol">${field('acName', 'Name', `maxlength="24" value="${esc(m.name)}" required`)}${m.photo ? '<button type="button" class="link small" data-act="acct-clear-photo">Remove photo</button>' : ''}</div>
+      <div class="pcol">${field('acName', 'Name', `maxlength="24" value="${esc(m.realName || m.name)}" required`)}${m.photo ? '<button type="button" class="link small" data-act="acct-clear-photo">Remove photo</button>' : ''}</div>
     </div>
     <div class="fld"><span>Colour</span>${swatches(ac.color, 'acct-color')}</div>
     <button class="btn btn-primary" type="submit">${ic('check')}Save profile</button>
@@ -414,6 +425,7 @@ const App = (() => {
     <button class="btn" data-act="signout">${ic('out')}Sign out</button>
     <p class="note">Forgot your password next time? ${comm ? 'You’re the commissioner: hand the role to someone first if you need a reset.' : `Ask ${esc(COMM_NAME)} for a reset.`}</p>
   </div>
+  <p class="powered">Powered by Claude &amp; Za</p>
 </section>`;
   }
 
@@ -461,7 +473,7 @@ const App = (() => {
     async 'acct-clear-photo'() { await Store.updateProfile({ photo: null }); await load(); render(); toast('Photo removed.'); },
     async 'member-menu'(el) {
       const x = member(el.dataset.id); if (!x) return;
-      const pick = await modal(`<h2>${esc(x.name)}</h2><p class="note">@${esc(x.username || '')}</p>
+      const pick = await modal(`<h2>${esc(x.realName || x.name)}</h2><p class="note">@${esc(x.username || '')}</p>
         <div class="menu-list">
           <button class="btn wide" data-ok data-val="reset">${ic('key')}Reset password</button>
           <button class="btn wide" data-ok data-val="comm">${ic('crown')}Make commissioner</button>
@@ -664,19 +676,42 @@ const App = (() => {
   /* ------------------------------------------------------------ inside jokes + Hoat Guarantee */
   const isHoat = () => !!(S.me && String(S.me.username || '').toLowerCase() === HOAT.username);
   const realName = id => (member(id) || {}).name || 'Someone';
+  const names = ids => { const n = [].concat(ids || []).map(realName); return n.length < 3 ? n.join(' and ') : n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1]; };
+  const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+  const P = v => `${fmtPts(v)} ${ptsWord(v)}`;
   function jokeText(e) {
-    const d = e.data || {};
-    if (e.type === 'coin') return `${realName(d.a)} and ${realName(d.b)} are tied at ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week. Not even a $1 coin can split them.`;
-    if (e.type === 'bluehair') return `${realName(d.who)} has the most points this week with ${fmtPts(d.pts)}. Blue hair activated.`;
-    if (e.type === 'iron') return `It’s Saturday morning and ${realName(d.who)} is in last with ${fmtPts(d.pts)} ${ptsWord(d.pts)}. Ironing his shirt again?`;
-    if (e.type === 'hoat') return `${realName(d.who)} hit ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week. Stamped and guaranteed.`;
-    return '';
+    const d = e.data || {}, who = realName(d.who);
+    switch (e.type) {
+      case 'coin': return `${realName(d.a)} and ${realName(d.b)} are tied at ${P(d.pts)} this week. Not even a $1 coin can split them.`;
+      case 'bluehair': return `${who} has the most points this week with ${fmtPts(d.pts)}. Blue hair activated.`;
+      case 'iron': return `It’s Saturday morning and ${who} is in last with ${P(d.pts)}. Ironing his shirt again?`;
+      case 'hoat': return `${who} hit ${P(d.pts)} this week. Stamped and guaranteed.`;
+      case 'bag': return `${names(d.who)} are all tied at ${P(d.pts)} this week. That’s The Bag.`;
+      case 'fight': return `${who} is tied for first with ${names(d.with)} at ${P(d.pts)}. Somebody hold him back.`;
+      case 'crashout': return `${who} called cap on ${realName(d.on)}’s ${CATS[d.cat] ? catName(d.cat) : ''} post. Crash out KNR.`.replace('  ', ' ');
+      case 'satellite': return `${who} had beers with the boys. Now the long trip home to his satellite house.`;
+      case 'puke': return `${who} is alone in last with ${P(d.pts)}. Somebody get him a towel.`;
+      case 'mma': return `${who} just logged his ${ordinal(d.n || 4)} MMA session this week. He’d like you to know he does MMA.`;
+      case 'radiator': return `${who} hasn’t logged anything in ${d.days} days. Somebody check the radiator.`;
+      case 'mom': return `It’s Sunday night and ${who} still needs ${P(d.left)}. His mom found out.`;
+      case 'nets': return `${names(d.who)} missed ${cfg().weeklyMin} points last week, and the train to the Nets game left without ${[].concat(d.who || []).length > 1 ? 'them' : 'him'}.`;
+      case 'liquor': return `It’s Saturday morning and ${who} is in last with ${P(d.pts)}. Still out on that liquor run.`;
+      case 'phil': return `${who} came out after ${d.days} days without a log. He saw his shadow: six more weeks of Winter Arc.`;
+      case 'scared': return `Nobody has logged a date in ${d.days} days. The fellas are scared of girls.`;
+      default: return '';
+    }
   }
-  const JOKE_EYEBROW = { coin: 'Achievement unlocked', bluehair: 'Week leader', iron: 'Saturday morning', hoat: 'Every week, as promised' };
+  const JOKE_EYEBROW = {
+    coin: 'Achievement unlocked', bluehair: 'Week leader', iron: 'Saturday morning', hoat: 'Every week, as promised',
+    bag: 'Three-way tie', fight: 'Tied for first', crashout: 'Cap called', satellite: 'Beers with the boys', puke: 'Last place',
+    mma: 'Fight night', radiator: 'Missing person', mom: 'Sunday night', nets: 'Strike', liquor: 'Saturday morning',
+    phil: 'Sighting', scared: 'Date drought',
+  };
   /** Every inside joke that has happened goes in the feed (config: feed). */
   const inFeed = e => (e.type === 'hoat' ? HOAT.feed !== false : !!(INSIDE_JOKES[e.type] && INSIDE_JOKES[e.type].feed));
   function jokeCard(e) {
-    const hoat = e.type === 'hoat', J = hoat ? { title: HOAT.title } : INSIDE_JOKES[e.type], d = e.data || {}, who = [d.a, d.b, d.who].filter(Boolean);
+    const hoat = e.type === 'hoat', J = hoat ? { title: HOAT.title } : INSIDE_JOKES[e.type], d = e.data || {};
+    const who = [...new Set([].concat(d.a || [], d.b || [], d.who || [], d.with || [], d.on || []))].filter(id => member(id)).slice(0, 6);
     const vis = hoat
       ? `<button class="jk-vid jk-stamp" data-act="hoat-replay" aria-label="${esc(HOAT.text)}: play the stamp again">${Art.hoatStamp()}</button>`
       : `<button class="jk-vid" data-act="play" data-id="${J.video}" aria-label="Play ${esc(J.title)}"><img src="${Art.poster(J.video)}" alt="" loading="lazy" width="96" height="171"><span class="gplay">${ic('play')}</span></button>`;
@@ -684,7 +719,7 @@ const App = (() => {
   ${vis}
   <div class="jk-body">
     <p class="eyebrow">${JOKE_EYEBROW[e.type] || 'Inside joke'}</p>
-    <h3>${esc(J.title)}</h3>
+    <h3${J.title.length > 13 ? ' class="long"' : ''}>${esc(J.title)}</h3>
     <p class="jk-text">${esc(jokeText(e))}</p>
     <p class="jk-meta"><span class="jk-avs">${who.map(id => avatar(id, 28)).join('')}</span><em>${ago(e.at)}</em></p>
   </div>
@@ -697,16 +732,21 @@ const App = (() => {
     if (!inApp() || jokeBusy) return;
     jokeBusy = true;
     try {
-      const found = Logic.jokes(S.members, S.calc, INSIDE_JOKES, new Date(), (S.group || {}).timezone, HOAT.feed !== false ? { username: HOAT.username, min: cfg().weeklyMin } : null);
+      const found = Logic.jokes(S.members, S.calc, INSIDE_JOKES, new Date(), (S.group || {}).timezone, HOAT.feed !== false ? { username: HOAT.username, min: cfg().weeklyMin } : null, { min: cfg().weeklyMin, posts: S.posts });
       let added = false;
-      for (const ev of found) if (!S.events.some(e => e.key === ev.key)) { await Store.recordEvent(ev); added = true; }
+      for (const ev of found) {
+        if (S.events.some(e => e.key === ev.key)) continue;
+        try { await Store.recordEvent(ev); added = true; } catch (err) { console.warn('Could not record', ev.key, err); }   // one refusal (e.g. an older server) doesn't block the rest
+      }
       if (added) { S.events = await Store.listEvents(); if (S.tab === 'feed' && $('#sheet').hidden) renderView(); }
       if (quiet()) return;   // something else is on screen: pop-ups wait for the next check
       const se = S.calc.season, now = Date.now();
       const due = S.events.filter(e => !e.seen && INSIDE_JOKES[e.type]).sort((a, b) => new Date(a.at) - new Date(b.at));
+      const newest = {};   // several of the same joke waiting (e.g. three caps overnight): play the newest once
+      for (const e of due) newest[e.type] = e;
       for (const e of due) {
         const J = INSIDE_JOKES[e.type];
-        if (now - new Date(e.at) > J.playFor * 36e5 || Logic.weekIdx(new Date(e.at), se.start) !== se.idx) { await Store.markSeen(e.id); e.seen = true; continue; }
+        if (now - new Date(e.at) > J.playFor * 36e5 || Logic.weekIdx(new Date(e.at), se.start) !== se.idx || newest[e.type] !== e) { await Store.markSeen(e.id); e.seen = true; continue; }
         if (quiet()) break;
         Celebrate.prefetch(J.video);
         await Celebrate.play(J.video);
@@ -800,7 +840,10 @@ const App = (() => {
       const who = p.reactions[el.dataset.e] || [], on = who.includes(S.me.id);
       el.classList.toggle('on', on); el.setAttribute('aria-pressed', String(on)); el.querySelector('span').textContent = who.length || '';
       if (on) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); floatEmoji(el, el.dataset.e); }
-      if (el.dataset.e === CAP) { const card = el.closest('.post'); setTimeout(() => { if (card && card.isConnected) card.outerHTML = postCard(p); }, 650); }
+      if (el.dataset.e === CAP) {
+        const card = el.closest('.post'); setTimeout(() => { if (card && card.isConnected) card.outerHTML = postCard(p); }, 650);
+        if (on) setTimeout(() => checkJokes(), 900);   // e.g. Crash Out KNR
+      }
     },
     photo(el) { const p = S.posts.find(x => x.id === el.dataset.id); if (p) modal(`<img class="full" src="${esc(Art.photo(p.photo))}" alt="Proof photo"><button class="btn" data-close>Close</button>`, 'photo-modal'); },
     async del(el) {

@@ -32,6 +32,19 @@ Reading:reading-1:2.2:1
 TheCoin:joke-coin:2.8:0
 BlueHair:joke-bluehair:2.6:0
 TheIron:joke-iron:1.0:0
+MMA:mma-1:1.8:1
+CrashOut:joke-crashout:2.0:0
+SatelliteHouse:joke-satellite:3.6:0
+TheBag:joke-bag:2.9:0
+DylanFights:joke-fight:2.4:0
+PukedOn:joke-puke:1.6:0
+MMAGuy:joke-mma:1.4:0
+TheRadiator:joke-radiator:2.3:0
+JakesMom:joke-mom:1.3:0
+NetsGame:joke-nets:2.3:0
+LiquorRun:joke-liquor:3.4:0
+PunxsutawneyPhil:joke-phil:2.0:0
+ScaredOfGirls:joke-scared:1.2:0
 "
 want() { [ -z "$ONLY" ] && return 0; for w in $ONLY; do [ "$w" = "$1" ] && return 0; done; return 1; }
 
