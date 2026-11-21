@@ -1,0 +1,901 @@
+'use strict';
+/* =====================================================================
+   WINTER ARC · screens and interactions
+   ===================================================================== */
+const App = (() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const S = { tab: 'home', board: 'week', feed: 'week', me: null, group: null, members: [], posts: [], events: [], calc: null, draft: null, ringFrom: null, busy: false,
+    acct: null, prefs: null, lastUser: '' };
+  const COLORS = ['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F'];
+  const isDemo = () => Store.mode === 'demo';
+  const cfg = () => Store.config();
+  const view = () => $('#view');
+  const ic = (n, cls) => Art.ui(n, cls);
+  const member = id => S.members.find(m => m.id === id);
+  const isComm = () => !!(S.me && member(S.me.id) && member(S.me.id).role === 'commissioner');
+  const nameOf = id => (S.me && id === S.me.id ? 'You' : (member(id) || {}).name || 'Someone');
+  const catName = cat => CATS[cat].short || CATS[cat].label;
+  const fmtDay = d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const fmtRange = (a, b) => fmtDay(a) + ' – ' + fmtDay(Logic.addDays(b, -1));
+  function fmtLeft(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+    return (d ? d + 'd ' : '') + [h, m, s % 60].map(v => String(v).padStart(2, '0')).join(':');
+  }
+  function ago(iso) {
+    const s = (Date.now() - new Date(iso)) / 1000;
+    if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + 'm ago'; if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    if (s < 172800) return 'yesterday'; if (s < 604800) return new Date(iso).toLocaleDateString('en-US', { weekday: 'long' });
+    return fmtDay(iso);
+  }
+  const ptsWord = v => (v === 1 ? 'point' : 'points');
+  function avatar(id, size = 40) {
+    const m = member(id) || {};
+    return `<span class="av" style="--c:${m.color || '#1E8FFF'};--s:${size}px" aria-hidden="true">${m.photo ? `<img src="${esc(m.photo)}" alt="">` : esc((m.name || '?').slice(0, 1).toUpperCase())}</span>`;
+  }
+  const coin = (pts, cls = '') => `<span class="coin ${cls}">+${fmtPts(pts)}</span>`;
+  const catChip = cat => `<span class="cchip" style="--c:${CATS[cat].color}">${Art.icon64(cat)}${esc(catName(cat))}</span>`;
+
+  async function load() {
+    S.auth = await Store.getAuth();
+    const inn = !!(S.auth && S.auth.signedIn);
+    S.me = inn ? await Store.getMe() : null;
+    S.group = S.me ? await Store.getGroup() : null;
+    S.members = S.me ? await Store.listMembers() : [];
+    if (S.me && !S.members.some(m => m.id === S.me.id)) S.me = null;
+    S.posts = S.me ? await Store.listPosts() : [];
+    S.events = S.me ? await Store.listEvents() : [];
+    S.calc = Logic.compute(S.members, S.posts, cfg(), new Date());
+  }
+  /** In the app proper (tabs showing), as opposed to the sign-in screens. */
+  const inApp = () => !!(S.me && !(S.auth && S.auth.mustChangePassword));
+
+  /* ------------------------------------------------------------ render */
+  function render() {
+    const app = inApp();
+    document.body.classList.toggle('signed-out', !app);
+    $('#sampleChip').hidden = !isDemo();
+    const mb = $('#meBtn'); mb.hidden = !app; mb.innerHTML = app ? avatar(S.me.id, 36) : '';
+    renderView(); navState();
+  }
+  function renderView() {
+    const v = view();
+    if (!S.auth || !S.auth.signedIn || !S.me) v.innerHTML = vSignedOut();
+    else if (!inApp()) v.innerHTML = vSetPassword();
+    else v.innerHTML = S.tab === 'feed' ? vFeed() : S.tab === 'board' ? vBoard() : S.tab === 'me' ? vMe() : S.tab === 'account' ? vAccount() : vHome();
+  }
+  function navState() {
+    $$('.tabs [data-tab]').forEach(b => { if (b.dataset.tab === S.tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  }
+  function go(tab) {
+    if (!inApp()) return;
+    if (S.tab === tab) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    S.tab = tab; renderView(); window.scrollTo(0, 0); navState();
+  }
+
+  /* ------------------------------------------------------------ home */
+  function mascotState(R, se, left) {
+    const min = cfg().weeklyMin, behind = left > 0 && se.msLeft < 2 * 864e5;
+    if (se.status === 'pre') return ['point', `The Winter Arc starts ${fmtDay(se.start)}. Stretch those biceps.`];
+    if (se.status === 'over') {
+      const w = S.calc.winners.map(id => nameOf(id));
+      return ['cheer', w.length ? `It’s over! ${w.join(', ')} ${w.length > 1 ? 'are' : 'is'} the stuff of legend.` : 'The Winter Arc is over. Legends were made.'];
+    }
+    if (R.eliminated) return ['shrug', 'You’re out, champ. All-time points still decide it if nobody survives, so keep stacking.'];
+    if (left <= 0) return ['flex', R.thisWeek >= min * 2 ? 'Double the minimum? Zeus is taking notes.' : 'Safe this week! Anything more is bonus glory.'];
+    if (behind) return ['shrug', `${fmtPts(left)} ${ptsWord(left)} to go and the clock is ticking. Move, champ!`];
+    if (R.strikes >= 1) return ['wave', `One strike already. ${fmtPts(left)} more ${ptsWord(left)} and this week is safe.`];
+    return ['wave', `${fmtPts(left)} more ${ptsWord(left)} and you’re safe this week, champ.`];
+  }
+  function ringSVG(pts, min) {
+    const r = 52, C = 2 * Math.PI * r, k = Math.min(pts, min) / min, over = U.clamp((pts - min) / min);
+    const ticks = Array.from({ length: min }, (_, i) => `<line x1="64" y1="3" x2="64" y2="17" transform="rotate(${((i / min) * 360).toFixed(2)} 64 64)"/>`).join('');
+    return `<div class="ring" role="img" aria-label="${fmtPts(pts)} of ${min} points this week">
+      <svg viewBox="0 0 128 128" aria-hidden="true">
+        <circle class="track" cx="64" cy="64" r="${r}"/>
+        <circle class="fill${pts >= min ? ' done' : ''}" id="ringFill" cx="64" cy="64" r="${r}" stroke-dasharray="${C.toFixed(2)}" style="stroke-dashoffset:${(C * (1 - k)).toFixed(2)}"/>
+        <circle class="over" id="ringOver" cx="64" cy="64" r="${r}" stroke-dasharray="${C.toFixed(2)}" style="stroke-dashoffset:${(C * (1 - over)).toFixed(2)}"/>
+        <g class="ticks">${ticks}</g>
+        <circle class="rim" cx="64" cy="64" r="61"/><circle class="rim" cx="64" cy="64" r="43"/>
+      </svg>
+      <div class="ring-num"><b id="ringNum">${fmtPts(pts)}</b><span>of ${min}</span></div>
+    </div>`;
+  }
+  function setRing(pts) {
+    const min = cfg().weeklyMin, C = 2 * Math.PI * 52, f = $('#ringFill'), o = $('#ringOver'); if (!f) return;
+    f.style.strokeDashoffset = (C * (1 - Math.min(pts, min) / min)).toFixed(2);
+    o.style.strokeDashoffset = (C * (1 - U.clamp((pts - min) / min))).toFixed(2);
+    f.classList.toggle('done', pts >= min);
+    $('.ring').setAttribute('aria-label', `${fmtPts(pts)} of ${min} points this week`);
+  }
+  function countUp(el, from, to, dur = 1000) {
+    if (!el) return; const t0 = performance.now();
+    const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = fmtPts(Math.round((from + (to - from) * e) * 2) / 2); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  function strikesHTML(R) {
+    const n = cfg().strikesOut;
+    return `<span class="strikes" role="img" aria-label="${R.strikes} of ${n} strikes">${Array.from({ length: n }, (_, i) => `<i class="${i < R.strikes ? 'on' : ''}">${i < R.strikes ? ic('x') : ''}</i>`).join('')}</span>`;
+  }
+  const miniRow = p => `<li>${avatar(p.memberId, 34)}<span class="mtxt"><b>${esc(nameOf(p.memberId))}</b> ${esc(catName(p.cat).toLowerCase() === 'beers' ? 'had beers with the fellas' : 'logged ' + catName(p.cat))}<small>${ago(p.at)}</small></span><span class="mic" style="--c:${CATS[p.cat].color}">${Art.icon64(p.cat)}</span>${coin(CATS[p.cat].pts, 'sm')}</li>`;
+  function vHome() {
+    const C = S.calc, se = C.season, R = C.by[S.me.id], min = cfg().weeklyMin;
+    const pts = S.ringFrom != null ? S.ringFrom : R.thisWeek, left = Math.max(0, min - R.thisWeek);
+    const chip = se.status === 'pre' ? ['pre', 'Starts ' + fmtDay(se.start)] : se.status === 'over' ? ['over', 'Season over']
+      : R.eliminated ? ['out', 'Eliminated'] : R.thisWeek >= min ? ['safe', isHoat() ? 'Hoat guaranteed' : 'Safe this week'] : ['todo', `${fmtPts(left)} to go`];
+    const [pose, line] = mascotState(R, se, left);
+    const recent = S.posts.filter(p => !p.voided && Logic.weekIdx(new Date(p.at), se.start) === se.idx).sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 4);
+    return `<section class="screen home" aria-labelledby="hT">
+  <h1 id="hT" class="sr">Home</h1>
+  ${roastHTML(roastPick())}
+  <div class="greet"><img class="mascot" src="${Art.mascot(pose)}" alt="" width="338" height="640"><p class="bubble">${esc(line)}</p></div>
+  <div class="card ringcard">
+    ${isHoat() && R.thisWeek >= min && se.status === 'live' ? `<span class="hoat-mini${pts >= min ? ' on' : ''}" role="img" aria-label="${esc(HOAT.text)}">${Art.hoatStamp()}</span>` : ''}
+    ${ringSVG(pts, min)}
+    <div class="ring-info">
+      <p class="eyebrow">${se.status === 'pre' ? 'Preseason' : `Week ${se.idx + 1} of ${se.weeks}`}</p>
+      <p class="dates">${fmtRange(se.wkStart, se.wkEnd)}</p>
+      <span class="chip ${chip[0]}">${chip[1]}</span>
+      <p class="cd">${ic('clock')}<span>${se.status === 'pre' ? 'Starts in' : se.status === 'over' ? 'Final week ended' : 'Ends Sun 11:59 PM'}</span><b id="cd">${se.status === 'over' ? fmtRange(se.wkStart, se.wkEnd) : fmtLeft(se.msLeft)}</b></p>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="flame">${Art.icon64('flame')}</span><b>${R.streak}</b><small>day streak</small></div>
+    <div class="stat">${strikesHTML(R)}<small>${R.eliminated ? 'eliminated' : 'strikes'}</small></div>
+    <div class="stat"><span class="shield">${Art.icon64('shield')}</span><b>${R.safeWeeks}</b><small>weeks safe</small></div>
+  </div>
+  <button class="btn btn-log" data-act="log">${ic('plus')}<span>Log an activity</span></button>
+  <div class="card standing">
+    <h2>Still standing <small>${C.alive.length} of ${S.members.length}</small></h2>
+    <div class="avs">${S.members.map(m => { const out = C.by[m.id].eliminated; return `<span class="sv${out ? ' out' : ''}">${avatar(m.id, 46)}${out ? `<i class="xmark">${ic('x')}</i>` : ''}<small>${esc(m.id === S.me.id ? 'You' : m.name)}</small></span>`; }).join('')}</div>
+    <p class="note">Two strikes and you’re out. Survivors win the Winter Arc.</p>
+  </div>
+  <div class="card recent">
+    <div class="row-h"><h2>This week</h2><button class="link" data-act="tab" data-tab="feed">See the feed ${ic('chevron')}</button></div>
+    ${recent.length ? `<ul class="mini">${recent.map(miniRow).join('')}</ul>` : '<p class="note">Nothing logged yet this week. Be first.</p>'}
+  </div>
+</section>`;
+  }
+
+  /* ------------------------------------------------------------ roast of the day (js/jokes.js) */
+  function roastPick() {
+    const now = new Date(), day = Logic.dayKey(now);
+    try {
+      let r = S.roast && S.roast.day === day ? Jokes.again(S.members, S.posts, cfg(), now, S.roast.i) : null;
+      if (!r) r = Jokes.daily(S.members, S.posts, cfg(), now);
+      S.roast = r ? { day, i: r.i, pos: r.pos, key: r.key, target: r.target } : null;
+      return r;
+    } catch (e) { console.error(e); return null; }
+  }
+  function roastHTML(r, swap) {
+    if (!r) return '';
+    const m = member(r.target) || {}, tag = S.me && r.target === S.me.id ? 'You got roasted' : 'Roast of the day';
+    return `<button class="roast${swap ? ' swap' : ''}" data-act="roast" style="--c:${m.color || '#E9566C'}" aria-label="${esc(`${tag}: ${r.text} Tap for another.`)}">
+    <span class="roast-tag">${Art.icon64('flame')}<span>${tag}</span></span>
+    ${avatar(r.target, 52)}
+    <span class="roast-txt">${r.html}</span>
+    <span class="roast-more">${ic('refresh')}</span>
+  </button>`;
+  }
+
+  /* ------------------------------------------------------------ feed */
+  const seg = (name, opts, cur) => `<div class="seg" role="tablist" aria-label="${name}">${opts.map(([v, l]) => `<button role="tab" aria-selected="${v === cur}" data-act="seg" data-seg="${name}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  function postCard(p) {
+    const C0 = CATS[p.cat], mine = p.memberId === S.me.id, caps = (p.reactions[CAP] || []).length, se = S.calc.season;
+    const thisWeek = Logic.weekIdx(new Date(p.at), se.start) === se.idx;
+    const details = [p.cat === 'gym' && p.minutes ? p.minutes + ' min' : '', p.cat === 'run' && p.miles ? p.miles + ' mi' : ''].filter(Boolean).join(' · ');
+    const wit = (p.witnesses || []).map(id => esc(nameOf(id))).join(', ');
+    return `<article class="post card${p.voided ? ' voided' : ''}" data-id="${p.id}" style="--c:${C0.color}">
+  <header>${avatar(p.memberId, 44)}<div class="who"><b>${esc(nameOf(p.memberId))}</b><span>${catChip(p.cat)}<em>${ago(p.at)}</em></span></div>${coin(C0.pts)}</header>
+  ${p.photo ? `<button class="photo" data-act="photo" data-id="${p.id}" aria-label="Open the proof photo"><img src="${esc(Art.photo(p.photo))}" alt="Proof for ${esc(C0.label)}" loading="lazy"></button>` : ''}
+  ${p.voided ? '<p class="stamp">Voided · fraud · 0-point week</p>' : ''}
+  ${p.caption ? `<p class="cap">${esc(p.caption)}</p>` : ''}
+  ${details || wit ? `<p class="meta">${details ? `<span>${ic('clock')}${details}</span>` : ''}${wit ? `<span>${ic('users')}Witnessed by ${wit}</span>` : ''}</p>` : ''}
+  ${caps >= CAP_DISPUTE && !p.voided ? `<p class="dispute">${ic('flag')}Disputed: ${caps} people called cap</p>` : ''}
+  <footer>
+    <div class="rx">${REACTIONS.map(e => { const who = p.reactions[e] || [], on = who.includes(S.me.id); return `<button class="${on ? 'on' : ''}" data-act="react" data-id="${p.id}" data-e="${e}" aria-pressed="${on}" aria-label="${e === CAP ? 'Call cap on this post' : 'React ' + e}">${e}<span>${who.length || ''}</span></button>`; }).join('')}</div>
+    ${mine && thisWeek ? `<button class="link danger" data-act="del" data-id="${p.id}">Delete</button>` : ''}
+    ${!mine && !p.voided && isComm() ? `<button class="link danger" data-act="void" data-id="${p.id}">Void</button>` : ''}
+  </footer>
+</article>`;
+  }
+  function vFeed() {
+    const se = S.calc.season;
+    const evs = S.events.filter(inFeed).map(e => ({ ...e, isEvent: true }));
+    let list = [...S.posts, ...evs].sort((a, b) => new Date(b.at) - new Date(a.at));
+    if (S.feed === 'week') list = list.filter(p => Logic.weekIdx(new Date(p.at), se.start) === se.idx);
+    return `<section class="screen feed"><div class="screen-h"><h1>Feed</h1>${seg('feed', [['week', 'This week'], ['all', 'Everything']], S.feed)}</div>
+  ${list.length ? list.map(p => (p.isEvent ? jokeCard(p) : postCard(p))).join('') : `<div class="card empty"><img src="${Art.mascot('point')}" alt="" width="104" height="160"><h2>Nothing here yet</h2><p class="note">Log something and it shows up here for the fellas.</p></div>`}
+  <p class="cap-hint">Think a post is fake? Tap ${CAP} to call cap. ${CAP_DISPUTE} caps marks it disputed.</p>
+</section>`;
+  }
+
+  /* ------------------------------------------------------------ leaderboard */
+  function boardRow(m, i, week, max) {
+    const R = S.calc.by[m.id], v = week ? R.thisWeek : R.total, min = cfg().weeklyMin, w = week ? Math.min(1, v / min) : max ? v / max : 0;
+    return `<li class="row${R.eliminated ? ' out' : ''}${m.id === S.me.id ? ' me' : ''}${i < 3 ? ' top' + (i + 1) : ''}" data-id="${m.id}">
+  <span class="rk">${i + 1}</span>${avatar(m.id, 44)}
+  <div class="who"><b>${esc(m.name)}${m.id === S.me.id ? ' <small>(you)</small>' : ''}</b><span class="bar${week && v >= min ? ' full' : ''}"><i style="--w:${(w * 100).toFixed(1)}%"></i></span></div>
+  <div class="side"><b class="pts">${fmtPts(v)}</b>${R.eliminated ? '<span class="outtag">OUT</span>' : strikesHTML(R)}</div>
+</li>`;
+  }
+  function podium(top) {
+    const order = [top[1], top[0], top[2]], h = [76, 104, 58], n = ['2', '1', '3'];
+    return `<div class="podium" aria-label="Top three all-time">${order.map((m, i) => `<div class="pod p${n[i]}">${i === 1 ? '<span class="crown">' + Art.icon64('trophy') + '</span>' : ''}${avatar(m.id, i === 1 ? 64 : 50)}<b>${esc(m.name)}</b><span class="ppts">${fmtPts(S.calc.by[m.id].total)} pts</span><div class="blk" style="--h:${h[i]}px">${n[i]}</div></div>`).join('')}</div>`;
+  }
+  function vBoard() {
+    const C = S.calc, min = cfg().weeklyMin, week = S.board === 'week', list = week ? C.weekRank : C.allRank;
+    const max = Math.max(min, ...list.map(m => (week ? C.by[m.id].thisWeek : C.by[m.id].total)));
+    return `<section class="screen boardS"><div class="screen-h"><h1>Leaderboard</h1>${seg('board', [['week', 'This week'], ['all', 'All-time']], S.board)}</div>
+  ${!week && list.length >= 3 ? podium(list.slice(0, 3)) : ''}
+  <ol class="board card">${list.map((m, i) => boardRow(m, i, week, max)).join('')}</ol>
+  <p class="note center">${week ? `Everyone needs ${min} points by Sunday 11:59 PM. Miss it and take a strike.` : 'Survivors win the Winter Arc. If nobody survives, most all-time points wins.'}</p>
+</section>`;
+  }
+  function flipBoard(update) {
+    const first = new Map($$('.board .row').map(r => [r.dataset.id, r.getBoundingClientRect().top]));
+    update();
+    $$('.board .row').forEach(r => {
+      const f = first.get(r.dataset.id); if (f == null) return;
+      const dy = f - r.getBoundingClientRect().top;
+      if (Math.abs(dy) > 1) r.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 560, easing: 'cubic-bezier(.2,1.25,.4,1)' });
+    });
+  }
+
+  /* ------------------------------------------------------------ me */
+  function historyChart(R, se) {
+    const n = se.weeks, W = 320, H = 140, pad = 18, bw = (W - pad) / n, min = cfg().weeklyMin, max = Math.max(min * 2, R.bestWeek || 0);
+    const y = v => H - 20 - (v / max) * (H - 34);
+    let g = '';
+    for (let w = 0; w < n; w++) {
+      const v = R.weekPts[w], x = pad + w * bw + 1.5, cur = se.status === 'live' && w === se.idx, done = w <= se.lastComplete;
+      const cls = cur ? 'cur' : !done ? 'fut' : v >= min ? 'ok' : 'miss';
+      const hh = cls === 'fut' ? 3 : Math.max(3, H - 20 - y(v));
+      g += `<rect class="${cls}" x="${x.toFixed(1)}" y="${(H - 20 - hh).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${hh.toFixed(1)}" rx="3"><title>Week ${w + 1}: ${fmtPts(v)} pts</title></rect>`;
+      if (w % 4 === 0 || w === n - 1) g += `<text x="${(x + (bw - 3) / 2).toFixed(1)}" y="${H - 5}" text-anchor="middle">W${w + 1}</text>`;
+    }
+    const ly = y(min);
+    return `<svg class="hist" viewBox="0 0 ${W} ${H}" role="img" aria-label="Points per week, the dashed line is the ${min}-point minimum">${g}<line class="minline" x1="${pad}" x2="${W}" y1="${ly.toFixed(1)}" y2="${ly.toFixed(1)}"/><text class="minlab" x="2" y="${(ly + 4).toFixed(1)}">${min}</text></svg>
+  <p class="legend"><span class="k ok"></span>safe <span class="k miss"></span>strike <span class="k cur"></span>this week</p>`;
+  }
+  function rulesHTML() {
+    const min = cfg().weeklyMin;
+    return `<div class="rules-body">
+  <p class="lead"><b>NO EXCUSES.</b> The mission is simple: earn ${min} points every week or face the consequences.</p>
+  <h3>Point system</h3>
+  <ul class="pts-list">${CAT_ORDER.map(k => `<li><span class="mic" style="--c:${CATS[k].color}">${Art.icon64(k)}</span>${esc(CATS[k].label)}<b>${fmtPts(CATS[k].pts)}</b></li>`).join('')}</ul>
+  <h3>Official rules</h3>
+  <ol>
+    <li><b>Weekly minimum.</b> Every participant must earn at least ${min} points per week. No rolling points into the next week.</li>
+    <li><b>The honor system.</b> All activities must be documented here. No proof = no points. Photos, screenshots, or witnesses count.</li>
+    <li><b>No double dipping.</b> One activity cannot count for multiple categories. Each event earns points once.</li>
+    <li><b>Gym requirements.</b> Minimum 45-minute workout. Actually lift. Sitting on your phone doesn’t count.</li>
+    <li><b>Running requirements.</b> Minimum 2 miles per run. Walking to the fridge doesn’t count.</li>
+    <li><b>Dating requirements.</b> Must be an actual one-on-one date. Dating apps, texting, and FaceTime do not count. A date with your existing girlfriend does not count.</li>
+    <li><b>Bronson Beer requirements.</b> Must physically attend and have at least one beer with the fellas. Drinking alone doesn’t count.</li>
+    <li><b>Weekly deadline.</b> Weeks run Monday through Sunday at 11:59 PM. Points reset every Monday.</li>
+    <li><b>No fake points.</b> Fraudulent claims result in an automatic 0-point week.</li>
+  </ol>
+  <h3>Strikes</h3>
+  <p>Miss ${min} points in a week and you take a strike. ${cfg().strikesOut} strikes = elimination. Anyone who survives the entire Winter Arc wins. If nobody survives, the most all-time points wins.</p>
+</div>`;
+  }
+  function vMe() {
+    const C = S.calc, R = C.by[S.me.id], m = member(S.me.id), se = C.season;
+    const all = CAT_ORDER.flatMap(cat => (CELEBRATIONS[cat] || []).map(c => ({ ...c, cat })));
+    const jk = Object.entries(INSIDE_JOKES).map(([k, j]) => ({ id: j.video, name: j.title, k }));
+    return `<section class="screen me">
+  <div class="card profile">${avatar(m.id, 70)}<div><h1>${esc(m.name)}</h1><p>${m.role === 'commissioner' ? '<span class="chip comm">Commissioner</span>' : ''}<span class="chip ${R.eliminated ? 'out' : 'safe'}">${R.eliminated ? 'Eliminated' : 'Still in'}</span></p>${S.group ? `<p class="crewline">${ic('users')}${esc(S.group.name)} · ${S.members.length} people</p>` : ''}</div><button class="gear" data-act="account" aria-label="Account and settings">${ic('gear')}</button></div>
+  <div class="grid4">
+    <div class="tile"><b>${fmtPts(R.total)}</b><small>all-time points</small></div>
+    <div class="tile"><b>${R.safeWeeks}</b><small>weeks safe</small></div>
+    <div class="tile"><b>${fmtPts(R.bestWeek)}</b><small>best week</small></div>
+    <div class="tile">${R.fav ? `<span class="mic big" style="--c:${CATS[R.fav].color}">${Art.icon64(R.fav)}</span>` : '<b>–</b>'}<small>${R.fav ? 'favorite: ' + esc(catName(R.fav)) : 'no favorite yet'}</small></div>
+  </div>
+  <div class="card"><h2>Your weeks</h2>${historyChart(R, se)}</div>
+  <div class="card"><h2>Badges <small>${R.badges.length} of ${BADGES.length}</small></h2><div class="badges">${BADGES.map(b => { const has = R.badges.includes(b.id); return `<button class="badge${has ? '' : ' locked'}" data-act="badge" data-id="${b.id}" aria-label="${esc(b.name)}. ${esc(b.desc)}${has ? '' : ' Locked.'}">${Art.icon64(b.icon)}<span>${esc(b.name)}</span></button>`; }).join('')}</div></div>
+  <div class="card gallery"><h2>Celebrations <small>${all.length}</small></h2><p class="note">Every log plays one for that activity. Tap to watch.</p>
+    <div class="gs">${all.map(c => `<button class="gtile" style="--c:${CATS[c.cat].color}" data-act="play" data-id="${c.id}"><img src="${Art.poster(c.id)}" alt="" loading="lazy" width="180" height="320"><span class="gplay">${ic('play')}</span><span class="gname">${esc(c.name)}</span><span class="gcat">${esc(catName(c.cat))}</span></button>`).join('')}</div>
+    <h3 class="gsub">Inside jokes <small>${jk.length}</small></h3>
+    <p class="note">They pop up by themselves when it happens. Tap to rewatch.</p>
+    <div class="gs">${jk.map(c => `<button class="gtile joke-${c.k}" data-act="play" data-id="${c.id}"><img src="${Art.poster(c.id)}" alt="" loading="lazy" width="180" height="320"><span class="gplay">${ic('play')}</span><span class="gname">${esc(c.name)}</span><span class="gcat">Inside joke</span></button>`).join('')}</div>
+  </div>
+  <details class="card rules"><summary><h2>Official rules</h2>${ic('chevron', 'chev')}</summary>${rulesHTML()}</details>
+  <div class="card settings"><h2>Settings</h2>
+    <button class="btn" data-act="account">${ic('gear')}Account &amp; settings</button>
+    <button class="btn" data-act="intro">${ic('play')}Replay the intro</button>
+    ${isDemo() ? `<button class="btn" data-act="switch">${ic('users')}Switch person (preview)</button><button class="btn" data-act="reset">${ic('refresh')}Reset sample data</button>` : ''}
+  </div>
+</section>`;
+  }
+
+  /* ------------------------------------------------------------ sign-in + accounts */
+  const COMM_NAME = (ROSTER.find(r => r.role === 'commissioner') || { name: 'the commissioner' }).name;
+  const bigAv = (name, color, photo, size = 96) =>
+    `<span class="av" style="--c:${color};--s:${size}px" aria-hidden="true">${photo ? `<img src="${esc(photo)}" alt="">` : esc((String(name || '').trim()[0] || '?').toUpperCase())}</span>`;
+  const swatches = (cur, act) => `<div class="swatches" role="radiogroup" aria-label="Colour">${COLORS.map(c => `<button type="button" role="radio" aria-checked="${c === cur}" aria-label="Colour ${c}" data-act="${act}" data-c="${c}" style="--c:${c}"></button>`).join('')}</div>`;
+  const backBtn = (act, to, label = 'Back') => `<button type="button" class="back" data-act="${act}" data-to="${to}">${ic('back')}${label}</button>`;
+  const demoNote = html => (isDemo() ? `<p class="demo-note">${html}</p>` : '');
+  const field = (id, label, attrs = '', after = '') => `<label class="fld" for="${id}"><span>${label}</span><input id="${id}" ${attrs}>${after}</label>`;
+  const pwField = (id, label, auto) => `<label class="fld" for="${id}"><span>${label}</span><span class="pw"><input id="${id}" type="password" autocomplete="${auto}" ${auto === 'new-password' ? 'minlength="8"' : ''} required><button type="button" class="pw-eye" data-act="pw-eye" aria-label="Show password">${ic('eye')}</button></span></label>`;
+
+  /* signed out: one screen, username + password. No sign-up: accounts are made for you. */
+  function vSignedOut() {
+    return `<section class="screen auth welcome">
+  <div class="hero-auth">
+    <img class="mascot big" src="${Art.mascot('flex')}" alt="Flexander, the Winter Arc mascot, flexing" width="410" height="640">
+    <h1 class="logo">Winter <span>Arc</span></h1>
+    <p class="tag">7 points a week. No excuses.</p>
+  </div>
+  <form id="signinForm" class="card form auth-card" novalidate>
+    ${field('siUser', 'Username', `autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required placeholder="your first name" value="${esc(S.lastUser || '')}"`)}
+    ${pwField('siPass', 'Password', 'current-password')}
+    <button class="btn btn-primary wide" type="submit">${ic('lock')}Sign in</button>
+    <p class="hint center">Forgot it? Ask ${esc(COMM_NAME)} to reset your password.</p>
+  </form>
+  <p class="fine">Members only. Your sign-in details come from ${esc(COMM_NAME)}. Proof or it didn’t happen.</p>
+  ${demoNote(`Preview: sign in as <b>osim</b> with <b>winterarc</b>. Everyone else uses <b>winterarc</b> too and gets asked to pick their own password. <button type="button" class="link small" data-act="demo-pick">Or just pick someone</button>`)}
+</section>`;
+  }
+
+  /* first sign-in with a temporary password: pick your own */
+  function vSetPassword() {
+    const m = S.me || {};
+    return `<section class="screen auth">
+  <div class="auth-h"><img class="mascot sm" src="${Art.mascot('wave')}" alt="" width="120" height="160"><h1>Welcome, ${esc(m.name || 'champ')}!</h1></div>
+  <p class="note center">You signed in with a temporary password. Pick your own so it’s just yours.</p>
+  <form id="setpwForm" class="card form" novalidate>
+    <input class="sr" type="text" autocomplete="username" value="${esc(m.username || '')}" readonly tabindex="-1" aria-hidden="true">
+    ${pwField('npPass', 'New password', 'new-password')}
+    ${pwField('npPass2', 'Type it again', 'new-password')}
+    <p class="hint">At least 8 characters.</p>
+    <button class="btn btn-primary wide" type="submit">${ic('check')}Save and go</button>
+  </form>
+  <button type="button" class="link" data-act="signout">Not you? Sign out</button>
+</section>`;
+  }
+
+  /* account + group settings (from Me, or the avatar in the top bar) */
+  function vAccount() {
+    const m = member(S.me.id), u = (S.auth && S.auth.user) || {}, g = S.group || {}, pf = S.prefs || {};
+    const ac = S.acct || (S.acct = { color: m.color });
+    const comm = isComm();
+    const others = S.members.filter(x => x.id !== m.id);
+    const num = (k, label) => `<label class="fld sm" for="gs_${k}"><span>${label}</span><input id="gs_${k}" type="number" inputmode="numeric" value="${g[k]}" required></label>`;
+    return `<section class="screen account">
+  ${backBtn('tab-to', 'me', 'Me')}
+  <h1 class="pageh">Account</h1>
+  <form id="profileForm" class="card form">
+    <h2>Profile</h2>
+    <div class="prow">
+      <button type="button" class="avpick sm" data-act="pick-avatar" aria-label="Change profile photo">${bigAv(m.name, ac.color, m.photo, 78)}<span class="cam">${ic('camera')}</span></button>
+      <div class="pcol">${field('acName', 'Name', `maxlength="24" value="${esc(m.name)}" required`)}${m.photo ? '<button type="button" class="link small" data-act="acct-clear-photo">Remove photo</button>' : ''}</div>
+    </div>
+    <div class="fld"><span>Colour</span>${swatches(ac.color, 'acct-color')}</div>
+    <button class="btn btn-primary" type="submit">${ic('check')}Save profile</button>
+  </form>
+  <div class="card">
+    <h2>Sign-in</h2>
+    <p class="kv"><span>${ic('key')}Username</span><b class="uname">${esc(u.username || m.username || '')}</b></p>
+    <form id="pwForm" class="form inline"><input class="sr" type="text" autocomplete="username" value="${esc(u.username || m.username || '')}" readonly tabindex="-1" aria-hidden="true">${pwField('acPass', 'New password', 'new-password')}<button class="btn" type="submit">${ic('lock')}Change password</button></form>
+  </div>
+  <div class="card">
+    <h2>Reminders</h2>
+    <label class="switch"><input type="checkbox" data-pref="sundayReminder" ${pf.sundayReminder ? 'checked' : ''}><span class="knob"></span><span class="sw-t"><b>Sunday nudge</b><small>Remind me Sunday at 6 PM if I’m under ${cfg().weeklyMin} points.</small></span></label>
+    <label class="switch"><input type="checkbox" data-pref="capAlerts" ${pf.capAlerts ? 'checked' : ''}><span class="knob"></span><span class="sw-t"><b>Cap alerts</b><small>Tell me when someone calls 🧢 on my post.</small></span></label>
+  </div>
+  <div class="card">
+    <h2>The season</h2>
+    <p class="kv"><span>${ic('users')}<b>${esc(g.name || 'Winter Arc')}</b> · ${S.members.length} people</span><span class="chip ${comm ? 'comm' : ''}">${comm ? 'Commissioner' : 'Member'}</span></p>
+    <p class="note">Starts ${fmtDay(Logic.parseDay(g.seasonStart || CONFIG.seasonStart))} · ${g.seasonWeeks} weeks · ${g.weeklyMin} points a week · ${g.strikesOut} strikes and you’re out. Weeks end Sunday 11:59 PM${g.timezone ? ` (${esc(g.timezone.replace(/_/g, ' '))} time)` : ''}.</p>
+  </div>
+  ${comm ? `<form id="groupForm" class="card form comm-card">
+    <h2>${ic('crown')}Commissioner</h2>
+    ${field('gs_name', 'Name', `maxlength="32" value="${esc(g.name || '')}" required`)}
+    ${field('gs_seasonStart', 'Week 1 starts (a Monday)', `type="date" value="${esc(g.seasonStart || '')}" required`)}
+    <div class="numrow">${num('seasonWeeks', 'Weeks')}${num('weeklyMin', 'Points a week')}${num('strikesOut', 'Strikes = out')}</div>
+    <p class="hint">Changing the rules mid-season re-scores everyone’s weeks.</p>
+    <button class="btn btn-primary" type="submit">${ic('check')}Save season settings</button>
+  </form>
+  <div class="card comm-card">
+    <h2>${ic('users')}Members <small>${S.members.length}</small></h2>
+    <p class="note">Tap someone to reset their password, hand over the commissioner role or remove them.</p>
+    <ul class="mlist">${others.map(x => `<li><button type="button" class="mrow" data-act="member-menu" data-id="${x.id}">${avatar(x.id, 36)}<span class="mname"><b>${esc(x.name)}</b><small>@${esc(x.username || '')}</small></span>${ic('chevron', 'mchev')}</button></li>`).join('')}</ul>
+    <form id="addFriendForm" class="form addf">
+      <h3>${ic('userplus')}Add a friend</h3>
+      <div class="numrow two">${field('afName', 'Name', 'maxlength="24" placeholder="First name" required')}${field('afUser', 'Username', 'maxlength="20" autocapitalize="none" spellcheck="false" placeholder="firstname" required')}</div>
+      <button class="btn" type="submit">${ic('plus')}Add friend</button>
+      <p class="hint">They get a temporary password to send them. No sign-up page, ever.</p>
+    </form>
+  </div>` : ''}
+  <div class="card danger-card">
+    <button class="btn" data-act="signout">${ic('out')}Sign out</button>
+    <p class="note">Forgot your password next time? ${comm ? 'You’re the commissioner: hand the role to someone first if you need a reset.' : `Ask ${esc(COMM_NAME)} for a reset.`}</p>
+  </div>
+</section>`;
+  }
+
+  /* preview only: jump into anyone's account */
+  function demoChooser(title, sub) {
+    const list = Store.demoRoster();
+    return modal(`<h2>${esc(title)}</h2><p class="note">${esc(sub)}</p>
+      <div class="who-list chooser">${list.map(a => `<button class="who-btn" data-ok data-val="${a.id}">${bigAv(a.name, a.color, a.photo, 40)}<span class="who-t"><b>${esc(a.name)}</b><small>@${esc(a.username)}</small></span>${a.role === 'commissioner' ? '<span class="chip comm">Comm</span>' : ''}</button>`).join('')}</div>
+      <div class="mact"><button class="btn" data-close>Cancel</button></div>`, 'chooser-modal');
+  }
+  /* commissioner: show a temporary password once */
+  function showTemp(name, r) {
+    const pr = modal(`<h2>${esc(name)}’s sign-in</h2>
+      <p>Send this to ${esc(name)} privately. They’ll pick their own password the first time they sign in.</p>
+      <div class="codebox temp"><span class="lbl">Username</span><b>${esc(r.username)}</b><span class="lbl">Temporary password</span><b id="tempPw">${esc(r.tempPassword)}</b></div>
+      <div class="mact"><button class="btn" data-act-copy="${esc(`Winter Arc sign-in\nUsername: ${r.username}\nPassword: ${r.tempPassword}`)}">${ic('copy')}Copy</button><button class="btn btn-primary" data-ok>Done</button></div>`, 'temp-modal');
+    const cb = pr.el && pr.el.querySelector('[data-act-copy]');
+    if (cb) cb.addEventListener('click', e => { e.stopPropagation(); copyText(cb.dataset.actCopy, 'Copied. Send it privately.'); });
+    return pr;
+  }
+
+  async function afterAuth() {
+    S.acct = null; S.prefs = null; S.tab = 'home';
+    await load();
+    if (inApp()) toast(`Welcome back, ${S.me.name}.`, 'wave');
+    render(); window.scrollTo(0, 0);
+    if (inApp()) checkJokes();
+  }
+  async function gotAvatar(dataUrl) { await Store.updateProfile({ photo: dataUrl }); await load(); render(); toast('Photo updated.'); }
+  async function copyText(text, ok = 'Copied.') {
+    try { await navigator.clipboard.writeText(text); toast(ok); } catch (e) { toast(text.replace(/\n/g, ' · ')); }
+  }
+
+  const AUTH_ACT = {
+    'pw-eye'(el) { const i = el.parentElement.querySelector('input'), show = i.type === 'password'; i.type = show ? 'text' : 'password'; el.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); el.classList.toggle('on', show); },
+    async 'demo-pick'() {
+      const pick = await demoChooser('Sign in as…', 'Preview only: skips the password.'); if (!pick) return;
+      await Store.demoSignInAs(pick); await afterAuth();
+    },
+    async signout() { await Store.signOut(); await afterAuth(); },
+    'pick-avatar'() { $('#avatarInput').click(); },
+    async account() { S.prefs = await Store.getPrefs(); S.acct = null; go('account'); },
+    'tab-to': el => go(el.dataset.to),
+    'acct-color'(el) { S.acct.color = el.dataset.c; $$('.swatches [data-act="acct-color"]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.c === el.dataset.c))); const av = $('.avpick .av'); if (av) av.style.setProperty('--c', el.dataset.c); },
+    async 'acct-clear-photo'() { await Store.updateProfile({ photo: null }); await load(); render(); toast('Photo removed.'); },
+    async 'member-menu'(el) {
+      const x = member(el.dataset.id); if (!x) return;
+      const pick = await modal(`<h2>${esc(x.name)}</h2><p class="note">@${esc(x.username || '')}</p>
+        <div class="menu-list">
+          <button class="btn wide" data-ok data-val="reset">${ic('key')}Reset password</button>
+          <button class="btn wide" data-ok data-val="comm">${ic('crown')}Make commissioner</button>
+          <button class="btn wide danger-t" data-ok data-val="remove">${ic('x')}Remove</button>
+        </div>
+        <div class="mact"><button class="btn" data-close>Cancel</button></div>`, 'menu-modal');
+      if (pick === 'reset') return AUTH_ACT['reset-pw'](el);
+      if (pick === 'comm') return AUTH_ACT['make-comm'](el);
+      if (pick === 'remove') return AUTH_ACT['remove-member'](el);
+    },
+    async 'reset-pw'(el) {
+      const x = member(el.dataset.id); if (!x) return;
+      if (!(await confirmBox(`Reset ${x.name}’s password?`, 'Their old password stops working. You’ll get a temporary one to send them.', 'Reset'))) return;
+      const r = await Store.resetPassword(x.id); await showTemp(x.name, r);
+    },
+    async 'make-comm'(el) {
+      const x = member(el.dataset.id); if (!x) return;
+      if (!(await confirmBox(`Make ${x.name} commissioner?`, 'They get the season settings, password resets and the void button. You become a regular member.', 'Hand it over'))) return;
+      await Store.makeCommissioner(x.id); await load(); render(); toast(`${x.name} is the commissioner now.`);
+    },
+    async 'remove-member'(el) {
+      const x = member(el.dataset.id); if (!x) return;
+      if (!(await confirmBox(`Remove ${x.name}?`, 'Their sign-in stops working and their posts come off the board.', 'Remove', true))) return;
+      await Store.removeMember(x.id); await load(); renderView(); toast(`${x.name} was removed.`, 'shrug');
+    },
+  };
+
+  const FORMS = {
+    async signinForm() {
+      const un = $('#siUser').value, pw = $('#siPass').value; S.lastUser = un;
+      await Store.signIn(un, pw); await afterAuth();
+    },
+    async setpwForm() {
+      const a = $('#npPass').value, b = $('#npPass2').value;
+      if (a !== b) throw new Error('Those two passwords don’t match.');
+      await Store.setPassword(a); await afterAuth(); toast('Password saved. You’re in.', 'thumbs');
+    },
+    async profileForm() {
+      await Store.updateProfile({ name: $('#acName').value, color: S.acct.color });
+      await load(); render(); toast('Profile saved.', 'thumbs');
+    },
+    async pwForm() { await Store.setPassword($('#acPass').value); $('#acPass').value = ''; toast('Password changed.', 'thumbs'); },
+    async groupForm() {
+      const g = S.group || {}, v = id => ($('#gs_' + id) ? $('#gs_' + id).value : g[id]);
+      await Store.updateGroup({ name: v('name'), seasonStart: v('seasonStart'), seasonWeeks: +v('seasonWeeks'), weeklyMin: +v('weeklyMin'), strikesOut: +v('strikesOut') });
+      await load(); render(); toast('Season settings saved.', 'thumbs');
+    },
+    async addFriendForm() {
+      const name = $('#afName').value, un = $('#afUser').value;
+      const r = await Store.addFriend({ name, username: un });
+      await load(); renderView(); await showTemp(name.trim(), r);
+    },
+  };
+
+  /* ------------------------------------------------------------ log sheet */
+  function weekDays() {
+    const se = S.calc.season, today = new Date(), out = [];
+    for (let d = new Date(se.wkStart); d <= today; d = Logic.addDays(d, 1)) out.push(new Date(d));
+    return out.reverse().map((d, i) => ({ key: Logic.dayKey(d), label: i === 0 ? 'Today' : i === 1 ? 'Yesterday' : d.toLocaleDateString('en-US', { weekday: 'short' }) }));
+  }
+  function openLog() {
+    if (!S.me) return;
+    const se = S.calc.season;
+    if (se.status === 'pre') return toast(`Logging opens ${fmtDay(se.start)} when week 1 starts.`);
+    if (se.status === 'over') return toast('The Winter Arc is over. No more logging.');
+    S.draft = { photo: null, witnesses: [], cat: null, minutes: 60, miles: 2.0, checks: {}, caption: '', day: Logic.dayKey(new Date()), tried: false };
+    const sh = $('#sheet');
+    sh.innerHTML = `<div class="scrim" data-act="close-sheet"></div>
+<div class="panel" role="dialog" aria-modal="true" aria-labelledby="logT">
+  <div class="grab" aria-hidden="true"></div>
+  <header class="sheet-h"><h2 id="logT">Log an activity</h2><button class="xbtn" data-act="close-sheet" aria-label="Close">${ic('x')}</button></header>
+  <section class="step"><h3><span class="num">1</span>Proof</h3><div id="shProof"></div></section>
+  <section class="step"><h3><span class="num">2</span>What did you do?</h3><div class="cats" id="shCats"></div></section>
+  <section class="step" id="shDetails" hidden></section>
+  <section class="step"><h3><span class="num" id="whenNum">3</span>When?</h3><div class="days" id="shWhen"></div></section>
+  <label class="capf" for="caption"><span>Caption <small>(optional)</small></span><input id="caption" maxlength="140" placeholder="Leg day survived" autocomplete="off"></label>
+  <div id="shFoot"></div>
+  <p class="fine">One activity per post. No double dipping.</p>
+</div>`;
+    sh.hidden = false; sh.classList.remove('bye');
+    document.body.classList.add('sheet-open');
+    refreshSheet();
+    setTimeout(() => $('.panel .xbtn') && $('.panel .xbtn').focus(), 60);
+  }
+  function closeSheet() {
+    const sh = $('#sheet'); if (sh.hidden) return;
+    sh.classList.add('bye'); document.body.classList.remove('sheet-open');
+    setTimeout(() => { sh.hidden = true; sh.innerHTML = ''; sh.classList.remove('bye'); }, 230);
+  }
+  function refreshSheet() { refreshProof(); refreshCats(); refreshDetails(); refreshWhen(); refreshFoot(); }
+  function refreshProof() {
+    const d = S.draft, el = $('#shProof'); if (!el) return;
+    const others = S.members.filter(m => m.id !== S.me.id);
+    el.innerHTML = (d.photo
+      ? `<figure class="shot"><img src="${d.photo}" alt="Your proof photo"></figure><div class="shot-actions"><button class="btn" data-act="pick-photo">${ic('camera')}Change photo</button><button class="btn" data-act="clear-photo">${ic('trash')}Remove</button></div>`
+      : `<button class="drop" data-act="pick-photo"><span class="drop-ic">${ic('camera')}</span><b>Add a photo or screenshot</b><span>Workout tracker, a gym pic, your run app, the date spot…</span></button>`)
+      + `<div class="wit"><p>${d.photo ? 'Tag witnesses too (optional)' : 'No photo? Tag witnesses instead'}</p><div class="chips">${others.map(m => `<button data-act="wit" data-id="${m.id}" aria-pressed="${d.witnesses.includes(m.id)}">${avatar(m.id, 26)}${esc(m.name)}</button>`).join('')}</div></div>`;
+  }
+  function refreshCats() {
+    const el = $('#shCats'); if (!el) return;
+    el.innerHTML = CAT_ORDER.map(k => `<button class="cat" style="--c:${CATS[k].color};--d:${CATS[k].dark}" data-act="cat" data-cat="${k}" aria-pressed="${S.draft.cat === k}">${Art.icon64(k)}<span class="cn">${esc(catName(k))}</span><span class="p">${fmtPts(CATS[k].pts)}</span></button>`).join('');
+  }
+  function refreshDetails() {
+    const d = S.draft, el = $('#shDetails'); if (!el) return;
+    const need = d.cat && ['gym', 'run', 'date', 'beers'].includes(d.cat);
+    el.hidden = !need; $('#whenNum').textContent = need ? '4' : '3';
+    if (!need) { el.innerHTML = ''; return; }
+    const ck = (key, label) => `<label class="check"><input type="checkbox" data-check="${key}"${d.checks[key] ? ' checked' : ''}><span class="box">${ic('check')}</span><span>${label}</span></label>`;
+    let body = '';
+    if (d.cat === 'gym') body = `<div class="stepper"><button data-act="step" data-k="minutes" data-d="-5" aria-label="5 minutes less">${ic('minus')}</button><output id="minOut">${d.minutes}<small> min</small></output><button data-act="step" data-k="minutes" data-d="5" aria-label="5 minutes more">${ic('plus')}</button></div>
+      <p class="${d.minutes >= 45 ? 'ok' : 'warn'}" id="minMsg">${d.minutes >= 45 ? 'Counts. 45 minutes minimum.' : 'Gym needs at least 45 minutes to count.'}</p>
+      <div class="checks">${ck('lifted', 'I actually lifted. No sitting on my phone.')}</div>`;
+    if (d.cat === 'run') body = `<div class="stepper"><button data-act="step" data-k="miles" data-d="-0.1" aria-label="0.1 miles less">${ic('minus')}</button><output id="miOut">${d.miles.toFixed(1)}<small> mi</small></output><button data-act="step" data-k="miles" data-d="0.1" aria-label="0.1 miles more">${ic('plus')}</button></div>
+      <p class="${d.miles >= 2 ? 'ok' : 'warn'}" id="miMsg">${d.miles >= 2 ? 'Counts. 2 miles minimum.' : 'Runs need at least 2 miles.'}</p>`;
+    if (d.cat === 'date') body = `<div class="checks">${ck('oneOnOne', 'A real one-on-one date, in person. Not apps, texting or FaceTime.')}${ck('notGf', 'Not with my existing girlfriend.')}</div>`;
+    if (d.cat === 'beers') body = `<div class="checks">${ck('inPerson', 'I was there in person and had at least one beer with the fellas.')}</div><p class="note">Tip: tag the fellas as witnesses above.</p>`;
+    el.innerHTML = `<h3><span class="num">3</span>The fine print</h3>${body}`;
+  }
+  function refreshWhen() {
+    const el = $('#shWhen'); if (!el) return;
+    el.innerHTML = weekDays().map(x => `<button data-act="day" data-day="${x.key}" aria-pressed="${S.draft.day === x.key}">${x.label}</button>`).join('');
+  }
+  function refreshFoot() {
+    const d = S.draft, el = $('#shFoot'); if (!el) return;
+    const probs = Logic.draftProblems(d), C0 = d.cat ? CATS[d.cat] : null;
+    el.innerHTML = `${probs.length ? `<ul class="need${d.tried ? ' tried' : ''}" aria-live="polite">${probs.map(p => `<li>${ic('alert')}${esc(p)}</li>`).join('')}</ul>` : ''}
+      <button class="btn btn-primary submit" data-act="submit"${probs.length ? ' aria-disabled="true"' : ''}>${C0 ? `Claim +${fmtPts(C0.pts)} ${ptsWord(C0.pts)}` : 'Claim points'}</button>`;
+  }
+  function downscale(file, max = 1100, q = 0.8) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), cv = document.createElement('canvas');
+        cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url); res(cv.toDataURL('image/jpeg', q));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('That file couldn’t be opened as an image. Try a JPG or PNG screenshot.')); };
+      img.src = url;
+    });
+  }
+  function whenISO(key) {
+    const now = new Date(); if (key === Logic.dayKey(now)) return now.toISOString();
+    const d = Logic.parseDay(key); d.setHours(12, 0, 0, 0); return d.toISOString();
+  }
+  async function submit() {
+    const d = S.draft, probs = Logic.draftProblems(d);
+    if (probs.length) { d.tried = true; refreshFoot(); const b = $('.submit'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; }
+    if (S.busy) return;
+    S.busy = true;
+    const before = S.calc.by[S.me.id], oldPts = before.thisWeek, oldBadges = new Set(before.badges);
+    const post = {
+      id: 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), memberId: S.me.id, cat: d.cat, at: whenISO(d.day),
+      witnesses: d.witnesses.slice(), reactions: {}, voided: false, fraud: false,
+    };
+    if (d.cat === 'gym') post.minutes = d.minutes;
+    if (d.cat === 'run') post.miles = d.miles;
+    if (d.caption.trim()) post.caption = d.caption.trim();
+    try {
+      if (d.photo) post.photo = await Store.uploadPhoto(d.photo);
+      await Store.addPost(post);
+    } catch (e) { S.busy = false; toast('Couldn’t save that post: ' + e.message); return; }
+    closeSheet();
+    await load();
+    S.tab = 'home'; S.ringFrom = oldPts; render(); window.scrollTo(0, 0);
+    try { if (navigator.vibrate) navigator.vibrate([16, 50, 16]); } catch (e) { /* not supported */ }
+    await Celebrate.play(Celebrate.pick(post.cat));
+    await afterLog(oldPts, oldBadges, post.cat);
+    S.busy = false;
+    checkJokes();
+  }
+  function flyPoints(text) {
+    const ring = $('.ring'); if (!ring) return Promise.resolve();
+    const r = ring.getBoundingClientRect(), el = document.createElement('div');
+    el.className = 'fly coin'; el.textContent = text; document.body.appendChild(el);
+    const sx = innerWidth / 2, sy = innerHeight - 110, ex = r.left + r.width / 2, ey = r.top + r.height / 2;
+    const a = el.animate([
+      { transform: `translate(${sx}px,${sy}px) translate(-50%,-50%) scale(.5)`, opacity: 0 },
+      { transform: `translate(${(sx + ex) / 2}px,${Math.min(sy, ey) - 80}px) translate(-50%,-50%) scale(1.5) rotate(-8deg)`, opacity: 1, offset: 0.55 },
+      { transform: `translate(${ex}px,${ey}px) translate(-50%,-50%) scale(.5)`, opacity: 0.2 },
+    ], { duration: 860, easing: 'cubic-bezier(.3,.7,.4,1)' });
+    return a.finished.then(() => el.remove(), () => el.remove());
+  }
+  async function afterLog(oldPts, oldBadges, cat) {
+    const R = S.calc.by[S.me.id], min = cfg().weeklyMin;
+    await flyPoints('+' + fmtPts(CATS[cat].pts));
+    S.ringFrom = null;
+    setRing(R.thisWeek); countUp($('#ringNum'), oldPts, R.thisWeek);
+    const ring = $('.ring'); if (ring) { ring.classList.remove('bump'); void ring.offsetWidth; ring.classList.add('bump'); }
+    if (oldPts < min && R.thisWeek >= min) {
+      await wait(650);
+      if (isHoat()) await hoatSlam();
+      else { const card = $('.ringcard'); if (card) { const st = document.createElement('span'); st.className = 'stamp-safe'; st.textContent = 'SAFE!'; card.appendChild(st); } }
+      const g = $('.greet .mascot'); if (g) g.src = Art.mascot(isHoat() ? 'thumbs' : 'flex');
+      await Celebrate.confetti();
+      toast(isHoat() ? `${HOAT.text}. ${min} points, as promised.` : R.eliminated ? 'Seven points! Every point still counts toward all-time.' : 'Safe this week! Anything more is bonus glory.', isHoat() ? 'thumbs' : 'flex');
+    } else toast(`+${fmtPts(CATS[cat].pts)} for ${catName(cat)}. ${R.thisWeek >= min ? 'Already safe, now you’re just showing off.' : `${fmtPts(min - R.thisWeek)} to go this week.`}`);
+    for (const id of R.badges.filter(b => !oldBadges.has(b))) await showBadge(id, true);
+  }
+
+  /* ------------------------------------------------------------ inside jokes + Hoat Guarantee */
+  const isHoat = () => !!(S.me && String(S.me.username || '').toLowerCase() === HOAT.username);
+  const realName = id => (member(id) || {}).name || 'Someone';
+  function jokeText(e) {
+    const d = e.data || {};
+    if (e.type === 'coin') return `${realName(d.a)} and ${realName(d.b)} are tied at ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week. Not even a $1 coin can split them.`;
+    if (e.type === 'bluehair') return `${realName(d.who)} has the most points this week with ${fmtPts(d.pts)}. Blue hair activated.`;
+    if (e.type === 'iron') return `It’s Saturday morning and ${realName(d.who)} is in last with ${fmtPts(d.pts)} ${ptsWord(d.pts)}. Ironing his shirt again?`;
+    if (e.type === 'hoat') return `${realName(d.who)} hit ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week. Stamped and guaranteed.`;
+    return '';
+  }
+  const JOKE_EYEBROW = { coin: 'Achievement unlocked', bluehair: 'Week leader', iron: 'Saturday morning', hoat: 'Every week, as promised' };
+  /** Every inside joke that has happened goes in the feed (config: feed). */
+  const inFeed = e => (e.type === 'hoat' ? HOAT.feed !== false : !!(INSIDE_JOKES[e.type] && INSIDE_JOKES[e.type].feed));
+  function jokeCard(e) {
+    const hoat = e.type === 'hoat', J = hoat ? { title: HOAT.title } : INSIDE_JOKES[e.type], d = e.data || {}, who = [d.a, d.b, d.who].filter(Boolean);
+    const vis = hoat
+      ? `<button class="jk-vid jk-stamp" data-act="hoat-replay" aria-label="${esc(HOAT.text)}: play the stamp again">${Art.hoatStamp()}</button>`
+      : `<button class="jk-vid" data-act="play" data-id="${J.video}" aria-label="Play ${esc(J.title)}"><img src="${Art.poster(J.video)}" alt="" loading="lazy" width="96" height="171"><span class="gplay">${ic('play')}</span></button>`;
+    return `<article class="post card joke joke-${e.type}" data-eid="${e.id}">
+  ${vis}
+  <div class="jk-body">
+    <p class="eyebrow">${JOKE_EYEBROW[e.type] || 'Inside joke'}</p>
+    <h3>${esc(J.title)}</h3>
+    <p class="jk-text">${esc(jokeText(e))}</p>
+    <p class="jk-meta"><span class="jk-avs">${who.map(id => avatar(id, 28)).join('')}</span><em>${ago(e.at)}</em></p>
+  </div>
+</article>`;
+  }
+  let jokeBusy = false;
+  const quiet = () => S.busy || Celebrate.busy() || !$('#sheet').hidden || !!$('#layer .modal') || !$('#intro').hidden;
+  /** Record any inside joke that's true right now (straight to the feed), then pop up the ones you haven't seen (once each). */
+  async function checkJokes() {
+    if (!inApp() || jokeBusy) return;
+    jokeBusy = true;
+    try {
+      const found = Logic.jokes(S.members, S.calc, INSIDE_JOKES, new Date(), (S.group || {}).timezone, HOAT.feed !== false ? { username: HOAT.username, min: cfg().weeklyMin } : null);
+      let added = false;
+      for (const ev of found) if (!S.events.some(e => e.key === ev.key)) { await Store.recordEvent(ev); added = true; }
+      if (added) { S.events = await Store.listEvents(); if (S.tab === 'feed' && $('#sheet').hidden) renderView(); }
+      if (quiet()) return;   // something else is on screen: pop-ups wait for the next check
+      const se = S.calc.season, now = Date.now();
+      const due = S.events.filter(e => !e.seen && INSIDE_JOKES[e.type]).sort((a, b) => new Date(a.at) - new Date(b.at));
+      for (const e of due) {
+        const J = INSIDE_JOKES[e.type];
+        if (now - new Date(e.at) > J.playFor * 36e5 || Logic.weekIdx(new Date(e.at), se.start) !== se.idx) { await Store.markSeen(e.id); e.seen = true; continue; }
+        if (quiet()) break;
+        Celebrate.prefetch(J.video);
+        await Celebrate.play(J.video);
+        await Store.markSeen(e.id); e.seen = true;
+        toast(jokeText(e), 'cheer');
+        await wait(900);
+      }
+    } catch (err) { console.error(err); } finally { jokeBusy = false; }
+  }
+  /** The red rubber stamp, slammed on screen, then tucked into the ring card. */
+  async function hoatSlam() {
+    const el = document.createElement('div');
+    el.className = 'hoat-slam';
+    el.innerHTML = `<div class="hs-stamp" role="img" aria-label="${esc(HOAT.text)}">${Art.hoatStamp()}</div>`;
+    document.body.appendChild(el);
+    const st = el.querySelector('.hs-stamp');
+    try { if (navigator.vibrate) navigator.vibrate([20, 40, 90]); } catch (e) { /* not supported */ }
+    await st.animate([
+      { transform: 'scale(3.2) rotate(-22deg)', opacity: 0 },
+      { transform: 'scale(.88) rotate(-8deg)', opacity: 1, offset: 0.62 },
+      { transform: 'scale(1) rotate(-8deg)', opacity: 1 },
+    ], { duration: 420, easing: 'cubic-bezier(.55,0,.7,.4)', fill: 'forwards' }).finished.catch(() => {});
+    el.classList.add('inked');
+    $('#app').animate([{ transform: 'none' }, { transform: 'translate(-8px,6px)' }, { transform: 'translate(7px,-5px)' }, { transform: 'translate(-3px,2px)' }, { transform: 'none' }], { duration: 340 });
+    await wait(1500);
+    const tgt = $('.ringcard .hoat-mini'), a = st.getBoundingClientRect(), b = tgt && tgt.getBoundingClientRect();
+    const to = b && b.width ? { transform: `translate(${b.left + b.width / 2 - (a.left + a.width / 2)}px,${b.top + b.height / 2 - (a.top + a.height / 2)}px) scale(${b.width / a.width}) rotate(-12deg)`, opacity: 1 } : { transform: 'scale(.5) rotate(-8deg)', opacity: 0 };
+    el.classList.add('leaving');
+    await st.animate([{ transform: 'scale(1) rotate(-8deg)', opacity: 1 }, to], { duration: 520, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards' }).finished.catch(() => {});
+    if (tgt) tgt.classList.add('on');
+    el.remove();
+  }
+
+  /* ------------------------------------------------------------ modals + toasts */
+  function modal(html, cls = '') {
+    let el;
+    const pr = new Promise(res => {
+      const back = document.activeElement; el = document.createElement('div');
+      el.className = 'modal ' + cls;
+      el.innerHTML = `<div class="scrim" data-close></div><div class="mbox" role="dialog" aria-modal="true">${html}</div>`;
+      $('#layer').appendChild(el);
+      const close = v => { document.removeEventListener('keydown', onKey); el.classList.add('bye'); setTimeout(() => el.remove(), 180); if (back && back.focus) back.focus(); res(v); };
+      const onKey = e => { if (e.key === 'Escape') close(false); };
+      document.addEventListener('keydown', onKey);
+      el.addEventListener('click', e => { const b = e.target.closest('[data-close],[data-ok]'); if (!b || b.disabled) return; e.stopPropagation(); close(b.hasAttribute('data-ok') ? (b.dataset.val || true) : false); });
+      setTimeout(() => { const f = el.querySelector('input') || el.querySelector('[data-ok]') || el.querySelector('.mbox button'); if (f) f.focus(); }, 60);
+    });
+    pr.el = el;
+    return pr;
+  }
+  const confirmBox = (title, body, ok, danger) => modal(`<h2>${esc(title)}</h2><p>${esc(body)}</p><div class="mact"><button class="btn" data-close>Cancel</button><button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-ok>${esc(ok)}</button></div>`);
+  function showBadge(id, fresh) {
+    const b = BADGES.find(x => x.id === id), has = S.calc.by[S.me.id].badges.includes(id);
+    return modal(`<div class="bpop${has ? '' : ' locked'}"><div class="burst" aria-hidden="true"></div>${Art.icon64(b.icon, 'big')}<p class="eyebrow">${fresh ? 'Badge unlocked' : has ? 'Badge earned' : 'Locked badge'}</p><h2>${esc(b.name)}</h2><p>${esc(b.desc)}</p><button class="btn btn-primary" data-ok>${fresh ? 'Let’s go' : 'OK'}</button></div>`, 'badge-modal');
+  }
+  function toast(msg, pose = 'thumbs') {
+    const t = $('#toast'); t.innerHTML = `<img src="${Art.mascot(pose)}" alt="">${esc(msg)}`;
+    t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+    clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+  function floatEmoji(el, e) {
+    const r = el.getBoundingClientRect();
+    for (let i = 0; i < 5; i++) {
+      const s = document.createElement('span'); s.className = 'femo'; s.textContent = e;
+      s.style.left = r.left + r.width / 2 + 'px'; s.style.top = r.top + 'px'; document.body.appendChild(s);
+      const dx = (Math.random() - 0.5) * 80, dy = -60 - Math.random() * 70;
+      s.animate([{ transform: 'translate(-50%,0) scale(.6)', opacity: 1 }, { transform: `translate(calc(-50% + ${dx}px),${dy}px) scale(1.25)`, opacity: 0 }], { duration: 650 + i * 70, easing: 'cubic-bezier(.2,.8,.3,1)' }).finished.then(() => s.remove(), () => s.remove());
+    }
+  }
+
+  /* ------------------------------------------------------------ actions */
+  const ACT = {
+    tab: el => go(el.dataset.tab),
+    log: () => openLog(),
+    'hoat-replay': () => hoatSlam(),
+    roast(el) {
+      const r = S.roast && Jokes.next(S.members, S.posts, cfg(), new Date(), S.roast);
+      if (!r) return;
+      S.roast = { day: Logic.dayKey(new Date()), i: r.i, pos: r.pos, key: r.key, target: r.target };
+      const focused = document.activeElement === el;
+      el.insertAdjacentHTML('afterend', roastHTML(r, true)); el.remove();
+      if (focused) { const b = $('.roast'); if (b) b.focus({ preventScroll: true }); }
+    },
+    seg(el) {
+      if (el.dataset.seg === 'board') flipBoard(() => { S.board = el.dataset.v; renderView(); });
+      else { S.feed = el.dataset.v; renderView(); }
+    },
+    async react(el) {
+      const p = await Store.toggleReaction(el.dataset.id, el.dataset.e); if (!p) return;
+      const i = S.posts.findIndex(x => x.id === p.id); if (i >= 0) S.posts[i] = p;
+      const who = p.reactions[el.dataset.e] || [], on = who.includes(S.me.id);
+      el.classList.toggle('on', on); el.setAttribute('aria-pressed', String(on)); el.querySelector('span').textContent = who.length || '';
+      if (on) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); floatEmoji(el, el.dataset.e); }
+      if (el.dataset.e === CAP) { const card = el.closest('.post'); setTimeout(() => { if (card && card.isConnected) card.outerHTML = postCard(p); }, 650); }
+    },
+    photo(el) { const p = S.posts.find(x => x.id === el.dataset.id); if (p) modal(`<img class="full" src="${esc(Art.photo(p.photo))}" alt="Proof photo"><button class="btn" data-close>Close</button>`, 'photo-modal'); },
+    async del(el) {
+      if (!(await confirmBox('Delete this post?', 'Its points come off your week.', 'Delete', true))) return;
+      await Store.deletePost(el.dataset.id); await load(); renderView(); toast('Post deleted.');
+    },
+    async void(el) {
+      const p = S.posts.find(x => x.id === el.dataset.id); if (!p) return;
+      const who = (member(p.memberId) || {}).name || 'They';
+      if (!(await confirmBox('Void this post as fraud?', `Rule 9: ${who} gets a 0-point week for the week of this post.`, 'Void it', true))) return;
+      try { await Store.voidPost(p.id); } catch (e) { toast(e.message, 'shrug'); return; }
+      await load(); renderView(); toast(`Voided. ${who} gets a 0-point week.`, 'shrug');
+    },
+    play: el => Celebrate.play(el.dataset.id),
+    badge: el => showBadge(el.dataset.id, false),
+    intro: () => Intro.play(),
+    async switch() {
+      const pick = await demoChooser('Switch person', 'Preview only: jump into anyone’s account.'); if (!pick) return;
+      await Store.demoSignInAs(pick); await afterAuth();
+    },
+    async reset() {
+      if (!(await confirmBox('Reset the sample data?', 'Your test posts, inside jokes and passwords go back to the start.', 'Reset'))) return;
+      await Store.resetDemo(); await load(); S.tab = 'home'; render(); window.scrollTo(0, 0); toast('Sample data reset.');
+    },
+    ...AUTH_ACT,
+    'close-sheet': () => closeSheet(),
+    'pick-photo': () => $('#photoInput').click(),
+    'clear-photo': () => { S.draft.photo = null; refreshProof(); refreshFoot(); },
+    wit(el) { const w = S.draft.witnesses, id = el.dataset.id, i = w.indexOf(id); if (i >= 0) w.splice(i, 1); else w.push(id); el.setAttribute('aria-pressed', String(i < 0)); refreshFoot(); },
+    cat(el) { S.draft.cat = el.dataset.cat; Celebrate.prepare(el.dataset.cat); refreshCats(); refreshDetails(); refreshFoot(); },
+    step(el) {
+      const d = S.draft, k = el.dataset.k, dv = parseFloat(el.dataset.d);
+      if (k === 'minutes') { d.minutes = U.clamp(d.minutes + dv, 0, 300); $('#minOut').innerHTML = `${d.minutes}<small> min</small>`; const m = $('#minMsg'); m.className = d.minutes >= 45 ? 'ok' : 'warn'; m.textContent = d.minutes >= 45 ? 'Counts. 45 minutes minimum.' : 'Gym needs at least 45 minutes to count.'; }
+      else { d.miles = Math.max(0, Math.round((d.miles + dv) * 10) / 10); $('#miOut').innerHTML = `${d.miles.toFixed(1)}<small> mi</small>`; const m = $('#miMsg'); m.className = d.miles >= 2 ? 'ok' : 'warn'; m.textContent = d.miles >= 2 ? 'Counts. 2 miles minimum.' : 'Runs need at least 2 miles.'; }
+      refreshFoot();
+    },
+    day(el) { S.draft.day = el.dataset.day; refreshWhen(); },
+    submit: () => submit(),
+  };
+
+  function bind() {
+    document.addEventListener('click', e => {
+      const el = e.target.closest('[data-act]'); if (!el || el.closest('.modal')) return;
+      const fn = ACT[el.dataset.act]; if (!fn) return;
+      e.preventDefault(); Promise.resolve(fn(el, e)).catch(err => { console.error(err); toast(err.message || 'Something went wrong.', 'shrug'); });
+    });
+    document.addEventListener('change', async e => {
+      const t = e.target;
+      if (t.id === 'photoInput') {
+        const f = t.files && t.files[0]; t.value = ''; if (!f || !S.draft) return;
+        try { S.draft.photo = await downscale(f); refreshProof(); refreshFoot(); } catch (err) { toast(err.message, 'shrug'); }
+      } else if (t.id === 'avatarInput') {
+        const f = t.files && t.files[0]; t.value = ''; if (!f) return;
+        try { await gotAvatar(await downscale(f, 480, 0.85)); } catch (err) { toast(err.message, 'shrug'); }
+      } else if (t.dataset && t.dataset.pref) {
+        try { S.prefs = await Store.updatePrefs({ [t.dataset.pref]: t.checked }); toast(t.checked ? 'Reminder on.' : 'Reminder off.', 'thumbs'); } catch (err) { t.checked = !t.checked; toast(err.message, 'shrug'); }
+      } else if (t.dataset && t.dataset.check && S.draft) { S.draft.checks[t.dataset.check] = t.checked; refreshFoot(); }
+    });
+    document.addEventListener('input', e => {
+      const t = e.target;
+      if (t.id === 'caption' && S.draft) S.draft.caption = t.value;
+      else if (t.id === 'siUser') S.lastUser = t.value;
+      else if (t.id === 'afName') { const u = $('#afUser'); if (u && !u.dataset.touched) u.value = t.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, ''); }
+      else if (t.id === 'afUser') t.dataset.touched = '1';
+    });
+    document.addEventListener('submit', async e => {
+      const fn = FORMS[e.target.id]; if (!fn) return; e.preventDefault();
+      const btn = e.target.querySelector('[type=submit]'); if (btn) btn.disabled = true;
+      try { await fn(e.target); } catch (err) { toast(err.message || 'Something went wrong.', 'shrug'); } finally { if (btn && btn.isConnected) btn.disabled = false; }
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#sheet').hidden && !$('#layer .modal')) closeSheet(); });
+  }
+  function tick() {
+    const el = $('#cd'); if (!S.calc || !inApp()) return;
+    const se = Logic.season(cfg(), new Date());
+    if (se.idx !== S.calc.season.idx || se.status !== S.calc.season.status) { if (!S.busy && !Celebrate.busy() && $('#sheet').hidden) load().then(renderView); return; }
+    if (el && se.status !== 'over') el.textContent = fmtLeft(se.msLeft);
+    if (Date.now() - (tick.j || 0) > 12000) { tick.j = Date.now(); checkJokes(); }
+  }
+
+  async function start() {
+    $$('[data-icon]').forEach(b => b.insertAdjacentHTML('afterbegin', ic(b.dataset.icon)));
+    bind();
+    const intro = Intro.play();
+    try { await Promise.race([Promise.all([document.fonts.load('40px "Luckiest Guy"'), document.fonts.load('700 16px "Baloo 2"')]), wait(1500)]); } catch (e) { /* fonts optional */ }
+    await Store.init(); await load();
+    render();
+    document.body.classList.remove('booting');
+    await intro;
+    setInterval(tick, 1000);
+    tick.j = Date.now();
+    checkJokes();
+    Store.subscribe(async () => { if (S.busy || Celebrate.busy() || !$('#sheet').hidden) return; await load(); renderView(); checkJokes(); });
+  }
+  return { start, state: S };
+})();
+
+App.start();

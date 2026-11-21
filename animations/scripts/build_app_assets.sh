@@ -1,0 +1,67 @@
+#!/bin/bash
+# Renders every video and still the app uses and drops them into ../app/assets.
+#   ./scripts/build_app_assets.sh                 (everything)
+#   ONLY="GunShow TheCoin" ./scripts/build_app_assets.sh   (just those compositions)
+#   ONLY="Intro" / ONLY="Stills"
+set -e
+cd "$(dirname "$0")/.."
+# the app's assets folder: ../app/assets in the working copy, ../assets in the GitHub repo (this folder is animations/)
+if [ -d ../app/assets ]; then APP=../app/assets; else APP=../assets; fi
+CHROME=${CHROME:-/usr/bin/google-chrome}
+R="npx remotion"
+mkdir -p out/videos out/frames "$APP/celebrations" "$APP/intro" "$APP/mascot" "$APP/icons" "$APP/demo"
+
+# composition : app video id : poster time (s) : sample-feed photo? (1 = yes)
+MAP="
+Gym:gym-1:2.2:1
+GunShow:gym-2:2.3:0
+LegDay:gym-3:2.55:0
+Atlas:gym-4:1.6:0
+Mirror:gym-5:2.9:0
+Run:run-1:2.2:1
+FrostMiles:run-2:1.6:0
+Torch:run-3:3.4:0
+NightOwl:run-4:1.4:0
+GooseChase:run-5:1.5:0
+Jickle:jickle-1:2.2:1
+Volo:volo-1:2.2:1
+Soccer:soccer-1:2.2:1
+Date:date-1:2.2:1
+Beers:beers-1:2.2:1
+Reading:reading-1:2.2:1
+TheCoin:joke-coin:2.8:0
+BlueHair:joke-bluehair:2.6:0
+TheIron:joke-iron:1.0:0
+"
+want() { [ -z "$ONLY" ] && return 0; for w in $ONLY; do [ "$w" = "$1" ] && return 0; done; return 1; }
+
+for row in $MAP; do
+  IFS=: read comp id poster photo <<< "$row"
+  want "$comp" || continue
+  $R render "$comp" "out/videos/$id.mp4" --codec=h264 --crf=20 --x264-preset=veryfast --browser-executable="$CHROME" --log=error
+  ffmpeg -y -loglevel error -i "out/videos/$id.mp4" -vf scale=720:1280 -c:v libx264 -crf 26 -preset veryfast \
+    -pix_fmt yuv420p -movflags +faststart -an "$APP/celebrations/$id.mp4"
+  ffmpeg -y -loglevel error -ss "$poster" -i "out/videos/$id.mp4" -frames:v 1 -vf scale=360:640 -c:v libwebp -quality 80 "$APP/celebrations/$id.webp"
+  if [ "$photo" = "1" ]; then
+    # square "proof photo" for the sample feed
+    cat=${id%-1}
+    ffmpeg -y -loglevel error -ss 2.0 -i "out/videos/$id.mp4" -frames:v 1 -vf "crop=1080:1080:0:560,scale=720:720" -c:v libwebp -quality 78 "$APP/demo/$cat.webp"
+  fi
+  echo "done $id"
+done
+if [ -z "$ONLY" ] || want Intro; then
+  $R render Intro out/videos/intro.mp4 --codec=h264 --crf=20 --x264-preset=veryfast --browser-executable="$CHROME" --log=error
+  ffmpeg -y -loglevel error -i out/videos/intro.mp4 -vf scale=720:1280 -c:v libx264 -crf 27 -preset veryfast -pix_fmt yuv420p -movflags +faststart -an "$APP/intro/intro.mp4"
+  ffmpeg -y -loglevel error -i out/videos/intro.mp4 -frames:v 1 -vf scale=720:1280 -c:v libwebp -quality 80 "$APP/intro/intro-first.webp"
+  ffmpeg -y -loglevel error -sseof -0.05 -i out/videos/intro.mp4 -frames:v 1 -vf scale=720:1280 -c:v libwebp -quality 82 "$APP/intro/intro-last.webp"
+  echo "done intro"
+fi
+if [ -z "$ONLY" ] || want Stills; then
+  for pose in wave flex thumbs cheer shrug point head; do
+    $R still Mascot "out/frames/mascot-$pose.png" --props="{\"pose\":\"$pose\"}" --browser-executable="$CHROME" --log=error
+  done
+  $R still AppIcon out/frames/app-icon.png --browser-executable="$CHROME" --log=error
+  $R still AppIconMaskable out/frames/app-icon-maskable.png --browser-executable="$CHROME" --log=error
+  python3 scripts/pack_stills.py "$APP"
+  echo "done stills"
+fi
