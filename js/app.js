@@ -9,6 +9,7 @@ const App = (() => {
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const S = { tab: 'home', board: 'week', messages: [], comments: {}, activeInjuries: [], me: null, group: null, members: [], posts: [], events: [], calc: null, draft: null, ringFrom: null, busy: false,
     acct: null, prefs: null, lastUser: '' };
+  const pendingCommentHearts = new Set();
   const COLORS = ['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F'];
   const isDemo = () => Store.mode === 'demo';
   const cfg = () => Store.config();
@@ -248,10 +249,16 @@ const App = (() => {
 
   /* ------------------------------------------------------------ feed */
   const seg = (name, opts, cur) => `<div class="seg" role="tablist" aria-label="${name}">${opts.map(([v, l]) => `<button role="tab" aria-selected="${v === cur}" data-act="seg" data-seg="${name}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  const findComment = id => Object.values(S.comments).flat().find(comment => comment.id === id);
   function commentsHTML(kind, id) {
     const comments = S.comments[kind + ':' + id] || [];
     return `<div class="feed-comments">
-      ${comments.length ? `<ul>${comments.map(c => `<li>${avatar(c.memberId, 25)}<div><b>${esc(displayName(member(c.memberId)))}</b> <small>${ago(c.at)}</small><p>${esc(c.body)}</p></div></li>`).join('')}</ul>` : ''}
+      ${comments.length ? `<ul>${comments.map(c => `<li>
+        ${avatar(c.memberId, 25)}
+        <div class="comment-copy"><b>${esc(displayName(member(c.memberId)))}</b> <small>${ago(c.at)}</small><p>${esc(c.body)}</p></div>
+        <button class="comment-heart" type="button" data-act="comment-heart" data-id="${esc(c.id)}"
+          aria-label="Heart comment" aria-pressed="${!!c.hearted}"${pendingCommentHearts.has(c.id) ? ' disabled' : ''}>${ic('heart')}<span aria-live="polite">${c.heartCount ?? 0}</span></button>
+      </li>`).join('')}</ul>` : ''}
       <form class="feed-comment" data-feed-form data-comment-for="${esc(id)}" data-comment-kind="${kind}">
         <input name="body" aria-label="Write a comment" maxlength="300" placeholder="Write a comment…" required>
         <button class="btn" type="submit">Comment</button>
@@ -1002,6 +1009,30 @@ const App = (() => {
       await load(); renderView(); toast('Injury report closed.');
     },
     seg(el) { flipBoard(() => { S.board = el.dataset.v; renderView(); }); },
+    async 'comment-heart'(el) {
+      const id = el.dataset.id, comment = findComment(id), viewer = S.me?.id;
+      if (!comment || !viewer || pendingCommentHearts.has(id)) return;
+      pendingCommentHearts.add(id);
+      el.disabled = true;
+      let state;
+      try {
+        const saved = await Store.setCommentHeart(id, !comment.hearted);
+        if (S.me?.id !== viewer) return;
+        state = saved;
+        const current = findComment(id);
+        if (current) Object.assign(current, state);
+      } finally {
+        pendingCommentHearts.delete(id);
+        const button = $(`.comment-heart[data-id="${CSS.escape(id)}"]`);
+        if (button) {
+          button.disabled = false;
+          if (state) {
+            button.setAttribute('aria-pressed', String(state.hearted));
+            button.querySelector('span').textContent = state.heartCount;
+          }
+        }
+      }
+    },
     async react(el) {
       const p = await Store.toggleReaction(el.dataset.id, el.dataset.e); if (!p) return;
       const i = S.posts.findIndex(x => x.id === p.id); if (i >= 0) S.posts[i] = p;
@@ -1123,7 +1154,7 @@ const App = (() => {
     tick.j = Date.now();
     checkJokes();
     Store.subscribe(async () => {
-      if (quiet() || document.activeElement?.closest('[data-feed-form]')) return false;
+      if (quiet() || pendingCommentHearts.size || document.activeElement?.closest('[data-feed-form]')) return false;
       const wasInApp = inApp();
       await load();
       if (inApp() !== wasInApp) render();

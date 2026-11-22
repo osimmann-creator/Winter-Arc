@@ -78,6 +78,7 @@ const Art = (() => {
     camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
     users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .7 3.2 2.6 3.7 5.5"/>',
     play: '<path d="M8 5.5v13l11-6.5z" fill="currentColor"/>',
+    heart: '<path d="M12 20s-8.8-5.4-8.8-10.8a4.6 4.6 0 0 1 8.8-2.1 4.6 4.6 0 0 1 8.8 2.1C20.8 14.6 12 20 12 20z"/>',
     x: '<path d="M6 6l12 12M18 6 6 18"/>',
     flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
     alert: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.01"/>',

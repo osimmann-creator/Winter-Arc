@@ -20,6 +20,12 @@ function messageShape(row) {
   return { id: row.id, kind: row.kind, memberId: row.member_id, title: row.title, body: row.body, at: row.at };
 }
 
+const commentHeartColumns = `
+  (SELECT count(*) FROM feed_comment_hearts WHERE comment_id = c.id) AS heart_count,
+  EXISTS (SELECT 1 FROM feed_comment_hearts WHERE comment_id = c.id AND member_id = ?) AS hearted
+`;
+const heartState = row => ({ heartCount: row.heart_count, hearted: Boolean(row.hearted) });
+
 async function publishInjuryReports(env, timezone, now = new Date()) {
   const [reports, posted] = await env.DB.batch([
     env.DB.prepare('SELECT * FROM injury_reports'),
@@ -51,13 +57,13 @@ async function publishInjuryReports(env, timezone, now = new Date()) {
   for (let i = 0; i < pending.length; i += 50) await env.DB.batch(pending.slice(i, i + 50));
 }
 
-export async function listSocial(env, now = new Date()) {
+export async function listSocial(env, now = new Date(), viewerId = null) {
   const group = await env.DB.prepare('SELECT timezone FROM group_settings WHERE id = 1').first();
   if (!group) return { messages: [], comments: [], activeInjuries: [] };
   await publishInjuryReports(env, group.timezone, now);
   const [messages, comments, injuries] = await env.DB.batch([
     env.DB.prepare('SELECT * FROM feed_messages ORDER BY at DESC, id DESC'),
-    env.DB.prepare('SELECT * FROM feed_comments ORDER BY at, id'),
+    env.DB.prepare(`SELECT c.*, ${commentHeartColumns} FROM feed_comments AS c ORDER BY c.at, c.id`).bind(viewerId),
     env.DB.prepare(`SELECT id, member_id, name FROM injury_reports
       WHERE member_id IS NOT NULL AND started_at <= ? AND resolved_at IS NULL ORDER BY name, id`).bind(now.toISOString()),
   ]);
@@ -68,6 +74,7 @@ export async function listSocial(env, now = new Date()) {
       id: row.id, memberId: row.member_id, at: row.at, body: row.body,
       kind: row.activity_id ? 'activity' : row.message_id ? 'message' : 'event',
       target: row.activity_id || row.message_id || row.event_id,
+      ...heartState(row),
     })),
   };
 }
@@ -107,6 +114,28 @@ export async function addFeedComment(env, session, input) {
   `).bind(`c_${crypto.randomUUID()}`, session.member_id, input.target, body, new Date().toISOString(), input.target, session.member_id).first();
   if (!row) fail('That feed post is no longer available.', 404);
   return row;
+}
+
+export async function setCommentHeart(env, session, input) {
+  const { commentId, hearted } = input;
+  if (typeof commentId !== 'string' || !/^[a-z0-9_-]{1,100}$/i.test(commentId) || typeof hearted !== 'boolean') {
+    fail('Choose a comment reaction.');
+  }
+  const memberId = session.member_id;
+  const change = hearted
+    ? env.DB.prepare(`
+        INSERT INTO feed_comment_hearts (comment_id, member_id)
+        SELECT ?, ? WHERE EXISTS (SELECT 1 FROM feed_comments WHERE id = ?)
+          AND EXISTS (SELECT 1 FROM members WHERE id = ?)
+        ON CONFLICT (comment_id, member_id) DO NOTHING
+      `).bind(commentId, memberId, commentId, memberId)
+    : env.DB.prepare('DELETE FROM feed_comment_hearts WHERE comment_id = ? AND member_id = ?').bind(commentId, memberId);
+  const [, saved] = await env.DB.batch([
+    change,
+    env.DB.prepare(`SELECT ${commentHeartColumns} FROM feed_comments AS c WHERE c.id = ?`).bind(memberId, commentId),
+  ]);
+  if (!saved.results.length) fail('That comment is no longer available.', 404);
+  return heartState(saved.results[0]);
 }
 
 export async function createInjuryReport(env, session, input, now = new Date()) {

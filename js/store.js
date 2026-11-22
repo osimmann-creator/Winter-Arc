@@ -88,6 +88,7 @@ const Store = (() => {
     listSocial: () => call('listSocial'),
     addTextPost: body => call('addTextPost', { body }),
     addFeedComment: comment => call('addFeedComment', comment),
+    setCommentHeart: (commentId, hearted) => call('setCommentHeart', { commentId, hearted }),
     createInjuryReport: report => call('createInjuryReport', report),
     resolveInjuryReport: id => call('resolveInjuryReport', { id }),
     uploadPhoto: dataUrl => call('uploadPhoto', { dataUrl }),

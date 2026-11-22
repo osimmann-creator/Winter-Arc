@@ -305,7 +305,15 @@ body.signed-out #app { padding-bottom: 40px; }
 .post.joke .feed-comments { grid-column: 1 / -1; }
 .feed-comments ul { display: grid; gap: 7px; list-style: none; padding: 0; margin: 0 0 8px; }
 .feed-comments li { display: flex; gap: 8px; align-items: start; }
-.feed-comments li div { min-width: 0; }
+.comment-copy { flex: 1; min-width: 0; }
+.comment-heart {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  min-width: 44px; min-height: 44px; padding: 4px; border-radius: 12px;
+  color: var(--ink2); font-size: .8rem; font-weight: 800;
+}
+.comment-heart .ic { width: 17px; height: 17px; }
+.comment-heart[aria-pressed="true"] { background: #FFF0F3; color: #BA3257; }
+.comment-heart[aria-pressed="true"] .ic { fill: currentColor; }
 .feed-comments small, .feed-message small { color: var(--ink2); font-size: .8rem; }
 .feed-comment { display: flex; gap: 6px; align-items: center; }
 .feed-comment .btn { flex: none; min-height: 38px; padding: 3px 9px; font-size: .9rem; }

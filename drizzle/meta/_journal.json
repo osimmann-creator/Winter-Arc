@@ -57,6 +57,13 @@
       "when": 1795316400000,
       "tag": "0007_roast_of_the_day",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1795320000000,
+      "tag": "0008_comment_hearts",
+      "breakpoints": true
     }
   ]
 }
