@@ -13,6 +13,7 @@ const App = (() => {
   const isDemo = () => Store.mode === 'demo';
   const cfg = () => Store.config();
   const view = () => $('#view');
+  const scrollToTop = (behavior = 'instant') => $('#app').scrollTo({ top: 0, behavior });
   const ic = (n, cls) => Art.ui(n, cls);
   const member = id => S.members.find(m => m.id === id);
   const isComm = () => !!(S.me && member(S.me.id) && member(S.me.id).role === 'commissioner');
@@ -67,6 +68,28 @@ const App = (() => {
   /** In the app proper (tabs showing), as opposed to the sign-in screens. */
   const inApp = () => !!(S.me && !(S.auth && S.auth.mustChangePassword));
 
+  // Keep the tab bar in the app layout. Use the visual viewport only while typing.
+  let keyboardFrame = 0;
+  function syncKeyboard() {
+    if (!window.visualViewport || keyboardFrame) return;
+    keyboardFrame = requestAnimationFrame(() => {
+      keyboardFrame = 0;
+      const viewport = window.visualViewport, field = document.activeElement, body = document.body;
+      const typing = field?.closest('#app') && field.matches('textarea, input:not([type]), input:is([type="text"], [type="password"], [type="number"], [type="email"], [type="search"], [type="url"], [type="tel"])');
+      const keyboard = typing && viewport.scale <= 1.01 && document.documentElement.clientHeight - viewport.height > 100;
+      body.classList.toggle('keyboard-open', !!keyboard);
+      if (!keyboard) {
+        body.style.removeProperty('--editing-height');
+        return;
+      }
+      const height = `${Math.round(viewport.height)}px`;
+      if (body.style.getPropertyValue('--editing-height') !== height) {
+        body.style.setProperty('--editing-height', height);
+        field.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+    });
+  }
+
   /* ------------------------------------------------------------ render */
   function render() {
     const app = inApp();
@@ -80,14 +103,15 @@ const App = (() => {
     if (S.auth?.signedIn && S.auth.mustChangePassword) v.innerHTML = vSetPassword();
     else if (!inApp()) v.innerHTML = vSignedOut();
     else v.innerHTML = S.tab === 'feed' ? vFeed() : S.tab === 'board' ? vBoard() : S.tab === 'me' ? vMe() : S.tab === 'account' ? vAccount() : vHome();
+    syncKeyboard();
   }
   function navState() {
     $$('.tabs [data-tab]').forEach(b => { if (b.dataset.tab === S.tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   }
   function go(tab) {
     if (!inApp()) return;
-    if (S.tab === tab) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-    S.tab = tab; renderView(); window.scrollTo(0, 0); navState();
+    if (S.tab === tab) { scrollToTop('smooth'); return; }
+    S.tab = tab; renderView(); scrollToTop(); navState();
   }
 
   /* ------------------------------------------------------------ home */
@@ -521,7 +545,7 @@ const App = (() => {
     S.acct = null; S.tab = 'home';
     await load();
     if (inApp()) toast(`Welcome back, ${displayName(S.me)}.`, 'wave');
-    render(); window.scrollTo(0, 0);
+    render(); scrollToTop();
     if (inApp()) checkJokes();
   }
   async function editAvatar(source, selector) {
@@ -773,7 +797,7 @@ const App = (() => {
       await load();
       if (original) { render(); toast('Activity updated.'); }
       else {
-        S.tab = 'home'; S.ringFrom = oldPts; render(); window.scrollTo(0, 0);
+        S.tab = 'home'; S.ringFrom = oldPts; render(); scrollToTop();
         try { if (navigator.vibrate) navigator.vibrate([16, 50, 16]); } catch (e) { /* not supported */ }
         await Celebrate.play(Celebrate.pick(post.cat, S.me && S.me.username));
         await afterLog(oldPts, oldBadges, post.cat);
@@ -1010,7 +1034,7 @@ const App = (() => {
     },
     async reset() {
       if (!(await confirmBox('Reset the sample data?', 'Your test posts, inside jokes and passwords go back to the start.', 'Reset'))) return;
-      await Store.resetDemo(); await load(); S.tab = 'home'; render(); window.scrollTo(0, 0); toast('Sample data reset.');
+      await Store.resetDemo(); await load(); S.tab = 'home'; render(); scrollToTop(); toast('Sample data reset.');
     },
     ...AUTH_ACT,
     'close-sheet': () => closeSheet(),
@@ -1085,6 +1109,9 @@ const App = (() => {
 
   async function start() {
     $$('[data-icon]').forEach(b => b.insertAdjacentHTML('afterbegin', ic(b.dataset.icon)));
+    window.visualViewport?.addEventListener('resize', syncKeyboard);
+    document.addEventListener('focusin', syncKeyboard);
+    document.addEventListener('focusout', syncKeyboard);
     bind();
     await Store.init();
     S.lastUser = Store.setupUsername;

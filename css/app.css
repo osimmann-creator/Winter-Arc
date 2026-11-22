@@ -34,10 +34,14 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { -webkit-text-size-adjust: 100%; background: var(--sky1); overscroll-behavior-y: none; }
+html { height: 100%; overflow: hidden; -webkit-text-size-adjust: 100%; background: var(--sky1); }
 body {
   margin: 0;
-  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: var(--editing-height, 100dvh);
+  overflow: hidden;
   font-family: var(--font-b);
   font-weight: 600;
   color: var(--ink);
@@ -69,13 +73,20 @@ p { margin: 0; }
 @keyframes drift { from { transform: translateX(-260px); } to { transform: translateX(calc(100vw + 40px)); } }
 
 /* ---------------------------------------------------------------- shell */
-#app { max-width: 520px; margin: 0 auto; padding: 0 14px calc(var(--tabs-h) + var(--safe-b) + 28px); }
+#app {
+  flex: 1 1 0; min-height: 0; width: 100%; max-width: 520px; margin: 0 auto;
+  padding: 0 14px 38px; overflow: hidden auto; overscroll-behavior-y: none;
+  scroll-padding: calc(env(safe-area-inset-top, 0px) + 70px) 0 16px;
+}
 body.signed-out #app { padding-bottom: 40px; }
 .topbar {
-  position: sticky; top: 0; z-index: 10;
+  position: sticky; top: 0; z-index: 10; isolation: isolate;
   display: flex; align-items: center; justify-content: space-between;
   padding: calc(env(safe-area-inset-top, 0px) + 10px) 2px 8px;
-  background: linear-gradient(180deg, var(--sky1) 55%, rgba(92, 198, 255, 0));
+}
+.topbar::before {
+  content: ''; position: absolute; inset: 0 -14px -18px; z-index: -1; pointer-events: none;
+  background: linear-gradient(180deg, var(--sky1) 55%, rgba(141, 188, 255, 0));
 }
 .brand { display: flex; align-items: center; gap: 8px; }
 .brand img { width: 42px; height: 42px; border-radius: 50%; border: 3px solid var(--ink); background: #F5F1FE; object-fit: contain; object-position: center; box-shadow: 0 3px 0 var(--ink); }
@@ -405,7 +416,7 @@ body.signed-out #app { padding-bottom: 40px; }
 
 /* ---------------------------------------------------------------- tabs */
 .tabs {
-  position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); z-index: 20;
+  position: relative; flex: none; margin: 0 auto; z-index: 20;
   width: min(520px, 100%); display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
   padding: 8px 8px calc(8px + var(--safe-b)); background: #fff; border-top: 3px solid var(--ink);
   border-radius: 24px 24px 0 0;
@@ -424,7 +435,7 @@ body.signed-out #app { padding-bottom: 40px; }
 }
 .tabs .fab:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
 .tabs .fab .ic { width: 36px; height: 36px; stroke-width: 3.4; }
-body.signed-out .tabs { display: none; }
+body:is(.signed-out, .booting, .keyboard-open) .tabs { display: none; }
 
 /* ---------------------------------------------------------------- sheet */
 .sheet { position: fixed; inset: 0; z-index: 40; }
