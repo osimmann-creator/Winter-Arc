@@ -7,6 +7,7 @@ const Celebrate = (() => {
   const last = {}, prepared = {}, blobs = {}, pending = {};
   const reduced = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const wait = ms => new Promise(r => setTimeout(r, ms));
+  const selectionKey = (cat, user) => `${cat}:${String(user || '').toLowerCase()}`;
 
   /** Download a celebration in the background so it starts instantly (and
       plays from a blob: URL, which also works on hosts without byte ranges). */
@@ -33,14 +34,16 @@ const Celebrate = (() => {
       celebration now and start downloading it. */
   function prepare(cat, user) {
     if (reduced()) return;
-    if (!prepared[cat]) prepared[cat] = choose(cat, user);
-    prefetch(prepared[cat]);
+    const key = selectionKey(cat, user);
+    if (!prepared[key]) prepared[key] = choose(cat, user);
+    prefetch(prepared[key]);
   }
 
   /** Pick a celebration for an activity, avoiding the one played last time. */
   function pick(cat, user) {
-    const id = prepared[cat] || choose(cat, user);
-    delete prepared[cat];
+    const key = selectionKey(cat, user);
+    const id = prepared[key] || choose(cat, user);
+    delete prepared[key];
     if (id) last[cat] = id;
     return id;
   }

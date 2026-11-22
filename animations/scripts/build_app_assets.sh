@@ -16,11 +16,11 @@ mkdir -p out/videos out/frames "$APP/celebrations" "$APP/intro" "$APP/mascot" "$
 
 # composition : app video id : poster time (s) : sample-feed photo? (1 = yes)
 MAP="
-Gym:gym-1:2.2:1
+Gym:gym-1:3.8:1
 GunShow:gym-2:2.3:0
 LegDay:gym-3:2.55:0
-Atlas:gym-4:1.6:0
-Mirror:gym-5:2.9:0
+Atlas:gym-4:2.4:0
+Mirror:gym-5:4.2:0
 Run:run-1:2.2:1
 FrostMiles:run-2:1.6:0
 Torch:run-3:3.4:0
@@ -75,10 +75,22 @@ want() { [ -z "$ONLY" ] && return 0; for w in $ONLY; do [ "$w" = "$1" ] && retur
 for row in $MAP; do
   IFS=: read comp id poster photo <<< "$row"
   want "$comp" || continue
-  $R render "$comp" "out/videos/$id.mp4" --codec=h264 --crf=20 --x264-preset=veryfast --browser-executable="$CHROME" --log=error $CONC
-  ffmpeg -y -loglevel error -i "out/videos/$id.mp4" -vf scale=720:1566 -c:v libx264 -crf 26 -preset veryfast \
+  master=(--crf=20 --x264-preset=veryfast)
+  mobile=(-crf 26 -preset veryfast)
+  downscale=scale=720:1566
+  poster_quality=80
+  case "$comp" in
+    Gym|Atlas|Mirror)
+      master=(--crf=17 --x264-preset=medium --image-format=png)
+      mobile=(-crf 20 -preset slow)
+      downscale=scale=720:1566:flags=lanczos,setsar=1
+      poster_quality=90
+      ;;
+  esac
+  $R render "$comp" "out/videos/$id.mp4" --codec=h264 "${master[@]}" --browser-executable="$CHROME" --log=error $CONC
+  ffmpeg -y -loglevel error -i "out/videos/$id.mp4" -vf "$downscale" -c:v libx264 "${mobile[@]}" \
     -pix_fmt yuv420p -movflags +faststart -an "$APP/celebrations/$id.mp4"
-  ffmpeg -y -loglevel error -ss "$poster" -i "out/videos/$id.mp4" -frames:v 1 -vf scale=360:782 -c:v libwebp -quality 80 "$APP/celebrations/$id.webp"
+  ffmpeg -y -loglevel error -ss "$poster" -i "out/videos/$id.mp4" -frames:v 1 -vf scale=360:782 -c:v libwebp -quality "$poster_quality" "$APP/celebrations/$id.webp"
   if [ "$photo" = "1" ]; then
     # square "proof photo" for the sample feed (the 1080x1920 design frame starts 214px down)
     cat=${id%-1}

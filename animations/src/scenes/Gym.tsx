@@ -1,74 +1,13 @@
 import React from 'react';
-import { useCurrentFrame } from 'remotion';
-import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
-import { poseAt, E, kf, shake, seg, Key } from '../lib/anim';
-import { ap, M } from '../lib/m2';
-import { Stage, camP, Cam } from '../fx/Stage';
-import { Burst, Ring, Sparks, Dust, Cloud, Sfx, GlowDefs, Glow, Glint, ConfettiRain, FocusLines } from '../fx/fx';
-import { Swoosh, trail } from '../fx/motion';
-import { EndCard } from '../fx/EndCard';
+import { C } from '../hero/Hero';
+import { seg } from '../lib/anim';
+import { camP, Cam } from '../fx/Stage';
+import { Cloud } from '../fx/fx';
 import { rng } from '../lib/shape';
 
+export { GymScene } from './BeastMode';
+
 const INK = C.ink;
-const GX = 540;
-const GY = 1700;
-const SC = 0.9;
-
-/* ------------------------------- poses ------------------------------- */
-const SQUAT: Partial<Pose> = {
-  hipL: 42, hipR: 42, knL: -50, knR: -50, thL: 0.64, thR: 0.64, ftL: 8, ftR: 8,
-  torsoSy: 0.8, lookY: -0.5, head: 0,
-  shL: 3, shR: 3, elL: 0, elR: 0, wrL: 0, wrR: 0, flexL: 0.6, flexR: 0.6,
-  mouthMode: 'grit', mouthOpen: 0, smile: 0, lid: 0.35, browTilt: -1, brow: -0.3, sweat: 1, red: 0.25,
-  handL: 'fist', handR: 'fist', armZL: 'mid', armZR: 'mid',
-};
-const PULL: Partial<Pose> = {
-  hipL: 14, hipR: 14, knL: -14, knR: -14, thL: 0.94, thR: 0.94, ftL: 4, ftR: 4, torsoSy: 0.95,
-  shL: 5, shR: 5, elL: 0, elR: 0, lookY: -0.2, red: 0.85, lid: 0.45, sweat: 1,
-};
-const DIP: Partial<Pose> = {
-  hipL: 28, hipR: 28, knL: -32, knR: -32, thL: 0.82, thR: 0.82, torsoSy: 0.9, sy: 0.95, sx: 1.03,
-  shL: 8, shR: 8, elL: 10, elR: 10, lid: 1, red: 1, browTilt: -1,
-};
-const RACK: Partial<Pose> = {
-  hipL: 14, hipR: 14, knL: -6, knR: -6, thL: 1, thR: 1, torsoSy: 1.02, sy: 1.08, sx: 0.96,
-  shL: 34, shR: 34, elL: 132, elR: 132, uaL: 0.8, uaR: 0.8, wrL: -20, wrR: -20,
-  mouthMode: 'grin', mouthOpen: 1, smile: 0.6, lid: 0, red: 0.5, brow: 1, browTilt: -0.4,
-};
-const OVER: Partial<Pose> = {
-  hipL: 24, hipR: 24, knL: -12, knR: -12, thL: 1, thR: 1, ftL: 6, ftR: 6, torsoSy: 1, sy: 1, sx: 1,
-  chestS: 1.05, shL: 167, shR: 167, elL: -8, elR: -8, uaL: 1.26, uaR: 1.26, faL: 1.26, faR: 1.26, shrugL: 40, shrugR: 40,
-  wrL: 0, wrR: 0, flexL: 0.9, flexR: 0.9,
-  mouthMode: 'grin', mouthOpen: 0.75, smile: 1, lid: 0, browTilt: 0, brow: 0.9, red: 0, sweat: 0, lookY: -0.1,
-};
-
-const KEYS: Key<Pose>[] = [
-  { f: 0, p: SQUAT },
-  { f: 10, p: { lookY: -0.3 } },
-  { f: 28, p: PULL, e: E.inOut },
-  { f: 35, p: DIP, e: E.out },
-  { f: 39, p: RACK, e: E.in },
-  { f: 42, p: OVER, e: E.in },
-  { f: 47, p: { sy: 1.05, sx: 0.97, chestS: 1.1 }, e: E.out },
-  { f: 53, p: { sy: 0.97, sx: 1.02, chestS: 1.04 }, e: E.inOut },
-  { f: 59, p: { sy: 1, sx: 1, chestS: 1.06, lookX: 0.2, turn: 0.15 }, e: E.inOut },
-  { f: 66, p: { mouthOpen: 0.15, lookX: 0.5, turn: 0.28, lid: 0.15 }, e: E.inOut },
-  { f: 70, p: { wink: 1, mouthSkew: 0.5 }, e: E.out },
-  { f: 82, p: { wink: 1 } },
-  { f: 86, p: { wink: 0, mouthSkew: 0, mouthOpen: 0.5, lookX: 0, turn: 0.05 }, e: E.inOut },
-  { f: 150, p: {} },
-];
-
-const poseF = (f: number): Pose => {
-  const p = poseAt(f, BASE, KEYS);
-  // strain jitter
-  const strain = seg(f, 6, 12) * (1 - seg(f, 36, 39));
-  const jx = Math.sin(f * 2.9) * 3.5 * strain;
-  const jr = Math.sin(f * 3.7) * 0.9 * strain;
-  // breathing after lockout
-  const br = f > 59 ? Math.sin((f - 59) / 7) * 0.012 : 0;
-  return plant({ ...p, x: jx, rot: jr, chestS: p.chestS + br });
-};
 
 /* ------------------------------- barbell ------------------------------- */
 export const Plate: React.FC<{ x: number; ry: number; rx: number; c: string; d: string }> = ({ x, ry, rx, c, d }) => (
@@ -106,12 +45,6 @@ export const Barbell: React.FC<{ a: [number, number]; b: [number, number]; bend:
       {side(1)}
     </g>
   );
-};
-
-const barBend = (f: number) => {
-  if (f < 43) return -kf(f, [[0, 0], [28, 24], [35, 30]]) + Math.sin(f * 3.1) * 2 * seg(f, 8, 12);
-  const t = f - 43;
-  return 34 * Math.cos(t * 0.5) * Math.exp(-t * 0.075) - 14 * (1 - Math.exp(-t * 0.1));
 };
 
 /* ------------------------------- background ------------------------------- */
@@ -264,87 +197,5 @@ export const Cracks: React.FC<{ f: number; start: number }> = ({ f, start }) => 
         </g>
       ))}
     </g>
-  );
-};
-
-/* ------------------------------- scene ------------------------------- */
-export const GymScene: React.FC = () => {
-  const f = useCurrentFrame();
-  const p = poseF(f);
-  const r = rig(p);
-  const grip = (a: Rig2) => ap(a.wrist, 0, 42) as [number, number];
-  type Rig2 = typeof r.aL;
-  const gL = grip(r.aL);
-  const gR = grip(r.aR);
-  const bend = barBend(f);
-  const behind = f >= 40;
-  const bar = <Barbell a={gL} b={gR} bend={bend} />;
-
-  // camera
-  const cam: Cam = {
-    cx: 540,
-    cy: kf(f, [[0, 1500], [22, 1060, E.out], [34, 1080], [42, 1040, E.out], [150, 1000]]),
-    z: kf(f, [[0, 1.75], [22, 1.0, E.out], [34, 1.08, E.inOut], [42, 0.98, E.out], [72, 1.0], [150, 1.05]]),
-    r: kf(f, [[0, -2], [22, 0, E.out], [42, 1.2], [50, 0]]),
-  };
-  const s1 = shake(f, 43, 22, 34, 3);
-  const s0 = shake(f, 8, 30, 3 * (1 - seg(f, 30, 38)), 1);
-  const sh = { x: s1.x + s0.x, y: s1.y + s0.y, r: s1.r };
-  const impact = f === 42 || f === 43;
-
-  // world-space helpers (hero space -> stage)
-  const toStage = (pt: [number, number]): [number, number] => [GX + pt[0] * SC, GY + pt[1] * SC];
-  const handTrail = (side: 'L' | 'R') =>
-    trail((ff) => {
-      const q = poseF(ff);
-      const rr = rig(q);
-      const pt = rr.W(side === 'L' ? rr.aL.wrist : rr.aR.wrist, 0, 40);
-      return toStage(pt);
-    }, f, 6);
-  const mouth = toStage(r.mouth());
-  const gripW = (pt: [number, number]) => toStage(ap(r.root as M, pt[0], pt[1]));
-  const barMid = gripW([(gL[0] + gR[0]) / 2, (gL[1] + gR[1]) / 2]);
-
-  return (
-    <Stage
-      impact={impact}
-      overlay={<EndCard f={f} start={74} lines={['BEAST MODE']} pts="+1.5" color="#F2853A" dark="#B4521C" y={96} />}
-    >
-      <GlowDefs />
-      <GymBG f={f} cam={cam} sh={sh} />
-      <g transform={camP(cam, 1, sh)}>
-        <Platform />
-        <Cracks f={f} start={43} />
-        <Ring x={540} y={1700} t={seg(f, 43, 62)} r={520} sy={0.22} color="#FFFFFF" w={30} />
-        {f >= 43 && f < 60 ? <FocusLines f={f} cx={barMid[0]} cy={barMid[1]} r0={420} opacity={0.75 * (1 - seg(f, 50, 60))} color="#FFFFFF" /> : null}
-        <Glow x={barMid[0]} y={barMid[1]} r={kf(f, [[42, 0], [46, 520, E.out], [70, 300]])} id="glowY" o={seg(f, 42, 44) * (1 - seg(f, 70, 100) * 0.6)} />
-        <Burst x={barMid[0]} y={barMid[1] + 60} r={340} t={seg(f, 43, 60)} seed={9} />
-        {f >= 38 && f <= 44 ? (
-          <>
-            <Swoosh pts={handTrail('L')} width={110} />
-            <Swoosh pts={handTrail('R')} width={110} />
-          </>
-        ) : null}
-        <Hero
-          p={p}
-          x={GX}
-          y={GY}
-          scale={SC}
-          behind={behind ? bar : undefined}
-          between={!behind ? bar : undefined}
-        />
-        <Dust f={f} start={43} x={540} y={1690} n={10} spread={460} size={64} seed={4} />
-        <Sparks f={f} start={43} seed={21} n={26} x={barMid[0]} y={barMid[1]} speed={[16, 40]} g={0.9} size={[14, 28]} />
-        <Glint x={mouth[0] + 40} y={mouth[1] - 10} s={1.3} t={seg(f, 58, 72)} />
-        <Glint x={barMid[0] - 330} y={barMid[1] - 110} s={0.9} t={seg(f, 64, 80)} />
-      </g>
-      <Columns cam={cam} sh={sh} />
-      <g transform={camP(cam, 1, sh)}>
-        <Sfx f={f} start={10} text="NNNGH!" x={250} y={900} size={110} rot={-10} fill="#FFFFFF" dur={28} />
-        <Sfx f={f} start={43} text="CLANG!" x={760} y={560} size={190} rot={8} fill="#FFD064" dur={30} />
-        <Sfx f={f} start={60} text="ting!" x={mouth[0] + 160} y={mouth[1] - 110} size={80} rot={-6} fill="#FFFFFF" dur={20} />
-      </g>
-      <ConfettiRain f={f} start={80} n={60} seed={3} />
-    </Stage>
   );
 };
