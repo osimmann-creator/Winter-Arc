@@ -73,7 +73,7 @@ const ALIASES = { dylan: { points: 4, name: 'La4' } };
 const INSIDE_JOKES = {
   coin: { video: 'joke-coin', title: 'The Coin', users: ['dean', 'jake'], feed: true, playFor: 72 },
   bluehair: { video: 'joke-bluehair', title: 'Blue Hair', users: ['connor'], feed: true, playFor: 72 },
-  iron: { video: 'joke-iron', title: 'The Iron', users: ['ayaad'], feed: true, playFor: 12, day: 6, from: 6, to: 12 },
+  iron: { video: 'joke-iron', title: 'The Iron', users: ['ayaad'], feed: true, playFor: 12, days: [0] },
   bag: { video: 'joke-bag', title: 'The Bag', users: ['dean', 'connor', 'dylan'], feed: true, playFor: 72 },
   fight: { video: 'joke-fight', title: 'Dylan Starts Fights', users: ['dylan'], feed: true, playFor: 72 },
   crashout: { video: 'joke-crashout', title: 'Crash Out KNR', users: ['connor'], feed: true, playFor: 48 },
@@ -81,9 +81,9 @@ const INSIDE_JOKES = {
   puke: { video: 'joke-puke', title: 'Puked On', users: ['amaan'], feed: true, playFor: 48 },
   mma: { video: 'joke-mma', title: 'MMA Guy', users: ['amaan'], feed: true, playFor: 72, count: 4 },
   radiator: { video: 'joke-radiator', title: 'The Radiator', users: ['jake'], feed: true, playFor: 48, days: 4 }, // Jake hasn't logged anything in 4 days
-  mom: { video: 'joke-mom', title: 'Jake’s Mom', users: ['jake'], feed: true, playFor: 6, day: 0, from: 18, to: 24 }, // Sunday from 6 PM, Jake still short of the minimum
+  mom: { video: 'joke-mom', title: 'Jake’s Mom', users: ['jake'], feed: true, playFor: 12, day: 0, from: 12, to: 24 },
   nets: { video: 'joke-nets', title: 'The Nets Game', users: ['jake', 'gaurav'], feed: true, playFor: 72 },
-  liquor: { video: 'joke-liquor', title: 'The Liquor Run', users: ['gaurav'], feed: true, playFor: 12, day: 6, from: 6, to: 12 }, // Saturday 6 AM–noon, Gaurav in last
+  liquor: { video: 'joke-liquor', title: 'The Liquor Run', users: ['gaurav'], feed: true, playFor: 12, days: [0] },
   phil: { video: 'joke-phil', title: 'Punxsutawney Phil', users: ['phil'], feed: true, playFor: 48, days: 3 }, // Philip logs after 3+ days without logging
   scared: { video: 'joke-scared', title: 'Scared of Girls', users: [], feed: true, playFor: 72, days: 30 },
   timesheet: { video: 'joke-timesheet', title: 'The Time Sheet', users: ['jake'], feed: true, playFor: 48, days: [6, 0] }, // Jake's post that gets him to the weekly minimum lands on a Saturday or Sunday

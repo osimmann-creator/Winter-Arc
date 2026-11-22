@@ -793,17 +793,23 @@ const App = (() => {
     const d = e.data || {};
     if (e.type === 'coin') return `${realName(d.a)} and ${realName(d.b)} are tied at ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week. Not even a $1 coin can split them.`;
     if (e.type === 'bluehair') return `${realName(d.who)} has the most points this week with ${fmtPts(d.pts)}. Blue hair activated.`;
-    if (e.type === 'iron') return `It’s Saturday morning and ${realName(d.who)} is in last with ${fmtPts(d.pts)} ${ptsWord(d.pts)}. Ironing his shirt again?`;
+    if (e.type === 'iron') return d.post
+      ? `${realName(d.who)} hit his weekly goal on Sunday with ${fmtPts(d.pts)} ${ptsWord(d.pts)}. Time to iron that shirt.`
+      : `It’s Saturday morning and ${realName(d.who)} is in last with ${fmtPts(d.pts)} ${ptsWord(d.pts)}. Ironing his shirt again?`;
     const names = (ids = []) => new Intl.ListFormat('en').format(ids.map(realName));
-    if (e.type === 'liquor') return `It’s Saturday morning and ${realName(d.who)} is in last with ${fmtPts(d.pts)} points. Still out on that liquor run?`;
+    if (e.type === 'liquor') return d.post
+      ? `${realName(d.who)} hit his weekly goal on Sunday with ${fmtPts(d.pts)} ${ptsWord(d.pts)}. Time for the liquor run.`
+      : `It’s Saturday morning and ${realName(d.who)} is in last with ${fmtPts(d.pts)} points. Still out on that liquor run?`;
     if (e.type === 'bag') return `${names(d.who)} are tied at ${fmtPts(d.pts)} points this week. That’s The Bag.`;
-    if (e.type === 'fight') return `${realName(d.who)} shares the lead with ${names(d.tied)} at ${fmtPts(d.pts)} points. Somebody hold him back.`;
+    if (e.type === 'fight') return d.post
+      ? `${realName(d.who)} logged beers with the fellas after a gym session. Somebody hold him back.`
+      : `${realName(d.who)} shares the lead with ${names(d.tied)} at ${fmtPts(d.pts)} points. Somebody hold him back.`;
     if (e.type === 'crashout') return `${realName(d.who)} called 🧢 on ${realName(d.target)}’s post. Crash Out KNR.`;
     if (e.type === 'satellite') return `${realName(d.who)} logged beers with the fellas. Now for the long trip home to his satellite house.`;
     if (e.type === 'puke') return `${realName(d.who)} dropped into last place on his own. Somebody get him a towel.`;
     if (e.type === 'mma') return `${realName(d.who)} has logged ${d.n} MMA sessions this week. He’d like you to know he does MMA.`;
     if (e.type === 'radiator') return `${realName(d.who)} has gone four days without a log. Somebody check the radiator.`;
-    if (e.type === 'mom') return `${realName(d.who)} is still below his weekly goal on Sunday night. His mom found out.`;
+    if (e.type === 'mom') return `${realName(d.who)} is still below his weekly goal on Sunday. His mom found out.`;
     if (e.type === 'nets') return `${names(d.who)} took a strike last week and missed the train to the Nets game.`;
     if (e.type === 'phil') return `${realName(d.who)} logged an activity after at least three days away. He saw his shadow. Six more weeks of Winter Arc.`;
     if (e.type === 'scared') return `No date posts for ${d.days ?? d.n * 30} days. The fellas are scared of girls.`;
@@ -812,15 +818,16 @@ const App = (() => {
     return '';
   }
   const JOKE_EYEBROW = {
-    coin: 'Achievement unlocked', bluehair: 'Week leader', iron: 'Saturday morning', liquor: 'Saturday morning',
-    bag: 'Three-way tie', fight: 'Tied for first', crashout: 'Cap called', satellite: 'Beers with the boys',
-    puke: 'Last place', mma: 'Fight night', radiator: 'Missing person', mom: 'Sunday night', nets: 'Strike',
+    coin: 'Achievement unlocked', bluehair: 'Week leader', iron: 'Weekly points', liquor: 'Weekly points',
+    bag: 'Three-way tie', crashout: 'Cap called', satellite: 'Beers with the boys',
+    puke: 'Last place', mma: 'Fight night', radiator: 'Missing person', mom: 'Sunday', nets: 'Strike',
     phil: 'Sighting', scared: 'Date drought', timesheet: 'Last minute', hoat: 'Every week, as promised',
   };
   /** Every inside joke that has happened goes in the feed (config: feed). */
   const inFeed = e => (e.type === 'hoat' ? HOAT.feed !== false : !!(INSIDE_JOKES[e.type] && INSIDE_JOKES[e.type].feed));
   function jokeCard(e) {
     const hoat = e.type === 'hoat', J = hoat ? { title: HOAT.title } : INSIDE_JOKES[e.type], d = e.data || {};
+    const eyebrow = e.type === 'fight' ? (d.post ? 'Gym and beers' : 'Tied for first') : JOKE_EYEBROW[e.type] || 'Inside joke';
     const who = [...new Set([d.a, d.b, d.who, d.tied, d.target].flat().filter(id => id && member(id)))].slice(0, 6);
     const vis = hoat
       ? `<button class="jk-vid jk-stamp" data-act="hoat-replay" aria-label="${esc(HOAT.text)}: play the stamp again">${Art.hoatStamp()}</button>`
@@ -828,7 +835,7 @@ const App = (() => {
     return `<article class="post card joke joke-${e.type}${vis ? '' : ' text-only'}" data-eid="${e.id}">
   ${vis}
   <div class="jk-body">
-    <p class="eyebrow">${JOKE_EYEBROW[e.type] || 'Inside joke'}</p>
+    <p class="eyebrow">${eyebrow}</p>
     <h3${J.title.length > 13 ? ' class="long"' : ''}>${esc(J.title)}</h3>
     <p class="jk-text">${esc(jokeText(e))}</p>
     <p class="jk-meta"><span class="jk-avs">${who.map(id => avatar(id, 28)).join('')}</span><em>${ago(e.at)}</em></p>

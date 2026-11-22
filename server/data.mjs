@@ -13,7 +13,7 @@ const POINTS = '(?:0|[1-9][0-9]*)(?:\\.5)?';
 const COUNT = '[1-9][0-9]*';
 const EVENT_KEYS = {
   coin: `${WEEK}:${POINTS}`, bluehair: WEEK, iron: WEEK, liquor: WEEK,
-  bag: `${WEEK}:${POINTS}`, fight: `${WEEK}:${POINTS}`,
+  bag: `${WEEK}:${POINTS}`, fight: `${WEEK}(?::${POINTS})?`,
   crashout: POST_ID, satellite: POST_ID, puke: `${WEEK}:${COUNT}`, mma: WEEK,
   radiator: POST_ID, mom: WEEK, nets: WEEK, phil: POST_ID,
   scared: `[0-9]{4}-[0-9]{2}-[0-9]{2}:${COUNT}`, timesheet: WEEK, hoat: WEEK,

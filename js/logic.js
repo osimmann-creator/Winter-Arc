@@ -251,26 +251,20 @@ const Logic = (() => {
     }
     const clock = zoned(now, tz);
     const inWindow = j => clock.day === j.day && clock.hour >= j.from && clock.hour < j.to;
-    for (const type of ['iron', 'liquor']) {
-      const [target] = people(type);
-      if (!alive(target) || !inWindow(J[type])) continue;
-      const rivals = calc.alive.filter(m => m.id !== target.id);
-      if (rivals.every(m => pts(m) >= pts(target)) && rivals.some(m => pts(m) > pts(target))) {
-        add(type, w, { pts: pts(target), who: target.id });
-      }
-    }
     const bag = people('bag');
     if (bag.length && bag.every(m => m && pts(m) > 0 && pts(m) === pts(bag[0]))) {
       add('bag', `${w}:${pts(bag[0])}`, { pts: pts(bag[0]), who: bag.map(m => m.id) });
     }
-    const [fighter] = people('fight');
-    if (fighter && pts(fighter) > 0 && members.every(m => pts(m) <= pts(fighter))) {
-      const tied = members.filter(m => m.id !== fighter.id && pts(m) === pts(fighter)).map(m => m.id);
-      if (tied.length) add('fight', `${w}:${pts(fighter)}`, { pts: pts(fighter), who: fighter.id, tied });
-    }
-
     const counted = members.flatMap(m => calc.by[m.id].counted).sort(byTime);
     const week = counted.filter(p => Date.parse(p.at) >= +S.wkStart && Date.parse(p.at) < +S.wkEnd);
+    const [fighter] = people('fight');
+    const beers = fighter && week.find(p => p.memberId === fighter.id && p.cat === 'beers' && Date.parse(p.at) <= +now);
+    if (beers) {
+      const previousDay = ordinal(beers.at, tz) - 1;
+      const gym = counted.some(p => p.memberId === fighter.id && p.cat === 'gym'
+        && Date.parse(p.at) <= Date.parse(beers.at) && ordinal(p.at, tz) >= previousDay);
+      if (gym) add('fight', w, { who: fighter.id, post: beers.id });
+    }
     const [capper] = people('crashout');
     const [beerDrinker] = people('satellite');
     for (const post of week) {
@@ -321,19 +315,19 @@ const Logic = (() => {
       const days = Math.floor((now - since) / DAY), n = Math.floor(days / J.scared.days);
       if (n > 0) add('scared', `${dayKey(since, tz)}:${n}`, { n, days });
     }
-    const [timekeeper] = people('timesheet');
-    if (timekeeper) {
-      const stats = calc.by[timekeeper.id];
-      if (!stats.fraudWeeks.has(w)) {
-        let points = 0;
-        for (const post of week) {
-          if (post.memberId !== timekeeper.id || Date.parse(post.at) > +now) continue;
-          points += CATS[post.cat]?.pts || 0;
-          if (points < stats.goal) continue;
-          const { day } = zoned(post.at, tz);
-          if (J.timesheet.days.includes(day)) add('timesheet', w, { post: post.id, pts: points, day, who: timekeeper.id });
-          break;
-        }
+    for (const type of ['iron', 'liquor', 'timesheet']) {
+      const [target] = people(type);
+      if (!target) continue;
+      const { goal, fraudWeeks } = calc.by[target.id];
+      if (fraudWeeks.has(w)) continue;
+      let points = 0;
+      for (const post of week) {
+        if (post.memberId !== target.id || Date.parse(post.at) > +now) continue;
+        points += CATS[post.cat]?.pts || 0;
+        if (points < goal) continue;
+        const { day } = zoned(post.at, tz);
+        if (J[type].days.includes(day)) add(type, w, { post: post.id, pts: points, day, who: target.id });
+        break;
       }
     }
     if (hoat) {

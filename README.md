@@ -50,16 +50,16 @@ Inside-joke videos can pop up once per member when the trigger fires. Members ca
 |---|---|---|
 | **The Coin** | Dean and Jake are tied on points this week (above 0). Lands on its edge. | Yes, with the tied score |
 | **Blue Hair** | Connor has the most points this week. | Yes |
-| **The Iron** | Saturday 6 AM to noon (New York time) and Ayaad is in last. | Yes |
-| **The Liquor Run** | Same as The Iron, but Gaurav is in last. He takes an hour to pick a bottle. | Yes |
+| **The Iron** | Ayaad first reaches his weekly points goal with an activity dated Sunday. | Yes |
+| **The Liquor Run** | Gaurav first reaches his weekly points goal with an activity dated Sunday. | Yes |
 | **The Bag** | Dean, Connor and Dylan are all tied this week (above 0). | Yes |
-| **Dylan Starts Fights** | Dylan is tied for first this week. | Yes |
+| **Dylan Starts Fights** | Dylan logs Beers with the fellas after a gym session from the same day or the day before. | Yes |
 | **Crash Out KNR** | Connor calls cap (🧢) on someone's post from this week. Once per post. | Yes |
 | **Satellite House** | Connor logs beers with the boys, then flies home to his house in orbit. Once per post. | Yes |
 | **Puked On** | Amaan is alone in last this week. Each trip into last can trigger it, subject to cooldown. | Yes |
 | **MMA Guy** | Amaan logs his 4th MMA session of the week. It is not cool. | Yes |
 | **The Radiator** | Jake hasn't logged anything for 4 days. Once per dry spell. | Yes |
-| **Jake's Mom** | Sunday from 6 PM and Jake is still below his weekly goal. | Yes |
+| **Jake's Mom** | Sunday from noon in the group’s timezone, while Jake is still below his weekly goal. | Yes |
 | **The Nets Game** | Jake or Gaurav missed his goal last week. Plays on Monday. | Yes, naming who missed |
 | **Punxsutawney Phil** | Phil logs something after 3+ days without a log. He sees his shadow. Once per post. | Yes |
 | **Scared of Girls** | Nobody has logged a date in 30 days. Again every 30 days it goes on. | Yes |
