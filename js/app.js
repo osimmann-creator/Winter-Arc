@@ -69,25 +69,41 @@ const App = (() => {
   /** In the app proper (tabs showing), as opposed to the sign-in screens. */
   const inApp = () => !!(S.me && !(S.auth && S.auth.mustChangePassword));
 
-  // Keep the tab bar in the app layout. Use the visual viewport only while typing.
-  let keyboardFrame = 0;
+  // iOS can pan the visual viewport when the keyboard opens. Keep the app
+  // full height and adjust the feed's scroll area to the visible edges.
+  let keyboardFrame = 0, keyboardField = null;
   function syncKeyboard() {
     if (!window.visualViewport || keyboardFrame) return;
     keyboardFrame = requestAnimationFrame(() => {
       keyboardFrame = 0;
       const viewport = window.visualViewport, field = document.activeElement, body = document.body;
-      const typing = field?.closest('#app') && field.matches('textarea, input:not([type]), input:is([type="text"], [type="password"], [type="number"], [type="email"], [type="search"], [type="url"], [type="tel"])');
+      const app = $('#app');
+      const typing = app.contains(field) && field.matches('textarea, input:not([type]), input:is([type="text"], [type="password"], [type="number"], [type="email"], [type="search"], [type="url"], [type="tel"])');
       const keyboard = typing && viewport.scale <= 1.01 && document.documentElement.clientHeight - viewport.height > 100;
       body.classList.toggle('keyboard-open', !!keyboard);
       if (!keyboard) {
-        body.style.removeProperty('--editing-height');
+        app.style.removeProperty('--keyboard-top');
+        app.style.removeProperty('--keyboard-bottom');
+        keyboardField = null;
         return;
       }
-      const height = `${Math.round(viewport.height)}px`;
-      if (body.style.getPropertyValue('--editing-height') !== height) {
-        body.style.setProperty('--editing-height', height);
-        field.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-      }
+      const frame = app.getBoundingClientRect();
+      const visibleTop = Math.max(frame.top, viewport.offsetTop);
+      const visibleBottom = Math.min(frame.bottom, viewport.offsetTop + viewport.height);
+      const topInset = `${Math.round(visibleTop - frame.top)}px`;
+      const bottomInset = `${Math.round(frame.bottom - visibleBottom)}px`;
+      if (keyboardField === field && app.style.getPropertyValue('--keyboard-top') === topInset
+          && app.style.getPropertyValue('--keyboard-bottom') === bottomInset) return;
+
+      keyboardField = field;
+      app.style.setProperty('--keyboard-top', topInset);
+      app.style.setProperty('--keyboard-bottom', bottomInset);
+      const editor = field.closest('.feed-comment') || field;
+      const bounds = editor.getBoundingClientRect();
+      const bottom = visibleBottom - 12;
+      const top = Math.min(bottom - bounds.height, Math.max(visibleTop, $('.topbar').getBoundingClientRect().bottom) + 12);
+      if (bounds.bottom > bottom) app.scrollTop += bounds.bottom - bottom;
+      else if (bounds.top < top) app.scrollTop -= top - bounds.top;
     });
   }
 
@@ -1141,6 +1157,7 @@ const App = (() => {
   async function start() {
     $$('[data-icon]').forEach(b => b.insertAdjacentHTML('afterbegin', ic(b.dataset.icon)));
     window.visualViewport?.addEventListener('resize', syncKeyboard);
+    window.visualViewport?.addEventListener('scroll', syncKeyboard);
     document.addEventListener('focusin', syncKeyboard);
     document.addEventListener('focusout', syncKeyboard);
     bind();

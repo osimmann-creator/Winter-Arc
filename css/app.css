@@ -40,7 +40,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  height: var(--editing-height, 100dvh);
+  height: 100dvh;
   overflow: hidden;
   font-family: var(--font-b);
   font-weight: 600;
@@ -75,12 +75,12 @@ p { margin: 0; }
 /* ---------------------------------------------------------------- shell */
 #app {
   flex: 1 1 0; min-height: 0; width: 100%; max-width: 520px; margin: 0 auto;
-  padding: 0 14px 38px; overflow: hidden auto; overscroll-behavior-y: none;
-  scroll-padding: calc(env(safe-area-inset-top, 0px) + 70px) 0 16px;
+  padding: 0 14px calc(38px + var(--keyboard-bottom, 0px)); overflow: hidden auto; overscroll-behavior-y: none;
+  scroll-padding: calc(env(safe-area-inset-top, 0px) + 70px + var(--keyboard-top, 0px)) 0 calc(16px + var(--keyboard-bottom, 0px));
 }
-body.signed-out #app { padding-bottom: 40px; }
+body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px)); }
 .topbar {
-  position: sticky; top: 0; z-index: 10; isolation: isolate;
+  position: sticky; top: var(--keyboard-top, 0px); z-index: 10; isolation: isolate;
   display: flex; align-items: center; justify-content: space-between;
   padding: calc(env(safe-area-inset-top, 0px) + 10px) 2px 8px;
 }
@@ -316,6 +316,7 @@ body.signed-out #app { padding-bottom: 40px; }
 .comment-heart[aria-pressed="true"] .ic { fill: currentColor; }
 .feed-comments small, .feed-message small { color: var(--ink2); font-size: .8rem; }
 .feed-comment { display: flex; gap: 6px; align-items: center; }
+.feed-comment input { font-size: 16px; }
 .feed-comment .btn { flex: none; min-height: 38px; padding: 3px 9px; font-size: .9rem; }
 .rx { display: flex; flex-wrap: wrap; gap: 6px; }
 .rx button { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px 1px; border: 2.5px solid var(--ink); border-radius: 999px; background: #fff; font-size: 16px; box-shadow: 0 2px 0 var(--ink); transition: transform .08s; }
