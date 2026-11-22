@@ -1,421 +1,337 @@
 'use strict';
 /* =====================================================================
-   WINTER ARC · roast of the day (the banner at the top of Home)
+   WINTER ARC · Roast of the Day (the banner at the top of Home)
 
-   183 jokes. Each one roasts whichever crew member it fits right now,
-   using the live points, so every roast is earned.
+   100 roasts. One a day, the same one for everyone. Each airs once
+   until nothing unused fits (see reruns below).
 
    HOW IT PICKS
-   - One joke a day, the same for everyone in the crew. It never shows the
-     same joke two days running, and tries not to roast the same person twice
-     in a row. As the week runs out, whoever is still short gets the spotlight.
-   - A joke only shows when its situation is true (e.g. someone really has
-     0 points on a Thursday). Ties rotate, so nobody hogs a category.
-   - Tapping the banner shows another one.
+   - Every roast fits a situation ("someone has 0 points on a Thursday").
+     It only shows on a day that situation is true, using the points as
+     they stood at midnight, and it names whoever it fits.
+   - Some roasts are written for one person (the third item, e.g. 'jake').
+     When theirs fits, they get it first. They're the funniest ones.
+   - Special days win their day: the first roast, Thanksgiving, Black Friday,
+     Christmas, New Year's Eve and Day, Groundhog Day, Valentine's Day and
+     the last day of the season.
+   - The server picks the day's roast the first time anyone opens the app
+     that day (or on its scheduled run) and saves it as an event: type
+     'roast', key 'roast:YYYY-MM-DD' in the group's time zone. Everyone gets
+     that saved one, so the whole crew sees the same roast all day. The
+     saved roasts are also how it knows which ones are used up.
+   - Nobody on the injury report gets roasted until he's marked recovered.
+   - Goals are per person: Jake's 8-point weeks count as 8.
+   - Each roast gets a number (#1-#100) the day it first airs. A 17-week
+     season has 119 days, so once nothing unused fits, the one that aired
+     longest ago comes back (about someone new if possible) as a rerun.
 
    EDITING
-   - Each line is [situation, joke]. The situations are described in WHEN.
-   - Blanks you can use in a joke:
-       {name}     the person being roasted
-       {pts}      their points this week        {left}    points they still need
-       {total}    their season points           {lastwk}  their points last week
-       {strikes}  their strikes                 {elim}    week they were eliminated
-       {streak}   days in a row they've logged  {days}    days since they last logged
-       {n}        the count the situation is about (beers, dates, caps...)
-       {name2} {pts2} {gap}   the person they're compared with, and the difference
-       {last}     this week's lowest scorer (in the leader jokes)
-       {min} weekly minimum · {day} today's weekday · {week} week number
-       {weeks} weeks in the season · {crew} people still in
-       {datePts} {gymPts} {readPts}   what those activities are worth
-   - Put a word after a colon for "1 point" / "3 points": {pts:point}, {n:date}.
+   - Each line is [situation, roast] or [situation, roast, username].
+     WHEN below says when each situation is true.
+   - Changing a roast's words makes it a new roast (it can show again).
+   - Blanks you can use:
+       {name}    who's being roasted        {pts}     their points this week
+       {left}    points they still need     {total}   their season points
+       {lastwk}  their points last week     {strikes} their strikes
+       {streak}  days in a row              {days}    days since they last logged
+       {elim}    week they were eliminated  {n}       the count the situation is about
+       {name2} {pts2}  the week's leader (last place) or the other guy (coin flip)
+       {last}    this week's lowest scorer  {gap}     the lead
+       {act} {time}  what they logged late on Sunday night, and when
+       {min} their weekly goal · {day} today's weekday · {week} week number · {year}
+       {datePts} {gymPts}  what a date and a gym session are worth
+   - A word after a colon gives "1 point" / "3 points": {pts:point}, {n:date}.
      Irregular plurals use a bar: {n:activity|activities}.
    ===================================================================== */
 const Jokes = (() => {
   const LIST = [
-    /* ---------- 0 points this week, Wednesday to Saturday */
-    ['zero', "It's {day} and {name} has 0 points. Bold strategy. Let's see if it pays off."],
-    ['zero', "{name}'s ring this week is just a zero with extra steps."],
-    ['zero', "{name} has 0 points this week. The mascot's toga has done more lifting."],
-    ['zero', "Search party for {name} is heading to the gym. Kidding. He'd never be there. 0 points."],
-    ['zero', "{name}: 0 points. Not a slow start. Not a start at all."],
-    ['zero', "It's {day}. {name} has 0 points and a lot of confidence about the weekend."],
-    ['zero', "{name} has 0 points this week. That's not a cold streak, that's hibernation."],
-    ['zero', "{name} is at 0 points. The Log button thinks it's decorative now."],
-    ['zero', "0 points for {name} so far. Zeus has seen statues move more."],
-    ['zero', "Scientists are studying {name}'s week. 0 points, 0 activity, somehow still tired."],
+    /* ---------- special days (each wins its day) */
+    ['first', "Welcome to Roast of the Day. One roast a day till the Winter Arc ends. {name} volunteered to go first by doing the least."],
+    ['thanksgiving', "Happy Thanksgiving. {name} has {pts:point} this week, so the heaviest thing he'll lift today is a fork."],
+    ['blackFriday', "Black Friday deal: gym sessions are still {gymPts:point} each. {name} still isn't buying."],
+    ['holiday', "Happy holidays. Most gyms are closed today, so {name}'s excuse is finally legit."],
+    ['nye', "Last day of {year}. {name} is leaving all his workouts in it."],
+    ['newYear', "New year, new {name}? Sources say same guy, different calendar."],
+    ['groundhog', "It's Groundhog Day, a national holiday for {name}. He came out, saw the leaderboard and went right back in.", 'phil'],
+    ['valentine', "Happy Valentine's Day. Dates are worth {datePts:point} and {name} has {n:date} all season. Tonight's the night, champ."],
+    ['finale', "Last day of the Winter Arc. {name}, this is your final chance to do literally anything."],
+
+    /* ---------- 0 points, Wednesday to Saturday */
+    ['zero', "It's {day} and {name} has 0 points. That's not a slow start, that's a parked car."],
+    ['zero', "{name} has 0 points this week. If he moved any less, he'd legally be furniture."],
+    ['zero', "{name} has 0 points this week. Even his Apple Watch stopped telling him to stand up."],
+    ['zero', "{name} has 0 points this week but still found time to mention he does MMA.", 'amaan'],
+    ['zero', "{name} has 0 points this week. The fellas have been honking outside since Monday.", 'ayaad'],
 
     /* ---------- last place this week */
-    ['last', "{name} is in last place with {pts:point}. Somebody had to be. He volunteered."],
-    ['last', "{name} is number {crew} of {crew} this week. Every leaderboard needs a foundation."],
-    ['last', "{name} has {pts:point} this week. {name2} has {pts2}. Same app, different universe."],
-    ['last', "{name} is dead last with {pts:point}. The comeback story writes itself. Any day now."],
+    ['last', "{name} is in last with {pts:point}. {name2} has {pts2}. Same app, same week, different species."],
     ['last', "{name} isn't in last place. Last place is in {name}."],
-    ['last', "{name} is last this week. Not losing, just helping everyone else feel good about themselves."],
-    ['last', "Bottom of the board: {name}. Close enough to the floor to do pushups. Hasn't."],
-    ['last', "{name} is last with {pts:point}. Even the clouds in the background are moving faster."],
-    ['last', "{name} is carrying this week's leaderboard. From underneath."],
-    ['last', "Rock bottom has a new tenant: {name}, with {pts:point} this week."],
-    ['last', "{name} is last this week. Somewhere, a dumbbell is collecting dust in his honor."],
-    ['last', "{name} is {gap:point} behind {name2}. Bring snacks, it's a long walk."],
+    ['last', "{name}'s position on the leaderboard: last. His position in real life: horizontal."],
+    ['last', "If this week were a group project, {name} made the title slide. Last place, {pts:point}."],
+    ['last', "{name} is in last with {pts:point}, which is wild for a guy who does MMA. He'll tell you.", 'amaan'],
+    ['last', "{name} is in last with {pts:point}. In his defense, the shirt wasn't going to iron itself.", 'ayaad'],
+    ['last', "{name} is in last place. Hard to make it to the gym when you live in orbit.", 'connor'],
+    ['last', "{name} is in last place. Nobody tell him. He'll try to start a fight with the leaderboard.", 'dylan'],
+    ['last', "The commissioner is in last place. {name} will be investigating himself and expects to find no wrongdoing.", 'osim'],
 
     /* ---------- still short on Friday or Saturday */
-    ['behind', "It's {day} and {name} still needs {left:point}. Thoughts and prayers."],
-    ['behind', "{name} needs {left:point} by Sunday night. Doctors say it's possible. Doctors haven't met {name}."],
-    ['behind', "{name} is {left:point} short with the weekend left. Cue the panic montage."],
-    ['behind', "Weekend forecast for {name}: {left:point} needed, 100% chance of excuses."],
-    ['behind', "{name} has {pts:point} on a {day}. The math isn't mathing, but the panic is."],
-    ['behind', "A strike is stretching in the parking lot. {name} still needs {left:point}."],
-    ['behind', "{name} needs {left:point} this weekend. Gym staff have been warned."],
-    ['behind', "{name} needs {left:point}. Reminder: the gym is open on weekends. It's not a rumor."],
+    ['behind', "Weekend forecast for {name}: {left:point} needed, 100% chance of excuses, heavy panic Sunday night."],
+    ['behind', "{name} is {left:point} short with the weekend left. He's about to discover the date category real quick."],
+    ['behind', "It's {day} and {name} still needs {left:point}. Thoughts and prayers to the treadmill."],
+    ['behind', "{name} needs {left:point} by Sunday. The Hoat Guarantee is starting to look like a Hoat Suggestion.", 'osim'],
+    ['behind', "{name} needs {left:point} by Sunday. It's a time crunch, {name}. You know what that means: no liquor runs.", 'gaurav'],
+    ['behind', "{name} needs {left:point} by Sunday. The car's running. Everyone's outside. He's ironing.", 'ayaad'],
+    ['behind', "{name} needs {left:point} by Sunday. Time to put that MMA training to use and fight for his life.", 'amaan'],
 
     /* ---------- still short on Sunday */
-    ['sunday', "It's Sunday and {name} needs {left:point}. Midnight is coming. So is the strike."],
-    ['sunday', "{name} needs {left:point} before 11:59 tonight. Somebody get this man a treadmill and a miracle."],
-    ['sunday', "Sunday scaries, starring {name}: {left:point} to go and the clock won't stop."],
-    ['sunday', "{name} has until 11:59 PM to find {left:point}. Check the couch cushions."],
-    ['sunday', "Tonight's main event: {name} vs. the clock. He needs {left:point}. Vegas likes the clock."],
+    ['sunday', "It's Sunday and {name} needs {left:point}. Not saying he's cooked, but the oven timer just went off."],
+    ['sunday', "Tonight's main event: {name} vs. the clock. He needs {left:point}. Vegas has the clock at -400."],
+    ['sunday', "If you see {name} sprinting down the street tonight, don't worry. Nobody's chasing him. He needs {left:point}."],
+    ['sunday', "{name} needs {left:point} today. Expect a 2-mile run at 11:41 PM and a very blurry photo."],
+    ['sunday', "{name} needs {left:point} today. Fix it before 6 PM or his mom finds out.", 'jake'],
+    ['sunday', "{name} has until midnight to find {left:point}. Plenty of time. He's done a whole liquor run in an hour.", 'gaurav'],
+    ['sunday', "{name} needs {left:point} today. If he misses, the Hoat Guarantee owes everyone a refund.", 'osim'],
 
-    /* ---------- one gym trip or run from safe */
-    ['close', "{name} is {left:point} from safe. So close. Yet so on the couch."],
-    ['close', "{name} needs just {left:point}. One gym trip. He's treating it like Everest."],
-    ['close', "{name} is sitting at {pts:point}. That's not safe, that's a cliffhanger."],
-    ['close', "{name} is {left:point} from safety and has decided to enjoy the suspense."],
-    ['close', "{pts} out of {min} for {name}. Close only counts in horseshoes, and that's not a category."],
-    ['close', "{name} needs {left:point}. One run. Two miles. He's acting like it's a marathon."],
+    /* ---------- one gym trip from safe */
+    ['close', "{name} needs {left:point}. One gym trip. He's treating it like Everest."],
+    ['close', "{pts} out of {min} for {name}. Close only counts in horseshoes, and horseshoes isn't a category."],
 
-    /* ---------- already safe this week */
-    ['safe', "{name} is already safe this week and has mentioned it 14 times."],
-    ['safe', "{name} hit {pts:point} and is now unbearable. Somebody please pass him."],
-    ['safe', "{name} is safe this week. Do not ask him about it. He'll tell you anyway."],
+    /* ---------- already safe, Tuesday to Friday */
+    ['safe', "{name} is already safe and it's only {day}. Is that dedication or does he just not have a job?"],
+    ['safe', "{name} hit {pts:point} by {day} and is walking around like he invented cardio."],
     ['safe', "{name} is safe with {pts:point}. Suspicious. Commissioner, check the photos."],
-    ['safe', "{name} is safe this week. Enjoy it, champ. Monday resets everything."],
-    ['safe', "{name} is safe and acting like he won the whole Winter Arc. It's week {week}."],
-    ['safe', "{name} already has {pts:point}. That's not working out, that's farming."],
+    ['safe', "{name} is safe and it's only {day}. Hoat Guarantee delivered, as promised. Insufferable, as expected.", 'osim'],
 
     /* ---------- leading the week */
     ['leader', "{name} leads the week with {pts:point}. The rest of you should be embarrassed. Mostly you, {last}."],
-    ['leader', "{name} is first with {pts:point}. That's not a Winter Arc, that's a Winter Montage."],
+    ['leader', "{name} leads with {pts:point}. That's not a Winter Arc, that's a Winter Montage."],
     ['leader', "{name} is #1 this week. Either he's locked in or he found a cheat code. Investigating."],
-    ['leader', "{name} leads with {pts:point}. Somebody tell him it's a {weeks}-week season, not a sprint."],
-    ['leader', "First place this week: {name}. Second place: everyone pretending they're not jealous."],
-    ['leader', "{name} is on top with {pts:point}. The mascot just asked for his autograph."],
-    ['leader', "{name} is {gap:point} clear in first. The group chat is quiet for a reason."],
-
-    /* ---------- double the minimum */
-    ['double', "{name} has {pts:point}. That's double the minimum. Leave some workouts for the rest of us."],
+    ['leader', "{name} leads the week with {pts:point}. Turns out blue hair is a performance enhancer.", 'connor'],
     ['double', "{name} is at {pts:point} this week. Hercules called. He wants his whole deal back."],
-    ['double', "{name} has {pts:point} this week. The gym is thinking about charging him rent."],
 
     /* ---------- one strike from elimination, not safe yet */
-    ['strike', "{name} is one strike from elimination and needs {left:point}. No pressure. Actually, all the pressure."],
-    ['strike', "{name} is running on {strikes:strike} and a prayer. {left:point} to go this week."],
-    ['strike', "One more strike and {name} becomes a ghost story the fellas tell over beers."],
-    ['strike', "{name} is one strike from out. The big red X is stretching next to his name."],
-    ['strike', "{name}: {strikes:strike} down, {left:point} to go, zero chill."],
-    ['strike', "Eliminations aren't personal. Unless you're {name}, who's one strike away."],
-    ['strike', "{name} is one strike from done. The commissioner has started drafting the eulogy."],
-
-    /* ---------- longest streak */
+    ['strike', "One more strike and {name} becomes a ghost story the fellas tell over beers. {left:point} to go."],
+    ['strike', "{name} is one strike from elimination. The commissioner has started drafting the eulogy."],
     ['streak', "{name} is on a {streak}-day streak. Somebody check on him. Blink twice if you need help."],
-    ['streak', "{name} has logged something {streak:day} straight. The flame icon is asking for overtime."],
-    ['streak', "{name}'s streak is at {streak:day}. Meanwhile, some of you can't find the gym on a map."],
-    ['streak', "{streak:day} in a row for {name}. The streak has its own streak now."],
 
-    /* ---------- longest since logging anything */
-    ['idle', "{name} hasn't logged anything in {days:day}. Last seen somewhere warm, probably horizontal."],
+    /* ---------- gone quiet, 4+ days */
+    ['idle', "MISSING: {name}. Last logged {days:day} ago. Answers to 'bro.' If found, do not feed."],
     ['idle', "It's been {days:day} since {name} logged anything. Milk lasts longer than his motivation."],
-    ['idle', "{name}'s last activity was {days:day} ago. Send a search party or a gym membership?"],
-    ['idle', "{name} has gone {days:day} without logging. That's not a rest day, that's a sabbatical."],
-    ['idle', "Missing: {name}. Last seen {days:day} ago. Answers to 'bro' and 'tomorrow, I swear.'"],
-    ['idle', "{days:day} since {name} logged anything. His sneakers have started a support group."],
-    ['idle', "{name} hasn't logged in {days:day}. Even hibernating bears get up to stretch."],
-
-    /* ---------- nothing logged all season */
-    ['ghost', "{name} has logged nothing all season. Is he in the Winter Arc or just in the group chat?"],
-    ['ghost', "{name} has 0 posts this season. His profile picture is doing all the work."],
-    ['ghost', "{name} joined the Winter Arc and then entered witness protection. 0 posts."],
-
-    /* ---------- lowest score last week */
-    ['lastWeekLow', "Last week {name} scored {lastwk:point}. Even his rest days were tired."],
-    ['lastWeekLow', "{name} finished last week with {lastwk:point}. Historians are calling it the quiet week."],
-    ['lastWeekLow', "Last week's lowest score belongs to {name}: {lastwk:point}. New week, same energy?"],
-    ['lastWeekLow', "{name} put up {lastwk:point} last week. The bar is on the floor. Don't trip over it."],
-
-    /* ---------- half this week's points are beers */
-    ['beerWeek', "{name} has {pts:point} this week and {n} came from beers. That's not a Winter Arc, that's a pub crawl."],
-    ['beerWeek', "{name}'s split this week: beers, beers, and a strong opinion about leg day."],
-    ['beerWeek', "{n} of {name}'s {pts:point} this week came from beers. Cheers to the grind, I guess."],
-
-    /* ---------- hands out the most reactions, not safe yet */
-    ['hype', "{name} has handed out {n} reactions and earned {pts:point} this week. All hype, no reps."],
-    ['hype', "{name} is the crew's number one hype man. {n} reactions given. Now do a pushup."],
-    ['hype', "{name} reacts to everyone's workouts like it's his job. {n} reactions. His own points: {pts}."],
+    ['idle', "{name} hasn't logged in {days:day}. His sneakers have started a support group."],
+    ['idle', "{name} hasn't logged in {days:day}. Nobody's saying he's chained to the radiator again. Nobody's ruling it out.", 'jake'],
+    ['idle', "{name} hasn't logged in {days:day}. Punxsutawney Phil is back in his hole. Six more weeks of nothing.", 'phil'],
+    ['idle', "{name} hasn't logged in {days:day}. We're outside, {name}. We've been outside for {days:day}.", 'ayaad'],
 
     /* ---------- bottom half of the week */
-    ['bottomHalf', "{name}'s workout plan: open the app, stare at the ring, close the app."],
-    ['bottomHalf', "{name} is the reason the weekly minimum isn't higher."],
-    ['bottomHalf', "{name} is saving his energy for the weekend. Which weekend? Nobody knows."],
-    ['bottomHalf', "{name} treats the Log button like a museum exhibit. Look, don't touch."],
-    ['bottomHalf', "{name} has {pts:point}. The mascot wears a toga in winter and is still more committed."],
-    ['bottomHalf', "{name}'s Winter Arc is less of an arc and more of a gentle slope."],
-    ['bottomHalf', "{name}'s rest days have rest days."],
-    ['bottomHalf', "{name} is one good week away from being a threat. He's been one good week away for a while."],
-    ['bottomHalf', "{name} has the energy of a phone at 2%. {pts:point} this week."],
-    ['bottomHalf', "{name} is still warming up. He's been warming up since the season started."],
+    ['bottom', "{name}'s workout plan: open the app, stare at the ring, close the app."],
+    ['bottom', "{name}'s rest days have rest days."],
+    ['bottom', "{name} has the energy of a phone at 2%. {pts:point} this week."],
+    ['bottom', "{name} is one good week away from being a threat. He's been one good week away since week 1."],
 
-    /* ---------- leading the season */
-    ['seasonLeader', "{name} leads the whole season with {total:point}. Statues are being commissioned."],
-    ['seasonLeader', "{name} is first all-time with {total:point}. Zeus has started following him back."],
-    ['seasonLeader', "{name} has {total:point} this season. The rest of the crew is basically his warm-up."],
-    ['seasonLeader', "{name} leads the season by {gap:point}. Everyone else is fighting for second."],
+    /* ---------- the crew's own bits */
+    ['coinTie', "{name} and {name2} are tied at {pts:point}. Flip a coin to see who's worse. It'll land on its edge."],
+    ['la4', "{name} is on exactly {pts:point} again. At this point it's not a score, it's a brand."],
 
-    /* ---------- last in season points */
-    ['seasonLast', "{name} is last in season points with {total:point}. Less Winter Arc, more Winter Nap."],
-    ['seasonLast', "{name} has {total:point} all season. The mascot did more in one celebration video."],
-    ['seasonLast', "Season standings, bottom row: {name}, {total:point}. Rent's cheap down there."],
-    ['seasonLast', "{name} is last on the all-time board. Bold of him to call this an arc."],
-    ['seasonLast', "{name} has {total:point}, {week:week} in. That's not an arc. That's a flat line."],
+    /* ---------- Monday: how last week went */
+    ['struck', "{name} got a strike last week. In bowling that's a good thing. This is not bowling."],
+    ['struck', "{name} finished last week with {lastwk:point} and a brand-new strike. Disappointed, not surprised."],
+    ['struck', "{name} got a strike last week. Missed {min} points like he missed the train to the Nets game.", 'jake'],
+    ['struck', "{name} got a strike last week. That's what happens when you spend an hour on a liquor run.", 'gaurav'],
+    ['elimLW', "RIP {name}'s Winter Arc. Cause of death: {strikes:strike}. He is survived by his couch."],
+    ['elimLW', "{name} has been eliminated. His couch released a statement: 'We're thrilled to have him back full time.'"],
+    ['lwLow', "Last week {name} put up {lastwk:point}. The bar was on the floor and he still tripped over it."],
+    ['lwHigh', "{name} put up {lastwk:point} last week. Somebody drug test this man."],
+    ['allSafe', "Everyone survived last week. {name} made it with {lastwk:point}, the fitness version of submitting at 11:59."],
+    ['buzzer', "Buzzer beater: {name} logged {act} at {time} on Sunday night. Clutch or cap? \u{1F9E2}"],
 
-    /* ---------- eliminated */
-    ['out', "{name} is eliminated and still checking the leaderboard. That's the spirit. Wrong spirit, but still."],
-    ['out', "{name} is out of the Winter Arc and into his Winter Couch era."],
-    ['out', "RIP {name}'s Winter Arc. Cause of death: {strikes:strike}."],
+    /* ---------- the season */
+    ['seasonLeader', "{name} leads the season with {total:point}. The rest of the crew is basically his warm-up."],
+    ['seasonLeader', "{name} leads the season by {gap:point}. Everyone else is fighting for second, and losing."],
+    ['seasonLast', "{name} is last in the season with {total:point}. Less Winter Arc, more Winter Nap."],
+    ['seasonLast', "{name} has {total:point}, {week:week} in. That's not an arc, that's a flat line."],
+    ['out', "{name} is out of the Winter Arc and fully into his Winter Couch era."],
     ['out', "{name} got eliminated in week {elim}. Gone, but not forgotten. Mostly gone."],
-    ['out', "{name} is out, but all-time points still count. Delusion is a form of cardio."],
+    ['commish', "Commissioner {name} can void anyone's post. Must be nice being above the law."],
 
-    /* ---------- the commissioner */
-    ['commish', "{name} is the commissioner with {pts:point} this week. Rules are for the little people."],
-    ['commish', "Commissioner {name} can void anyone's post. Must be nice."],
-    ['commish', "{name} runs this crew with an iron fist and {pts:point}. Mostly the fist."],
-    ['commish', "Reminder: Commissioner {name} has the void button and a long memory. Be nice."],
-
-    /* ---------- one badge or fewer */
-    ['badgeless', "{name} has {n:badge} this season. The trophy case is mostly air."],
-    ['badgeless', "{name} has {n:badge}. The Me tab has never looked so peaceful."],
-
-    /* ---------- most beers with the fellas */
-    ['beers', "{name} has logged beers with the fellas {n:time}. Hydration counts if you believe hard enough."],
-    ['beers', "{name} has {n:beer night} on the board. Elite reps. Wrong kind."],
-    ['beers', "{name}'s most trained muscle this season: the elbow. {n:beer night} logged."],
-    ['beers', "{name} leads the crew in beers with the fellas: {n}. Somebody has to keep the culture alive."],
-    ['beers', "{name} has logged {n:beer night}. His liver is requesting a rest day."],
-
-    /* ---------- most dates */
-    ['dater', "{name} has logged {n:date}. Lover Boy is farming the {datePts}-pointers."],
-    ['dater', "{name} found the cheat code: dates are worth {datePts:point}. {n:date} logged. Romance is cardio now."],
-    ['dater', "{name} has {n:date} on the board. Real one-on-one, in person. Allegedly."],
-    ['dater', "{name} leads the crew in dates with {n}. The rest of the fellas lead in excuses."],
-
-    /* ---------- no dates all season */
-    ['nodate', "Dates are worth {datePts:point} and {name} has logged zero. Leaving money on the table."],
+    /* ---------- how they log */
+    ['beers', "{name} has logged {n:beer night}. His most trained muscle is the elbow."],
+    ['beers', "{name} has logged beers {n:time}. That's a lot of jetpack rides home to the satellite house.", 'connor'],
+    ['beerRun', "{name} has had beers with the fellas {n:week} straight. That's not a Winter Arc, that's a pub crawl."],
+    ['dater', "{name} has logged {n:date}. Lover Boy is farming the {datePts}-pointers like a side hustle."],
+    ['nodate', "Dates are worth {datePts:point} and {name} still has zero. 'Scared of girls' is not a valid excuse."],
     ['nodate', "{name} has 0 dates logged. The Lover Boy badge is starting to feel like a rumor."],
-    ['nodate', "{name} hasn't logged a single date. {datePts:point} on the table every week, and he chooses violence."],
-    ['nodate', "0 dates for {name} this season. He's treating the date category like a side quest."],
-
-    /* ---------- most reading */
-    ['reader', "{name} has logged reading {n:time}. Big Brain energy. Medium everything else."],
     ['reader', "{name} has read {n:time} this season. The only guy getting points for sitting still."],
-    ['reader', "{name} has {n:reading session}. Building the one muscle the rest of you skip."],
-
-    /* ---------- no reading all season */
-    ['nobook', "{name} has zero reading logs. It's the easiest point in the app and he's dodging it."],
-    ['nobook', "{name} hasn't read a page all season. The Big Brain badge filed a missing person report."],
-    ['nobook', "Reading is {readPts:point} for sitting down. {name} still hasn't done it. Incredible commitment."],
-
-    /* ---------- most gym sessions */
-    ['gymrat', "{name} has {n:gym session} this season. The front desk knows his name and his playlist."],
     ['gymrat', "{name} has been to the gym {n:time}. That's not a membership, that's a lease."],
-    ['gymrat', "{name} leads the crew with {n:gym session}. The squat rack has his initials carved in it."],
-
-    /* ---------- no gym all season */
-    ['nogym', "Gym is worth {gymPts:point} and {name} has logged zero. Allergic to a good deal."],
-    ['nogym', "{name} has 0 gym sessions this season. His gym bag is legally a time capsule."],
-    ['nogym', "{name} hasn't touched the gym all season. The dumbbells stopped asking about him."],
-    ['nogym', "Gym sessions logged by {name}: 0. Gym sessions talked about: countless."],
-
-    /* ---------- most runs */
-    ['runner', "{name} has logged {n:run}. Not running for fitness, running from his responsibilities."],
-    ['runner', "{name} has {n:run} this season. His shoes are trying to unionize."],
-
-    /* ---------- no runs all season */
-    ['norun', "{name} has 0 runs this season. Apparently 2 miles is unconstitutional."],
-    ['norun', "{name} hasn't logged a single run. The only thing he runs is his mouth in the group chat."],
-    ['norun', "Runs logged by {name}: 0. The treadmill thinks he's a myth."],
-
-    /* ---------- most jickle, Volo and soccer */
-    ['sports', "{name} has played {n} half-point games. Building a Winter Arc half a point at a time."],
-    ['sports', "{name} has {n} games of jickle, Volo and soccer logged. Half-points add up. Slowly. Very slowly."],
-    ['sports', "{name} is grinding the half-pointers: {n} games. Like paying rent in pennies."],
-
-    /* ---------- every gym session 50 minutes or less */
-    ['minGym', "{name}'s gym sessions never go past 50 minutes. Not one second of unpaid overtime."],
-    ['minGym', "{name} does exactly as much gym as the rules require. Lawyer energy."],
+    ['nogym', "{name} hasn't been to the gym in {gymDays:day}. His gym bag is legally a time capsule."],
+    ['norun', "{name} hasn't logged a run in {runDays:day}. The only thing he runs is his mouth in the group chat."],
+    ['sports', "{name} has {n} games of jickle, Volo and soccer. Half a point at a time, like paying rent in pennies."],
     ['minGym', "{name} leaves the gym the second it counts. The Cinderella of the squat rack."],
-
-    /* ---------- every run barely over 2 miles */
-    ['minRun', "{name}'s runs stop right after 2 miles. Not a step further. A man who respects a minimum."],
-    ['minRun', "{name} runs 2 miles and stops like the sidewalk ended. Every single time."],
-
-    /* ---------- most caps on their posts */
-    ['capped', "{name} has been capped {n:time} this season. The fellas don't trust him. Fair."],
-    ['capped', "{name}'s posts have earned {n} \u{1F9E2}. The jury is out. The jury is laughing."],
-    ['capped', "{name} has {n:cap} on his posts. Somewhere a lie detector just sighed."],
-    ['capped', "{n} caps for {name} this season. His captions come with a disclaimer now."],
-
-    /* ---------- had a post voided */
+    ['minRun', "{name} runs 2 miles and stops like the sidewalk ended. Every. Single. Time."],
+    ['capped', "{name}'s posts have collected {n} \u{1F9E2}. At this point he's a hat store."],
     ['voided', "{name} got a post voided. Commissioner justice is swift, cold and very funny."],
-    ['voided', "{name} has {n:voided post}. The commissioner has seen enough, and so have we."],
-    ['voided', "Fraud alert: {name} got voided this season. Allegedly. Definitely."],
-
-    /* ---------- witnessed more than they've logged */
-    ['witness', "{name} has witnessed {n:workout} for other people. Great at watching. Less great at doing."],
-    ['witness', "{name} has been tagged as a witness {n:time}. Professional spectator. Amateur athlete."],
-
-    /* ---------- most posts without a photo */
-    ['noPhoto', "{name} has {n:post} with no photo. Witnesses only. Very 'trust me bro' of him."],
-    ['noPhoto', "{name} has posted {n:time} without a photo. Camera shy or evidence shy?"],
-
-    /* ---------- hands out the most caps */
-    ['capper', "{name} has thrown {n:cap} at the crew. Self-appointed fraud police. Badge not included."],
-    ['capper', "{name} has handed out {n} \u{1F9E2} this season. Trust issues, but make it fitness."],
-
-    /* ---------- logs after 10 PM */
+    ['noPhoto', "{name} has {n:post} with no photo. Very 'trust me bro' of him."],
+    ['hype', "{name} has handed out {n} reactions and earned {pts:point} this week. All hype, no reps."],
     ['late', "{name} has logged {n:activity|activities} after 10 PM. Vampire arc."],
-    ['late', "{name} has {n:late-night log}. The gym closes, but his Winter Arc never sleeps."],
-
-    /* ---------- logs before 7 AM */
-    ['early', "{name} has logged {n:activity|activities} before 7 AM. Who hurt him?"],
-    ['early', "{name} is up before the sun logging points. The roosters filed a complaint."],
-
-    /* ---------- before the season starts */
-    ['pre', "The Winter Arc hasn't even started and {name} is already behind. Impressive, honestly."],
-    ['pre', "{name} has been getting ready for the Winter Arc since summer. It shows. Nowhere."],
-    ['pre', "Preseason power rankings: {name} at the bottom, out of respect for tradition."],
-    ['pre', "{name} is stretching for the Winter Arc. He'll finish stretching in March."],
-
-    /* ---------- season over */
-    ['champ', "{name} survived the Winter Arc. Zeus is clearing a spot on Mount Olympus."],
-    ['champ', "{name} is a Winter Arc champion. The rest of you can start your Spring Arc now."],
-    ['overLast', "{name} finished the Winter Arc with {total:point}. There's always the Summer Arc."],
-    ['overLast', "Final standings, last place: {name}. A legend, in the opposite direction."],
+    ['mma', "{name} has logged MMA {n:time}. Nobody asked. He told us anyway.", 'amaan'],
+    ['capper', "{name} has called cap on {n:post}. Crash Out KNR isn't a nickname, it's a job title.", 'connor'],
   ];
 
-  /* When each situation is true. Everything except pre/champ/overLast needs a live season. */
+  /* When each situation is true (points as of midnight). */
   const WHEN = {
+    first: 'it’s the very first roast (this week’s lowest scorer)',
+    thanksgiving: 'it’s Thanksgiving (this week’s lowest scorer)',
+    blackFriday: 'it’s Black Friday (fewest gym sessions)',
+    holiday: 'it’s December 25 (longest gap since logging)',
+    nye: 'it’s December 31 (lowest season points)',
+    newYear: 'it’s January 1 (this week’s lowest scorer)',
+    groundhog: 'it’s Groundhog Day, February 2',
+    valentine: 'it’s Valentine’s Day (someone with no dates)',
+    finale: 'it’s the last day of the season (lowest season points)',
     zero: 'someone has 0 points this week (Wednesday to Saturday)',
     last: 'someone is last this week (from Tuesday)',
-    behind: 'someone is still short of the weekly minimum on Friday or Saturday',
-    sunday: 'someone is still short of the weekly minimum on Sunday',
-    close: 'someone is one gym trip or run away from safe',
-    safe: 'someone is already safe this week',
+    behind: 'someone is 2+ points short on Friday or Saturday',
+    sunday: 'someone is 1.5+ points short on Sunday',
+    close: 'someone is one gym trip from safe',
+    safe: 'someone is already safe (Tuesday to Friday)',
     leader: 'someone leads the week on their own',
     double: 'someone has double the weekly minimum',
+    strike: 'someone is one strike from elimination and not safe yet',
+    streak: 'someone has logged 5+ days in a row (the longest streak)',
+    idle: 'someone hasn’t logged anything in 4+ days',
+    bottom: 'someone is in the bottom half this week',
+    struck: 'it’s Monday and someone got a strike last week',
+    elimLW: 'it’s Monday and someone got eliminated last week',
+    lwLow: 'it’s Monday or Tuesday and someone had last week’s lowest score',
+    lwHigh: 'it’s Monday and someone had last week’s top score, 1.5× the minimum or more',
+    allSafe: 'it’s Monday, everyone survived last week and someone only just made it',
+    buzzer: 'it’s Monday or Tuesday and someone logged after 10 PM last Sunday',
+    coinTie: 'two people are tied below the minimum this week (Dean and Jake first)',
+    la4: 'Dylan is on exactly 4 points (so he’s La4)',
     seasonLeader: 'someone leads the season on their own (from week 2)',
-    seasonLast: 'someone is last in season points (from week 2)',
-    strike: 'someone is one strike from elimination and not safe yet this week',
+    seasonLast: 'someone has the fewest season points (from week 2)',
     out: 'someone is eliminated',
-    streak: 'someone has the longest current streak (3+ days)',
-    idle: 'someone has gone the longest without logging (3+ days)',
-    ghost: 'someone hasn\u2019t logged anything all season (after 4 days)',
-    lastWeekLow: 'someone had the lowest score last week, under the minimum',
-    beers: 'someone has the most beers with the fellas (2+)',
-    beerWeek: 'someone got at least half of this week\u2019s points from beers',
-    dater: 'someone has the most dates (1+)',
-    nodate: 'someone has no dates all season (from week 2)',
-    reader: 'someone has the most reading (2+)',
-    nobook: 'someone has no reading all season (from week 2)',
-    gymrat: 'someone has the most gym sessions (3+)',
-    nogym: 'someone has no gym all season (from week 2)',
-    runner: 'someone has the most runs (2+)',
-    norun: 'someone has no runs all season (from week 2)',
-    sports: 'someone has the most jickle, Volo and soccer games (3+)',
-    minGym: 'someone never goes past 50 minutes at the gym (2+ sessions)',
-    minRun: 'someone never runs past 2.3 miles (2+ runs)',
-    capped: 'someone has the most \u{1F9E2} on their posts (2+)',
+    commish: 'it’s about the commissioner (any day)',
+    beers: 'someone has the most beers with the fellas (3+)',
+    beerRun: 'someone has had beers with the fellas 3+ weeks in a row',
+    dater: 'someone has the most dates (2+)',
+    nodate: 'someone has no dates all season (from week 3)',
+    reader: 'someone has the most reading (3+)',
+    gymrat: 'someone has the most gym sessions (10+)',
+    nogym: 'someone hasn’t been to the gym in 10+ days',
+    norun: 'someone hasn’t logged a run in 14+ days',
+    sports: 'someone has the most jickle, Volo and soccer games (4+)',
+    minGym: 'someone’s usual gym session is 50 minutes or less (3+ sessions)',
+    minRun: 'someone’s usual run is under 2.3 miles (2+ runs)',
+    capped: 'someone has the most \u{1F9E2} on their posts (3+)',
     voided: 'someone had a post voided',
-    witness: 'someone has witnessed more workouts than they\u2019ve logged (3+)',
-    noPhoto: 'someone has the most posts without a photo (2+)',
-    hype: 'someone hands out the most reactions (5+) and isn\u2019t safe this week',
-    capper: 'someone hands out the most \u{1F9E2} (2+)',
-    late: 'someone has the most logs after 10 PM (2+)',
-    early: 'someone has the most logs before 7 AM (2+)',
-    commish: 'it\u2019s about the commissioner',
-    bottomHalf: 'someone is in the bottom half this week (from Tuesday)',
-    badgeless: 'someone has one badge or fewer (from week 2)',
-    pre: 'the season hasn\u2019t started yet (anyone)',
-    champ: 'the season is over (the winners)',
-    overLast: 'the season is over (last place)',
+    noPhoto: 'someone has the most posts without a photo (3+)',
+    hype: 'someone hands out the most reactions (8+) and isn’t safe',
+    late: 'someone has the most logs after 10 PM (3+)',
+    mma: 'Amaan has logged MMA 3+ times',
+    capper: 'Connor has called cap 2+ times',
   };
 
+  /* Special days win their day, in this order. */
+  const SPECIAL = ['first', 'finale', 'thanksgiving', 'blackFriday', 'holiday', 'nye', 'newYear', 'groundhog', 'valentine'];
+  /* How likely each situation is to get the day when it's true. Timely ones are
+     high. The ones that stay true for weeks (habits, standings) are low, so
+     they're saved for later in the season when fewer people are left.
+     A roast written for one person counts 3 times as much. */
+  const WEIGHT = {
+    sunday: 10, behind: 6, zero: 5, last: 4, strike: 4, close: 3, safe: 3, leader: 3, double: 3, idle: 3, streak: 2, bottom: 1,
+    struck: 8, elimLW: 12, lwLow: 3, lwHigh: 3, allSafe: 4, buzzer: 6, coinTie: 6, la4: 6, beerRun: 1.5, hype: 1.5,
+    seasonLeader: 0.6, seasonLast: 0.6, out: 0.6, commish: 0.4,
+  };
+  const HABIT_WEIGHT = 0.7;
+  const PERSONAL = 3;
 
   /* ------------------------------------------------------------ helpers */
   const DAY = 864e5;
   const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const HYPE = ['\u{1F525}', '\u{1F4AA}', '\u{1F44F}'];          // fire, flex, clap
-  const CLOSE = Math.max(CATS.gym.pts, CATS.run.pts);           // "one gym trip or one run away"
-  const NAMES = new Set(['name', 'name2', 'last']);
-  const POINTS = new Set(['pts', 'left', 'total', 'min', 'lastwk', 'pts2', 'gap', 'datePts', 'gymPts', 'readPts']);
+  const HYPE = ['\u{1F525}', '\u{1F4AA}', '\u{1F44F}'];           // fire, flex, clap
+  const CLOSE = Math.max(CATS.gym.pts, CATS.run.pts);            // "one gym trip away"
+  const ACT = { gym: 'a gym session', run: 'a run', bike: 'a bike ride', mma: 'an MMA session', jickle: 'jickle', volo: 'Volo', soccer: 'soccer', date: 'a date', beers: 'beers with the fellas', reading: 'reading' };
+  const NAMES = ['name', 'name2', 'last'];
+  const POINTS = new Set(['pts', 'left', 'total', 'min', 'lastwk', 'pts2', 'gap', 'datePts', 'gymPts']);
   const mod = (a, n) => ((a % n) + n) % n;
   const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const curly = s => s.replace(/(^|[\s(])'/g, '$1‘').replace(/'/g, '’');
-  const midnight = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
-  const daysBetween = (a, b) => Math.round((midnight(b) - midnight(a)) / DAY);
+  /* Days, weekdays and clock times are all in the group's time zone (cfg.timezone),
+     so the server and every phone agree on when a day starts. */
+  const startOf = (d, tz) => Logic.parseDay(Logic.dayKey(d, tz), tz);           // midnight that day
+  const clocks = new Map(), seen = new Map();
+  /* The clock on the wall in that time zone: { ord: day number (days since 1970-01-01), day: 0 = Sunday, hour, minute }.
+     Remembered per instant, since the same posts come up every day. */
+  function wall(d, tz) {
+    const ms = +new Date(d), id = tz + '|' + ms;
+    let w = seen.get(id);
+    if (w) return w;
+    if (!clocks.has(tz)) clocks.set(tz, new Intl.DateTimeFormat('en-US', { timeZone: tz, year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }));
+    const p = {};
+    for (const x of clocks.get(tz).formatToParts(ms)) p[x.type] = x.value;
+    const ord = Math.floor(Date.UTC(Number(p.year), Number(p.month) - 1, Number(p.day)) / DAY);
+    w = { ord, day: mod(ord + 4, 7), hour: Number(p.hour) % 24, minute: Number(p.minute) };   // 1970-01-01 was a Thursday
+    if (seen.size > 20000) seen.clear();
+    seen.set(id, w);
+    return w;
+  }
+  const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(36); };
+  const ID = LIST.map(([k, t, who]) => `${k}.${hash((who || '') + '|' + t)}`);
   const byName = (a, b) => a.name.localeCompare(b.name) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   const rx = (p, e) => ((p.reactions || {})[e] || []).length;
   const cat = (o, k) => o.cat[k] || 0;
-  const every = list => list.map(o => ({ o, s: 0 }));                 // all equally fit: rotate
+  const every = list => list.map(o => ({ o, s: 0 }));                       // all equally fit: rotate
   const most = (list, f, atLeast) => list.filter(o => f(o) >= atLeast).map(o => ({ o, s: f(o) }));
-  const lows = (list, f) => {                                          // lowest value, only if someone is higher
+  const lows = (list, f) => {                                                // the lowest, if someone is higher
     if (list.length < 2) return [];
     const v = list.map(f), lo = Math.min(...v), hi = Math.max(...v);
     return lo < hi ? list.filter(o => f(o) === lo) : [];
   };
   const rotate = (list, k) => { const s = [...list].sort(byName); return s.length ? s[mod(k, s.length)] : null; };
+  const fmtTime = (d, tz) => { const { hour: h, minute } = wall(d, tz); return `${h % 12 || 12}:${String(minute).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
+  const random = seed => {                                                   // mulberry32: same day, same draw, on every phone
+    let a = seed >>> 0;
+    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  };
 
-  /* Fixed order with the situations spread out, so neighbouring days differ. */
-  const ORDER = (() => {
-    let seed = 183;
-    const r = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
-    const pool = LIST.map((_, i) => i);
-    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-    const out = [];
-    while (pool.length) {
-      const recent = out.slice(-4).map(i => LIST[i][0]);
-      const k = Math.max(0, pool.findIndex(i => !recent.includes(LIST[i][0])));
-      out.push(pool.splice(k, 1)[0]);
-    }
-    return out;
-  })();
-
-  /* ------------------------------------------------------------ the crew, right now */
+  /* ------------------------------------------------------------ the crew as of midnight */
+  /* Anyone in `excluded` (a Set of member ids: the injury report) is left out entirely. */
   function build(members, posts, cfg, now, excluded) {
-    if (!members || !members.length) return null;
-    const calc = Logic.compute(members, posts, cfg, now), se = calc.season;
-    const P = members.filter(m => !excluded?.has(m.id)).map(m => {
-      const R = calc.by[m.id], wk = {}, joinedWeek = Math.max(0, m.joinedWeek || 0);
+    const tz = cfg.timezone || CONFIG.timezone;
+    members = (members || []).filter(m => !(excluded && excluded.has(m.id)));
+    if (!members.length) return null;
+    const mid = startOf(now, tz), before = (posts || []).filter(p => new Date(p.at) < mid);
+    const calc = Logic.compute(members, before, cfg, mid), se = calc.season;
+    const startOrd = wall(se.start, tz).ord, midOrd = wall(mid, tz).ord, weekOf = at => Math.floor((wall(at, tz).ord - startOrd) / 7);
+    const P = members.map(m => {
+      const R = calc.by[m.id], wk = {}, joinedWeek = Math.max(0, m.joinedWeek || 0), shown = Logic.displayName(m, calc);
+      const counts = se.lastComplete >= 0 && se.lastComplete >= joinedWeek;
       const o = {
-        id: m.id, name: Logic.displayName(m, calc), role: m.role, goal: R.goal, pts: R.thisWeek, total: R.total, strikes: R.strikes, out: R.eliminated,
-        elim: R.elimWeek != null ? R.elimWeek + 1 : null, streak: R.streak, cat: R.cat, wk, badges: R.badges.length,
-        witnessed: R.witnessed, logs: R.counted.length, caps: 0, voided: 0, noPhoto: 0, late: 0, early: 0, given: 0, capsGiven: 0,
-        gymMins: [], runMiles: [], lastAt: null,
-        lastwk: se.lastComplete >= joinedWeek ? R.weekPts[se.lastComplete] : null, lastGoal: R.weekGoals[se.lastComplete],
-        inFor: daysBetween(Logic.addDays(se.start, 7 * joinedWeek), now),
+        id: m.id, username: String(m.username || '').toLowerCase(), name: shown, aliased: shown !== m.name, role: m.role,
+        pts: R.thisWeek, goal: R.goal, total: R.total, strikes: R.strikes, out: R.eliminated, elimIdx: R.elimWeek,
+        elim: R.elimWeek != null ? R.elimWeek + 1 : null, streak: R.streak, cat: R.cat, wk, witnessed: R.witnessed,
+        caps: 0, voided: 0, noPhoto: 0, late: 0, given: 0, capsGiven: 0, gymMins: [], runMiles: [], lastAt: null, sunLate: null,
+        lastwk: counts ? R.weekPts[se.lastComplete] : null, lastGoal: counts ? R.weekGoals[se.lastComplete] : null,
       };
       for (const p of R.posts) { o.caps += rx(p, CAP); if (p.voided) o.voided++; }
       for (const p of R.counted) {
-        const at = new Date(p.at), h = at.getHours();
-        if (Logic.weekIdx(at, se.start) === se.idx) wk[p.cat] = (wk[p.cat] || 0) + 1;
+        const at = new Date(p.at), t = wall(at, tz), w = weekOf(at);
+        if (w === se.idx) wk[p.cat] = (wk[p.cat] || 0) + 1;
         if (!o.lastAt || at > o.lastAt) o.lastAt = at;
         if (!p.photo) o.noPhoto++;
-        if (h >= 22 || h < 4) o.late++; else if (h < 7) o.early++;
+        if (t.hour >= 22 || t.hour < 4) o.late++;
         if (p.cat === 'gym' && p.minutes) o.gymMins.push(p.minutes);
         if (p.cat === 'run' && p.miles) o.runMiles.push(p.miles);
+        if (w === se.lastComplete && t.day === 0 && t.hour >= 22 && (!o.sunLate || at > o.sunLate.at)) o.sunLate = { at, cat: p.cat };
       }
-      o.days = o.lastAt ? daysBetween(o.lastAt, now) : null;
+      o.days = o.lastAt ? midOrd - wall(o.lastAt, tz).ord : null;
+      const since = k => { const l = R.counted.filter(p => p.cat === k).reduce((a, p) => Math.max(a, +new Date(p.at)), 0); return midOrd - (l ? wall(l, tz).ord : startOrd + 7 * joinedWeek); };
+      o.gymDays = since('gym'); o.runDays = since('run');
+      const beerWks = new Set(R.counted.filter(p => p.cat === 'beers').map(p => weekOf(p.at)));
+      o.beerRun = 0; for (let w = beerWks.has(se.idx) ? se.idx : se.idx - 1; w >= 0 && beerWks.has(w); w--) o.beerRun++;
       o.sports = cat(o, 'jickle') + cat(o, 'volo') + cat(o, 'soccer');
       return o;
     });
-    if (!P.length) return null;
     const byId = {}; P.forEach(o => { byId[o.id] = o; });
     for (const m of members) {
       for (const p of calc.by[m.id].posts) {
@@ -427,206 +343,231 @@ const Jokes = (() => {
         }
       }
     }
-    const dow = (now.getDay() + 6) % 7;
+    const dow = (wall(mid, tz).day + 6) % 7, key = Logic.dayKey(mid, tz);
     return {
-      se, P, byId, alive: P.filter(o => !o.out), winners: calc.winners.map(id => byId[id]).filter(Boolean),
-      live: se.status === 'live', min: cfg.weeklyMin, outN: cfg.strikesOut,
-      dow, dayName: WEEKDAYS[dow], day: daysBetween(se.start, now), week: se.idx + 1, weeks: se.weeks,
+      se, P, byId, tz, alive: P.filter(o => !o.out), active: P.filter(o => !o.out || (o.days != null && o.days <= 14)), live: se.status === 'live', outN: cfg.strikesOut,
+      dow, dayName: WEEKDAYS[dow], day: midOrd - startOrd, week: se.idx + 1, weeks: se.weeks,
+      year: Number(key.slice(0, 4)), month: Number(key.slice(5, 7)) - 1, dom: Number(key.slice(8, 10)), first: false,
     };
   }
 
-  const weekTop = c => [...c.alive].sort((a, b) => b.pts - a.pts || b.total - a.total || byName(a, b));
-  const lowestOther = (c, o) => { const rest = c.alive.filter(x => x.id !== o.id); if (!rest.length) return null; const lo = Math.min(...rest.map(x => x.pts)); return rotate(rest.filter(x => x.pts === lo), c.day); };
-  const short = c => { const s = c.alive.filter(o => o.pts < o.goal), far = s.filter(o => o.goal - o.pts >= 2); return every(far.length ? far : s); };
-  const fromWeek2 = c => c.live && c.se.idx >= 1;
+  const byUser = (c, u) => c.P.find(o => o.username === u);
+  const weekTop = c => [...c.active].sort((a, b) => b.pts - a.pts || b.total - a.total || byName(a, b));
+  const weekLow = c => { const l = lows(c.active, o => o.pts); return every(l.length ? l : c.active); };
+  const seasonLow = c => { const l = lows(c.P, o => o.total); return every(l.length ? l : c.P); };
+  const short = c => every(c.alive.filter(o => o.goal - o.pts >= 2));
+  const uniqueTop = (list, f) => { const t = [...list].sort((a, b) => f(b) - f(a)); return t.length >= 2 && f(t[0]) > 0 && f(t[0]) > f(t[1]) ? [{ o: t[0], s: 0 }] : []; };
+  const live = c => c.live;
+  const fromWeek = n => c => c.live && c.se.idx >= n - 1;
+  const monday = c => c.live && c.dow === 0 && c.se.lastComplete >= 0;
+  const coinPair = () => ((typeof INSIDE_JOKES !== 'undefined' && INSIDE_JOKES.coin && INSIDE_JOKES.coin.users) || ['dean', 'jake']);
+  /* Two people tied below the minimum: The Coin pair (Dean and Jake) if they are, otherwise the lowest tie. */
+  const tiedPair = c => {
+    const [a, b] = coinPair().map(u => byUser(c, u)), ok = o => o && c.active.includes(o) && o.pts < o.goal;
+    if (ok(a) && ok(b) && a.pts === b.pts) return [a, b];
+    const by = {}; c.active.filter(ok).forEach(o => { (by[o.pts] = by[o.pts] || []).push(o); });
+    const k = Object.keys(by).map(Number).filter(v => by[v].length === 2).sort((x, y) => x - y)[0];
+    return k == null ? [] : by[k];
+  };
+  const median = a => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.floor((s.length - 1) / 2)] : Infinity; };
 
   /* ------------------------------------------------------------ situations */
   const C = {
-    zero: { when: c => c.live && c.dow >= 2 && c.dow <= 5, pick: c => every(c.alive.filter(o => o.pts === 0)) },
+    first: { when: c => c.first && c.live, pick: c => { const l = lows(c.active, o => o.pts); return l.length ? every(l) : seasonLow(c); } },
+    thanksgiving: { when: c => c.live && c.month === 10 && c.dow === 3 && c.dom >= 22 && c.dom <= 28, pick: weekLow },
+    blackFriday: { when: c => c.live && c.month === 10 && c.dow === 4 && c.dom >= 23 && c.dom <= 29, pick: c => { const l = lows(c.alive, o => cat(o, 'gym')); return every(l.length ? l : c.alive); } },
+    holiday: { when: c => c.live && c.month === 11 && c.dom === 25, pick: c => { const q = most(c.alive.filter(o => o.days != null), o => o.days, 1); return q.length ? q : weekLow(c); } },
+    nye: { when: c => c.live && c.month === 11 && c.dom === 31, pick: seasonLow },
+    newYear: { when: c => c.live && c.month === 0 && c.dom === 1, pick: weekLow },
+    groundhog: { when: c => c.live && c.month === 1 && c.dom === 2, pick: c => every(c.P) },
+    valentine: {
+      when: c => c.live && c.month === 1 && c.dom === 14,
+      pick: c => { const lo = Math.min(...c.active.map(o => cat(o, 'date'))); return every(c.active.filter(o => cat(o, 'date') === lo)); },
+      n: o => cat(o, 'date'),
+    },
+    finale: { when: c => c.live && c.se.idx === c.se.weeks - 1 && c.dow === 6, pick: seasonLow },
+
+    zero: { when: c => c.live && c.dow >= 2 && c.dow <= 5, pick: c => every(c.active.filter(o => o.pts === 0)) },
     last: {
       when: c => c.live && c.dow >= 1,
-      pick: c => every(lows(c.alive, o => o.pts).filter(o => o.pts < o.goal)),
-      vars: (c, o) => { const t = weekTop(c)[0]; return { name2: t.name, pts2: t.pts, gap: t.pts - o.pts }; },
+      pick: c => every(lows(c.active, o => o.pts).filter(o => o.pts < o.goal)),
+      vars: c => { const t = weekTop(c)[0]; return { name2: t.name, pts2: t.pts }; },
     },
     behind: { when: c => c.live && (c.dow === 4 || c.dow === 5), pick: short },
-    sunday: { when: c => c.live && c.dow === 6, pick: short },
-    close: { pick: c => every(c.alive.filter(o => o.pts < o.goal && o.goal - o.pts <= CLOSE)) },
-    safe: { pick: c => every(c.alive.filter(o => o.pts >= o.goal)) },
+    sunday: { when: c => c.live && c.dow === 6, pick: c => every(c.alive.filter(o => o.goal - o.pts >= CLOSE)) },
+    close: { when: c => c.live && c.dow >= 2, pick: c => every(c.alive.filter(o => o.pts < o.goal && o.goal - o.pts <= CLOSE)) },
+    safe: { when: c => c.live && c.dow >= 1 && c.dow <= 4, pick: c => every(c.alive.filter(o => o.pts >= o.goal)) },
     leader: {
-      pick: c => { const t = weekTop(c); return t.length >= 2 && t[0].pts > 0 && t[0].pts > t[1].pts ? [{ o: t[0], s: 0 }] : []; },
-      vars: (c, o) => { const t = weekTop(c), lo = lowestOther(c, o); return { gap: o.pts - t[1].pts, last: lo && lo.pts < o.pts ? lo.name : null }; },
+      when: c => c.live && c.dow >= 2,
+      pick: c => uniqueTop(c.active, o => o.pts),
+      vars: (c, o) => { const rest = c.active.filter(x => x.id !== o.id), lo = Math.min(...rest.map(x => x.pts)); return { last: rotate(rest.filter(x => x.pts === lo), c.day).name }; },
     },
-    double: { pick: c => most(c.alive.filter(o => o.pts >= o.goal * 2), o => o.pts, 0) },
-    seasonLeader: {
-      when: fromWeek2,
-      pick: c => { const t = [...c.P].sort((a, b) => b.total - a.total); return t.length >= 2 && t[0].total > 0 && t[0].total > t[1].total ? [{ o: t[0], s: 0 }] : []; },
-      vars: (c, o) => ({ gap: o.total - Math.max(...c.P.filter(x => x.id !== o.id).map(x => x.total)) }),
-    },
-    seasonLast: { when: fromWeek2, pick: c => every(lows(c.alive, o => o.total)) },
-    strike: { pick: c => every(c.alive.filter(o => o.strikes >= 1 && o.strikes === c.outN - 1 && o.pts < o.goal)) },
-    out: { pick: c => every(c.P.filter(o => o.out)) },
-    streak: { pick: c => most(c.alive, o => o.streak, 3) },
-    idle: { pick: c => most(c.alive.filter(o => o.days != null), o => o.days, 3) },
-    ghost: { pick: c => every(c.alive.filter(o => o.logs === 0 && o.inFor >= 4)) },
-    lastWeekLow: {
-      when: c => c.live && c.se.lastComplete >= 0,
-      pick: c => every(lows(c.alive.filter(o => o.lastwk != null), o => o.lastwk).filter(o => o.lastwk < o.lastGoal)),
-    },
-    beers: { pick: c => most(c.P, o => cat(o, 'beers'), 2), n: o => cat(o, 'beers') },
-    beerWeek: {
-      pick: c => c.alive.filter(o => (o.wk.beers || 0) >= 2 && o.wk.beers * CATS.beers.pts >= o.pts / 2).map(o => ({ o, s: o.wk.beers })),
-      n: o => o.wk.beers,
-    },
-    dater: { pick: c => most(c.P, o => cat(o, 'date'), 1), n: o => cat(o, 'date') },
-    nodate: { when: fromWeek2, pick: c => every(c.alive.filter(o => !cat(o, 'date'))) },
-    reader: { pick: c => most(c.P, o => cat(o, 'reading'), 2), n: o => cat(o, 'reading') },
-    nobook: { when: fromWeek2, pick: c => every(c.alive.filter(o => !cat(o, 'reading'))) },
-    gymrat: { pick: c => most(c.P, o => cat(o, 'gym'), 3), n: o => cat(o, 'gym') },
-    nogym: { when: fromWeek2, pick: c => every(c.alive.filter(o => !cat(o, 'gym'))) },
-    runner: { pick: c => most(c.P, o => cat(o, 'run'), 2), n: o => cat(o, 'run') },
-    norun: { when: fromWeek2, pick: c => every(c.alive.filter(o => !cat(o, 'run'))) },
-    sports: { pick: c => most(c.P, o => o.sports, 3), n: o => o.sports },
-    minGym: { pick: c => most(c.P.filter(o => o.gymMins.length && Math.max(...o.gymMins) <= 50), o => o.gymMins.length, 2) },
-    minRun: { pick: c => most(c.P.filter(o => o.runMiles.length && Math.max(...o.runMiles) < 2.3), o => o.runMiles.length, 2) },
-    capped: { pick: c => most(c.P, o => o.caps, 2), n: o => o.caps },
-    voided: { pick: c => most(c.P, o => o.voided, 1), n: o => o.voided },
-    witness: { pick: c => most(c.P.filter(o => o.witnessed > o.logs), o => o.witnessed, 3), n: o => o.witnessed },
-    noPhoto: { pick: c => most(c.P, o => o.noPhoto, 2), n: o => o.noPhoto },
-    hype: { pick: c => most(c.alive.filter(o => o.pts < o.goal), o => o.given, 5), n: o => o.given },
-    capper: { pick: c => most(c.P, o => o.capsGiven, 2), n: o => o.capsGiven },
-    late: { pick: c => most(c.P, o => o.late, 2), n: o => o.late },
-    early: { pick: c => most(c.P, o => o.early, 2), n: o => o.early },
-    commish: { pick: c => every(c.P.filter(o => o.role === 'commissioner')) },
-    bottomHalf: {
+    double: { when: c => c.live && c.dow >= 1, pick: c => c.active.filter(o => o.pts >= o.goal * 2).map(o => ({ o, s: o.pts })) },
+    strike: { when: c => c.live && c.dow >= 1, pick: c => every(c.alive.filter(o => o.strikes >= 1 && o.strikes === c.outN - 1 && o.pts < o.goal)) },
+    streak: { when: live, pick: c => most(c.active, o => o.streak, 5) },
+    idle: { when: live, pick: c => most(c.active.filter(o => o.days != null), o => o.days, 4) },
+    bottom: {
       when: c => c.live && c.dow >= 1,
       pick: c => {
-        const s = [...c.alive].sort((a, b) => a.pts - b.pts || byName(a, b)), hi = s.length ? s[s.length - 1].pts : 0;
+        const s = [...c.active].sort((a, b) => a.pts - b.pts || byName(a, b)), hi = s.length ? s[s.length - 1].pts : 0;
         return every(s.slice(0, Math.floor(s.length / 2)).filter(o => o.pts < o.goal && o.pts < hi));
       },
     },
-    badgeless: { when: fromWeek2, pick: c => c.alive.filter(o => o.badges <= 1).map(o => ({ o, s: -o.badges })), n: o => o.badges },
-    pre: { when: c => c.se.status === 'pre', pick: c => every(c.P) },
-    champ: { when: c => c.se.status === 'over', pick: c => every(c.winners) },
-    overLast: { when: c => c.se.status === 'over', pick: c => every(lows(c.P, o => o.total)) },
+
+    struck: { when: monday, pick: c => every(c.alive.filter(o => o.lastwk != null && o.lastwk < o.lastGoal)), vars: (c, o) => ({ min: o.lastGoal }) },
+    elimLW: { when: monday, pick: c => every(c.P.filter(o => o.out && o.elimIdx === c.se.lastComplete)) },
+    lwLow: { when: c => c.live && c.dow <= 1 && c.se.lastComplete >= 0, pick: c => every(lows(c.alive.filter(o => o.lastwk != null), o => o.lastwk).filter(o => o.lastwk < o.lastGoal)) },
+    lwHigh: { when: monday, pick: c => uniqueTop(c.P.filter(o => o.lastwk != null && o.lastwk >= o.lastGoal * 1.5), o => o.lastwk) },
+    allSafe: {
+      when: monday,
+      pick: c => {
+        const L = c.alive.filter(o => o.lastwk != null);
+        if (L.length < 2 || L.some(o => o.lastwk < o.lastGoal) || c.P.some(o => o.out && o.elimIdx === c.se.lastComplete)) return [];
+        const spare = o => o.lastwk - o.lastGoal, lo = Math.min(...L.map(spare));
+        return lo <= 1 ? every(L.filter(o => spare(o) === lo)) : [];
+      },
+    },
+    buzzer: {
+      when: c => c.live && c.dow <= 1 && c.se.lastComplete >= 0,
+      pick: c => { const t = c.P.filter(o => o.sunLate).sort((a, b) => b.sunLate.at - a.sunLate.at)[0]; return t ? [{ o: t, s: 0 }] : []; },
+      vars: (c, o) => ({ act: ACT[o.sunLate.cat] || 'something', time: fmtTime(o.sunLate.at, c.tz) }),
+    },
+
+    coinTie: {
+      when: c => c.live && c.dow >= 2,
+      pick: c => every(tiedPair(c)),
+      vars: (c, o) => ({ name2: tiedPair(c).find(x => x.id !== o.id).name }),
+    },
+    la4: { when: c => c.live && c.dow >= 1, pick: c => every(c.alive.filter(o => o.aliased)) },
+
+    seasonLeader: {
+      when: fromWeek(2),
+      pick: c => uniqueTop(c.P, o => o.total),
+      vars: (c, o) => ({ gap: o.total - Math.max(...c.P.filter(x => x.id !== o.id).map(x => x.total)) }),
+    },
+    seasonLast: { when: fromWeek(2), pick: c => every(lows(c.P, o => o.total)) },
+    out: { when: live, pick: c => every(c.P.filter(o => o.out)) },
+    commish: { when: live, pick: c => every(c.P.filter(o => o.role === 'commissioner')) },
+
+    beers: { when: live, pick: c => most(c.P, o => cat(o, 'beers'), 3), n: o => cat(o, 'beers') },
+    beerRun: { when: live, pick: c => most(c.alive, o => o.beerRun, 3), n: o => o.beerRun },
+    dater: { when: live, pick: c => most(c.P, o => cat(o, 'date'), 2), n: o => cat(o, 'date') },
+    nodate: { when: fromWeek(3), pick: c => every(c.alive.filter(o => !cat(o, 'date'))) },
+    reader: { when: live, pick: c => most(c.P, o => cat(o, 'reading'), 3), n: o => cat(o, 'reading') },
+    gymrat: { when: live, pick: c => most(c.P, o => cat(o, 'gym'), 10), n: o => cat(o, 'gym') },
+    nogym: { when: live, pick: c => most(c.active, o => o.gymDays, 10) },
+    norun: { when: live, pick: c => most(c.active, o => o.runDays, 14) },
+    sports: { when: live, pick: c => most(c.P, o => o.sports, 4), n: o => o.sports },
+    minGym: { when: live, pick: c => most(c.P.filter(o => median(o.gymMins) <= 50), o => o.gymMins.length, 3) },
+    minRun: { when: live, pick: c => most(c.P.filter(o => median(o.runMiles) < 2.3), o => o.runMiles.length, 2) },
+    capped: { when: live, pick: c => most(c.P, o => o.caps, 3), n: o => o.caps },
+    voided: { when: live, pick: c => most(c.P, o => o.voided, 1), n: o => o.voided },
+    noPhoto: { when: live, pick: c => most(c.P, o => o.noPhoto, 3), n: o => o.noPhoto },
+    hype: { when: c => c.live && c.dow >= 1, pick: c => most(c.alive.filter(o => o.pts < o.goal), o => o.given, 8), n: o => o.given },
+    late: { when: live, pick: c => most(c.P, o => o.late, 3), n: o => o.late },
+    mma: { when: live, pick: c => most(c.P, o => cat(o, 'mma'), 3), n: o => cat(o, 'mma') },
+    capper: { when: live, pick: c => most(c.P, o => o.capsGiven, 2), n: o => o.capsGiven },
   };
 
   /* ------------------------------------------------------------ filling in the blanks */
   function fill(tpl, v) {
-    let ok = true, text = '', html = '', at = 0;
-    const lit = s => { text += s; html += esc(s); };
-    tpl = curly(tpl);
-    tpl.replace(/\{(\w+)(?::([^}|]+)(?:\|([^}]+))?)?\}/g, (m, k, one, many, i) => {
-      lit(tpl.slice(at, i)); at = i + m.length;
+    let ok = true, text = '';
+    const bold = [v.name];
+    text = curly(tpl).replace(/\{(\w+)(?::([^}|]+)(?:\|([^}]+))?)?\}/g, (m, k, one, many) => {
       const val = v[k];
       if (val == null || (typeof val === 'number' && !Number.isFinite(val))) { ok = false; return m; }
       let s = typeof val === 'number' ? (POINTS.has(k) ? fmtPts(val) : String(val)) : String(val);
       if (one) s += ' ' + (val === 1 ? one : many || one + 's');
-      text += s; html += NAMES.has(k) ? `<b${k === 'name' ? ' class="t"' : ''}>${esc(s)}</b>` : esc(s);
-      return m;
+      if (NAMES.includes(k) && !bold.includes(s)) bold.push(s);
+      return s;
     });
-    lit(tpl.slice(at));
-    return ok ? { text, html } : null;
+    return ok ? { text, bold } : null;
   }
 
   function resolve(c, i) {
-    const [key, tpl] = LIST[i], W = C[key];
+    const [key, tpl, who] = LIST[i], W = C[key];
     if (!W || !(W.when ? W.when(c) : c.live)) return null;
-    const cands = W.pick(c);
-    if (!cands || !cands.length) return null;
+    let cands = W.pick(c) || [];
+    if (who) cands = cands.filter(x => x.o.username === who);
+    if (!cands.length) return null;
     const best = Math.max(...cands.map(x => x.s));
     const o = rotate(cands.filter(x => x.s === best).map(x => x.o), c.day * 7 + i);
     const v = {
-      name: o.name, pts: o.pts, left: Math.max(0, o.goal - o.pts), total: o.total, min: o.goal, strikes: o.strikes,
-      streak: o.streak, days: o.days, lastwk: o.lastwk, elim: o.elim, day: c.dayName, week: c.week, weeks: c.weeks,
-      crew: c.alive.length, datePts: CATS.date.pts, gymPts: CATS.gym.pts, readPts: CATS.reading.pts,
+      name: o.name, pts: o.pts, left: Math.max(0, o.goal - o.pts), total: o.total, min: o.goal, strikes: o.strikes, streak: o.streak,
+      days: o.days, gymDays: o.gymDays, runDays: o.runDays, lastwk: o.lastwk, elim: o.elim, day: c.dayName, week: c.week, year: c.year, datePts: CATS.date.pts, gymPts: CATS.gym.pts,
     };
     if (W.n) v.n = W.n(o, c);
     if (W.vars) Object.assign(v, W.vars(c, o));
     const out = fill(tpl, v);
-    return out ? { i, key, target: o.id, text: out.text, html: out.html } : null;
+    return out ? { i, id: ID[i], key, who: who || null, target: o.id, text: out.text, bold: out.bold } : null;
   }
 
-  /* ------------------------------------------------------------ choosing */
-  /* Each day first picks a kind of roast, then a situation within it.
-     'week' is this week's points, 'season' the standings, 'habit' how they log.
-     The week gets more of the spotlight as Sunday gets closer. */
-  const SEASON = ['seasonLeader', 'seasonLast', 'out', 'commish', 'badgeless'];
-  const HABIT = ['beers', 'dater', 'nodate', 'reader', 'nobook', 'gymrat', 'nogym', 'runner', 'norun', 'sports', 'minGym', 'minRun', 'capped', 'voided', 'witness', 'noPhoto', 'capper', 'late', 'early'];
-  const kindOf = k => (SEASON.includes(k) ? 'season' : HABIT.includes(k) ? 'habit' : 'week');
-  const WEEK_SHARE = [0.45, 0.5, 0.55, 0.55, 0.65, 0.7, 0.8];   // Monday ... Sunday
-  /* Within a kind, how likely each situation is when it's true (default 1). */
-  const WEIGHT = {
-    sunday: 6, behind: 4, zero: 5, strike: 4, last: 4, close: 2, leader: 2, double: 2, idle: 2, ghost: 2, bottomHalf: 2,
-    lastWeekLow: 2, seasonLast: 2, seasonLeader: 2, out: 2,
-  };
-  /* Weekend headline: whoever's still short gets roasted most Fridays to Sundays. */
-  const HEADLINE = { 4: ['behind', 0.35], 5: ['behind', 0.5], 6: ['sunday', 0.75] };
-  const KEYS = [...new Set(LIST.map(x => x[0]))];
-  const GROUP = {}; LIST.forEach(([k], i) => { (GROUP[k] = GROUP[k] || []).push(i); });
-  const random = seed => {                                   // mulberry32: same day, same numbers, every phone
-    let a = seed >>> 0;
-    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  };
-  const withPos = r => r && Object.assign(r, { pos: ORDER.indexOf(r.i) });
-  /* Tiers: different joke, person and situation from `prev`, then relax in that order. */
-  const tiers = prev => (prev ? [r => r.key !== prev.key && r.target !== prev.target, r => r.target !== prev.target && r.i !== prev.i, r => r.i !== prev.i, () => true] : [() => true]);
-
-  /* One day's pick: each true situation offers its joke of the day, then a weighted draw. */
-  function choose(c, prev) {
-    const offers = [];
-    for (const k of KEYS) {
-      const ids = GROUP[k];
-      for (let t = 0; t < ids.length; t++) { const r = resolve(c, ids[mod(c.day + t, ids.length)]); if (r) { offers.push(r); break; } }
+  /* ------------------------------------------------------------ picking the day's roast */
+  function choose(c, past, prev) {
+    const lastUse = new Map(past.map(h => [h.joke, h.day]));
+    const fits = LIST.map((_, i) => resolve(c, i)).filter(Boolean);
+    if (!fits.length) return null;
+    let offers = fits.filter(r => !lastUse.has(r.id));
+    if (!offers.length) {   // every roast that fits has had its day: bring back the one used longest ago, about someone new if possible
+      const firstWho = new Map(); past.forEach(h => { if (!firstWho.has(h.joke)) firstWho.set(h.joke, h.who); });
+      const old = fits.filter(r => !prev || (r.id !== prev.joke && r.target !== prev.who))
+        .sort((a, b) => (firstWho.get(a.id) === a.target) - (firstWho.get(b.id) === b.target) || (lastUse.get(a.id) < lastUse.get(b.id) ? -1 : 1));
+      return old[0] || fits[0];
     }
-    const [hk, odds] = HEADLINE[c.dow] || [];
-    const h = hk && offers.find(r => r.key === hk && (!prev || r.i !== prev.i));
-    if (h && random(c.day * 104729 + 7)() < odds) return withPos(h);
-    for (const ok of tiers(prev)) {
-      const pool = offers.filter(ok); if (pool.length) return withPos(draw(pool, c));
-    }
+    for (const k of SPECIAL) { const r = offers.find(x => x.key === k); if (r) return r; }
+    offers = offers.filter(r => !SPECIAL.includes(r.key));
+    const tiers = prev ? [r => r.key !== prev.key && r.target !== prev.who, r => r.target !== prev.who, () => true] : [() => true];
+    for (const ok of tiers) { const pool = offers.filter(ok); if (pool.length) return draw(pool, c); }
     return null;
   }
+  /* A weighted draw over situations (seeded by the date), then that situation's roast:
+     one written for whoever it's about if there is one, otherwise the next unused
+     generic one in the order they're listed (best first). */
   function draw(pool, c) {
-    const R = random(c.day * 7919 + 2026), wk = WEEK_SHARE[c.dow];
-    const share = { week: wk, season: (1 - wk) * 0.3, habit: (1 - wk) * 0.7 };
-    const kinds = Object.keys(share).filter(k => pool.some(r => kindOf(r.key) === k));
-    let x = R() * kinds.reduce((a, k) => a + share[k], 0), kind = kinds[kinds.length - 1];
-    for (const k of kinds) if ((x -= share[k]) < 0) { kind = k; break; }
-    const items = pool.filter(r => kindOf(r.key) === kind);
-    const w = items.map(r => (WEIGHT[r.key] || 1) * (r.key === 'lastWeekLow' && c.dow <= 1 ? 2 : 1));
-    let y = R() * w.reduce((a, b) => a + b, 0);
-    for (let j = 0; j < items.length; j++) if ((y -= w[j]) < 0) return items[j];
-    return items[items.length - 1];
+    const groups = {};
+    pool.forEach(r => { (groups[r.key] = groups[r.key] || []).push(r); });
+    const keys = Object.keys(groups).sort();
+    const w = keys.map(k => (WEIGHT[k] || HABIT_WEIGHT) * (groups[k].some(r => r.who) ? PERSONAL : 1));
+    let x = random(c.day * 7919 + 2026)() * w.reduce((a, b) => a + b, 0), key = keys[keys.length - 1];
+    for (let j = 0; j < keys.length; j++) if ((x -= w[j]) < 0) { key = keys[j]; break; }
+    const g = groups[key], mine = g.filter(r => r.who);
+    return mine.length ? mine[mod(c.day, mine.length)] : g[0];     // generic ones go in the order they're written
   }
 
-  /** Today's roast: the same for the whole crew. Replays the last few days so it
-      doesn't repeat yesterday's joke, person or situation. */
-  function daily(members, posts, cfg, now = new Date(), excluded) {
-    let prev = null;
-    for (let back = 4; back >= 1; back--) {
-      const end = new Date(Logic.addDays(midnight(now), 1 - back).getTime() - 1);
-      const c = build(members, posts.filter(p => new Date(p.at) <= end), cfg, end, excluded);
-      if (c) prev = choose(c, prev) || prev;
-    }
-    const c = build(members, posts, cfg, now, excluded);
-    return c ? choose(c, prev) : null;
+  /** Today's roast. hist = the saved roasts ({ day, joke, key, who, n, ... }); excluded = member ids to leave out.
+      → { day, joke, key, who, text, bold, n, rerun? } or null. n numbers each roast the first time it
+      airs (1–100); a rerun keeps its old number. */
+  function today(members, posts, cfg, now = new Date(), hist = [], excluded) {
+    const c = build(members, posts, cfg, now, excluded); if (!c) return null;
+    const day = Logic.dayKey(now, c.tz), yest = Logic.dayKey(Logic.addDays(startOf(now, c.tz), -1, c.tz), c.tz);
+    const past = (hist || []).filter(h => h && h.day < day).sort((a, b) => (a.day < b.day ? -1 : 1));
+    c.first = past.length === 0;
+    const prev = past.length && past[past.length - 1].day === yest ? past[past.length - 1] : null;
+    const r = choose(c, past, prev);
+    if (!r) return null;
+    const aired = past.find(h => h.joke === r.id), n = aired && aired.n ? aired.n : new Set(past.map(h => h.joke)).size + 1;
+    return Object.assign({ day, joke: r.id, key: r.key, who: r.target, text: r.text, bold: r.bold, n }, aired ? { rerun: true } : {});
   }
-  /** The same joke again with fresh numbers (after a new post), or null if it no longer fits. */
-  function again(members, posts, cfg, now, i, excluded) { const c = build(members, posts, cfg, now || new Date(), excluded); return c && LIST[i] ? withPos(resolve(c, i)) : null; }
-  /** The next joke after `cur` (tapping the banner): walks the shuffled order, preferring someone else. */
-  function next(members, posts, cfg, now, cur, excluded) {
-    const c = build(members, posts, cfg, now || new Date(), excluded); if (!c || !cur) return null;
-    const start = ORDER.indexOf(cur.i) + 1;
-    for (const ok of tiers(cur)) {
-      for (let k = 0; k < ORDER.length; k++) {
-        const pos = mod(start + k, ORDER.length), r = resolve(c, ORDER[pos]);
-        if (r && r.i !== cur.i && ok(r)) return Object.assign(r, { pos });
-      }
+  /** Fallback when the server can't save roasts: replay every day since `from`. */
+  function replay(members, posts, cfg, now, from, excluded) {
+    const tz = cfg.timezone || CONFIG.timezone, hist = [], end = Logic.dayKey(now, tz);
+    for (let d = Logic.dayKey(from, tz); d < end; d = Logic.dayKey(Logic.addDays(Logic.parseDay(d, tz, 12), 1, tz), tz)) {
+      const r = today(members, posts, cfg, Logic.parseDay(d, tz, 12), hist, excluded);
+      if (r) hist.push(r);
     }
-    return null;
+    return hist;
   }
-  /** Every joke that fits right now, with its target (for testing). */
-  function all(members, posts, cfg, now, excluded) { const c = build(members, posts, cfg, now || new Date(), excluded); return c ? LIST.map((_, i) => resolve(c, i)) : []; }
+  /** A saved roast as HTML: the roasted person's name highlighted, other names bold. */
+  function html(r) {
+    let h = esc(r.text || '');
+    (r.bold || []).forEach((nm, k) => { if (nm) h = h.split(esc(nm)).join(`<b${k === 0 ? ' class="t"' : ''}>${esc(nm)}</b>`); });
+    return h;
+  }
+  /** Every roast that fits on a given day, with its target (for testing). */
+  function all(members, posts, cfg, now, first = false, excluded) {
+    const c = build(members, posts, cfg, now || new Date(), excluded); if (!c) return [];
+    c.first = first; return LIST.map((_, i) => resolve(c, i));
+  }
 
-  return { LIST, WHEN, ORDER, daily, again, next, all };
+  return { LIST, WHEN, ID, today, replay, html, all };
 })();

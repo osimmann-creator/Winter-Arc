@@ -1,4 +1,4 @@
-import { CATS, CONFIG, HOAT, INSIDE_JOKES, Logic } from './shared.mjs';
+import { CATS, CONFIG, HOAT, INSIDE_JOKES, Jokes, Logic } from './shared.mjs';
 import { addFeedComment, addTextPost, createInjuryReport, listSocial, resolveInjuryReport } from './social.mjs';
 
 const COLORS = new Set(['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F']);
@@ -17,6 +17,7 @@ const EVENT_KEYS = {
   crashout: POST_ID, satellite: POST_ID, puke: `${WEEK}:${COUNT}`, mma: WEEK,
   radiator: POST_ID, mom: WEEK, nets: WEEK, phil: POST_ID,
   scared: `[0-9]{4}-[0-9]{2}-[0-9]{2}:${COUNT}`, timesheet: WEEK, hoat: WEEK,
+  roast: '[0-9]{4}-[0-9]{2}-[0-9]{2}',
 };
 
 function fail(message, status = 400) {
@@ -497,7 +498,7 @@ function validatedEvent(input, now = new Date()) {
   if (typeof key !== 'string' || key.length > 100 || !new RegExp(`^${type}:${EVENT_KEYS[type]}$`).test(key)) {
     fail('Invalid event key.');
   }
-  if (type === 'scared' && !dateKeyValid(key.split(':')[1])) fail('Invalid event day.');
+  if ((type === 'scared' || type === 'roast') && !dateKeyValid(key.split(':')[1])) fail('Invalid event day.');
   const data = input.data ?? {};
   if (typeof data !== 'object' || Array.isArray(data)) fail('Invalid event details.');
   const json = JSON.stringify(data);
@@ -510,10 +511,11 @@ function validatedEvent(input, now = new Date()) {
 function eventInsert(env, event, timezone) {
   const cooldownStart = Logic.jokeCooldownStart(event.at, timezone).toISOString();
   // Check history inside the insert so simultaneous triggers share one cooldown.
+  // The Hoat stamp and the daily roast have no cooldown: their keys already make them one per week / day.
   return statement(env, `
     INSERT INTO events (id, type, key, at, data)
     SELECT ?, ?, ?, ?, ?
-    WHERE ? = 'hoat' OR NOT EXISTS (
+    WHERE ? IN ('hoat', 'roast') OR NOT EXISTS (
       SELECT 1 FROM events WHERE type = ? AND at >= ?
     )
     ON CONFLICT (key) DO NOTHING
@@ -557,9 +559,12 @@ async function markSeen(env, session, id) {
 }
 
 async function findEvents(env, now) {
-  const [groupRows, memberRows, ...postRows] = await env.DB.batch([
+  const [groupRows, memberRows, injuryRows, roastRows, ...postRows] = await env.DB.batch([
     statement(env, 'SELECT * FROM group_settings WHERE id = 1'),
     statement(env, 'SELECT * FROM members'),
+    statement(env, `SELECT member_id FROM injury_reports
+      WHERE member_id IS NOT NULL AND started_at <= ? AND resolved_at IS NULL`, now.toISOString()),
+    statement(env, "SELECT key, data FROM events WHERE type = 'roast' ORDER BY key"),
     ...postQueries(env),
   ]);
   if (!groupRows.results.length) return { events: [] };
@@ -569,7 +574,29 @@ async function findEvents(env, now) {
   const cfg = { ...CONFIG, ...group };
   const calc = Logic.compute(members, posts, cfg, now);
   const guarantee = HOAT.feed !== false ? { username: HOAT.username, min: group.weeklyMin } : null;
-  return { events: Logic.jokes(members, calc, INSIDE_JOKES, now, group.timezone, guarantee), timezone: group.timezone };
+  const events = Logic.jokes(members, calc, INSIDE_JOKES, now, group.timezone, guarantee);
+  let roast = null;
+  try { roast = roastOfTheDay(members, posts, cfg, now, injuryRows.results, roastRows.results); }
+  catch { console.warn('Winter Arc couldn’t pick the roast of the day.'); }   // never let it block the inside jokes
+  if (roast) events.push(roast);
+  return { events, timezone: group.timezone };
+}
+
+/* Roast of the Day (js/jokes.js): picked once per day in the group's time zone, from the points as
+   they stood at midnight, and saved so everyone sees the same one. Saved roasts are the history
+   that keeps them from repeating. Members on an open injury report are left out. */
+function roastOfTheDay(members, posts, cfg, now, injuries, saved) {
+  const day = Logic.dayKey(now, cfg.timezone);
+  if (saved.some(row => row.key === `roast:${day}`)) return null;
+  const history = [];
+  for (const row of saved) {
+    try { history.push({ ...JSON.parse(row.data), day: row.key.slice('roast:'.length) }); } catch { /* skip a bad row */ }
+  }
+  const excluded = new Set(injuries.map(row => row.member_id));
+  const roast = Jokes.today(members, posts, cfg, now, history, excluded);
+  if (!roast || roast.day !== day) return null;
+  const { joke, key, who, text, bold, n, rerun } = roast;
+  return { type: 'roast', key: `roast:${day}`, at: now.toISOString(), data: { joke, key, who, text, bold, n, ...(rerun ? { rerun } : {}) } };
 }
 
 export async function runEvents(env, now = new Date()) {

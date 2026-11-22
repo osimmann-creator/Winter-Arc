@@ -18,7 +18,7 @@ Run `npm run build` from the repository root. The deployable output is in `dist/
 | `css/app.css` | All styling (the cartoon look, layout and animations) |
 | `js/config.js` | **Settings to edit**: points per activity, season defaults, the roster, celebration videos, inside jokes and the Hoat Guarantee |
 | `js/logic.js` | Rules engine: weeks, strikes, elimination, streaks, badges, leaderboards and the inside-joke rules (pure functions) |
-| `js/jokes.js` | Roast of the day: 183 jokes and how one is picked each day |
+| `js/jokes.js` | Roast of the day: the 100 roasts and how the day's one is picked |
 | `js/store.js` | Browser client for the hosted Worker API |
 | `js/app.js` | The screens: sign-in, pick your own password, Home, Feed, Board, Me, Account, the log sheet, inside-joke pop-ups, the stamp, toasts and dialogs |
 | `js/celebrate.js` | Full-screen celebration videos and confetti |
@@ -73,7 +73,14 @@ The same joke can be triggered again after one full intervening game week (Monda
 
 The settings live in `INSIDE_JOKES` and `HOAT` in `js/config.js` and match people by username; the exact rules are in `Logic.jokes` in `js/logic.js`. Joke replays are attached to their feed posts.
 
-**Roast of the day:** the banner at the top of Home roasts whoever a joke fits right now, using live points (183 jokes in `js/jokes.js`). Everyone sees the same one each day. Tap it for another. Members with active injury reports are excluded from the roast.
+**Roast of the day:** the banner at the top of Home. There are 100 roasts in `js/jokes.js` and one airs a day, the same one for everyone. There's nothing to tap.
+
+- The Worker picks it the first time anyone opens the app that day (or on its scheduled run), from the points as they stood at midnight in the group's timezone. It saves it as an event: type `roast`, key `roast:YYYY-MM-DD`. Every phone shows that saved roast. Until it arrives, a phone shows its own pick, which comes out the same.
+- Each roast fits a situation (0 points on a Thursday, short on Sunday, a strike on Monday, a holiday...) and names whoever it fits. Roasts written for one person (Jake's mom, Ayaad's ironing, Gaurav's liquor runs, the Hoat Guarantee) go first when they fit. Special days win their day: the first roast, Thanksgiving, Black Friday, Christmas, New Year's Eve and Day, Groundhog Day, Valentine's Day and the last day.
+- Each roast airs once, numbered #1 to #100. The season has 119 days, so once nothing unused fits, the one that aired longest ago comes back, about someone new if possible, with a "Rerun" pill.
+- Members on an open injury report are left out. Weekly goals are per person (Jake's 8-point weeks count as 8), and La4 shows up as La4.
+- To edit, change `LIST` at the top of `js/jokes.js`. `WHEN` says when each situation is true. Changed words count as a new roast.
+- Publishing this needs D1 migration `drizzle/0007_roast_of_the_day.sql`, which allows the `roast` event type.
 
 ## Changing the rules
 

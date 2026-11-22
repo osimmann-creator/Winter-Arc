@@ -160,15 +160,13 @@ body.signed-out #app { padding-bottom: 40px; }
 .bubble::before { content: ''; position: absolute; left: -13px; bottom: 22px; width: 20px; height: 20px; background: #fff; border-left: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: rotate(45deg) skew(10deg, 10deg); }
 @keyframes bubbleIn { from { opacity: 0; transform: scale(.7) translateX(-20px); } to { opacity: 1; transform: none; } }
 
-/* roast of the day: the banner at the top of Home (jokes in js/jokes.js) */
+/* roast of the day: the banner at the top of Home (roasts in js/jokes.js; one a day, the same for everyone) */
 .roast {
   position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px;
-  width: 100%; margin-top: 14px; padding: 21px 42px 14px 13px; text-align: left;
+  width: 100%; margin-top: 14px; padding: 22px 14px 15px 13px; text-align: left;
   background: linear-gradient(180deg, #FFFDF4 0%, #FFF3CC 100%); border: 3px solid var(--ink); border-radius: 20px; box-shadow: 0 5px 0 var(--ink);
   animation: roastIn .6s cubic-bezier(.2, 1.3, .4, 1) both;
-  transition: transform .08s ease, box-shadow .08s ease;
 }
-.roast:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
 .roast-tag {
   position: absolute; top: -16px; left: 12px; display: inline-flex; align-items: center; gap: 4px;
   font-family: var(--font-d); font-size: 14px; letter-spacing: .6px; line-height: 1; color: #fff; text-transform: uppercase;
@@ -177,24 +175,23 @@ body.signed-out #app { padding-bottom: 40px; }
   animation: tagIn .5s cubic-bezier(.2, 1.6, .4, 1) .25s both;
 }
 .roast-tag .i64 { width: 19px; height: 19px; margin-top: -4px; }
+.roast-no {
+  position: absolute; top: -14px; right: 14px; font-family: var(--font-d); font-size: 14px; letter-spacing: .5px; line-height: 1; color: var(--ink);
+  background: #fff; border: 2.5px solid var(--ink); border-radius: 9px; padding: 5px 8px 2px; box-shadow: 0 3px 0 var(--ink);
+  transform: rotate(3deg); animation: tagIn2 .5s cubic-bezier(.2, 1.6, .4, 1) .35s both;
+}
 .roast > .av { box-shadow: 0 3px 0 var(--ink); }
 .roast-txt { font-weight: 700; font-size: 15.5px; line-height: 1.3; color: var(--ink); overflow-wrap: anywhere; }
 .roast-txt b { font-weight: 800; }
 .roast-txt b.t { --hl: color-mix(in srgb, var(--c) 48%, white); background: linear-gradient(transparent 50%, var(--hl) 50%, var(--hl) 86%, transparent 86%); padding: 0 2px; margin: 0 -1px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-.roast-more {
-  position: absolute; right: 9px; bottom: 9px; width: 27px; height: 27px; border-radius: 50%;
-  border: 2.5px solid var(--ink); background: #fff; display: grid; place-items: center; box-shadow: 0 2px 0 var(--ink);
-}
-.roast-more .ic { width: 15px; height: 15px; stroke-width: 3; }
-.roast.swap { animation: none; }
-.roast.swap .roast-tag { animation: none; }
+/* the saved roast replacing the phone's own guess: no second drop-in, just the new words */
+.roast.swap, .roast.swap .roast-tag, .roast.swap .roast-no { animation: none; }
 .roast.swap .roast-txt { animation: jokeIn .35s cubic-bezier(.2, .9, .3, 1) both; }
 .roast.swap > .av { animation: pop .4s ease both; }
-.roast.swap .roast-more .ic { animation: roastSpin .5s ease both; }
 @keyframes roastIn { from { opacity: 0; transform: translateY(-16px) rotate(-1.5deg) scale(.96); } to { opacity: 1; transform: none; } }
 @keyframes tagIn { from { opacity: 0; transform: rotate(-14deg) scale(.5); } to { opacity: 1; transform: rotate(-3deg); } }
+@keyframes tagIn2 { from { opacity: 0; transform: rotate(14deg) scale(.5); } to { opacity: 1; transform: rotate(3deg); } }
 @keyframes jokeIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
-@keyframes roastSpin { from { transform: rotate(-220deg); } to { transform: none; } }
 
 .ringcard { display: grid; grid-template-columns: 136px 1fr; gap: 14px; align-items: center; }
 .ring { position: relative; width: 136px; height: 136px; }
@@ -557,7 +554,7 @@ body.signed-out .toast { bottom: calc(20px + var(--safe-b)); }
 body.booting #view { visibility: hidden; }
 
 @media (max-width: 360px) {
-  .roast { gap: 10px; padding-right: 38px; }
+  .roast { gap: 10px; padding-right: 12px; }
   .roast-txt { font-size: 14.5px; }
   .cats { gap: 9px 7px; }
   .cat .cn { font-size: 11px; }

@@ -144,7 +144,7 @@ const App = (() => {
     const recent = S.posts.filter(p => !p.voided && Logic.weekIdx(new Date(p.at), se.start) === se.idx).sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 4);
     return `<section class="screen home" aria-labelledby="hT">
   <h1 id="hT" class="sr">Home</h1>
-  ${roastHTML(roastPick())}
+  ${roastHTML(roastToday())}
   <div class="greet"><img class="mascot" src="${Art.mascot(pose)}" alt="" width="338" height="640"><p class="bubble">${esc(line)}</p></div>
   <div class="card ringcard">
     ${isHoat() && R.thisWeek >= min && se.status === 'live' ? `<span class="hoat-mini${pts >= min ? ' on' : ''}" role="img" aria-label="${esc(HOAT.text)}">${Art.hoatStamp()}</span>` : ''}
@@ -175,27 +175,51 @@ const App = (() => {
   }
 
   /* ------------------------------------------------------------ roast of the day (js/jokes.js) */
+  /* One roast a day, the same for everyone. The server picks it and saves it as an event
+     (type 'roast', key 'roast:YYYY-MM-DD' in the group's time zone). Until that comes back
+     this phone shows its own pick, which comes out the same from the same posts. Nobody on
+     the injury report gets roasted. */
   const roastExclusions = () => new Set(S.activeInjuries.map(report => report.memberId));
-  function roastPick() {
+  const savedRoast = e => e && e.type === 'roast' && e.data && typeof e.data.text === 'string';
+  function roastToday() {
     if (!Array.isArray(S.activeInjuries)) return null;
-    const now = new Date(), day = Logic.dayKey(now, cfg().timezone);
+    const now = new Date(), tz = cfg().timezone, day = Logic.dayKey(now, tz);
+    const saved = S.events.find(e => savedRoast(e) && e.key === 'roast:' + day);
+    if (saved) return Object.assign({}, saved.data, { day });
+    if (S.roast && S.roast.day === day) return S.roast.none ? null : S.roast;
     try {
       const excluded = roastExclusions();
-      let r = S.roast && S.roast.day === day ? Jokes.again(S.members, S.posts, cfg(), now, S.roast.i, excluded) : null;
-      if (!r) r = Jokes.daily(S.members, S.posts, cfg(), now, excluded);
-      S.roast = r ? { day, i: r.i, pos: r.pos, key: r.key, target: r.target } : null;
+      // the saved roasts are the history; if the server can't save them, replay the season on this phone
+      const hist = S.roastLocal ? Jokes.replay(S.members, S.posts, cfg(), now, Logic.parseDay(cfg().seasonStart, tz), excluded)
+        : S.events.filter(savedRoast).map(e => Object.assign({}, e.data, { day: e.key.slice(6) }));
+      const r = Jokes.today(S.members, S.posts, cfg(), now, hist, excluded);
+      S.roast = r || { day, none: true };
+      if (r && !S.roastLocal) saveRoast(r);
       return r;
     } catch (e) { console.error(e); return null; }
   }
+  async function saveRoast(r) {
+    let ev;
+    try { ev = await Store.recordEvent({ type: 'roast', key: 'roast:' + r.day }); }
+    catch (err) {   // the server couldn't pick or save it: every phone works it out from the posts instead
+      console.warn('Could not save the roast of the day', err);
+      S.roastLocal = true; S.roast = null; swapRoast(); return;
+    }
+    if (!savedRoast(ev)) return;   // nothing saved for today (yet): keep this phone's pick
+    if (!S.events.some(e => e.key === ev.key)) S.events.push(ev);
+    if (ev.data.text !== r.text || ev.data.n !== r.n || !!ev.data.rerun !== !!r.rerun) swapRoast();
+  }
+  function swapRoast() { const el = $('.roast'); if (el) el.outerHTML = roastHTML(roastToday(), true); }
   function roastHTML(r, swap) {
     if (!r) return '';
-    const m = member(r.target) || {}, tag = S.me && r.target === S.me.id ? 'You got roasted' : 'Roast of the day';
-    return `<button class="roast${swap ? ' swap' : ''}" data-act="roast" style="--c:${m.color || '#E9566C'}" aria-label="${esc(`${tag}: ${r.text} Tap for another.`)}">
+    const m = member(r.who) || {}, tag = S.me && r.who === S.me.id ? 'You got roasted' : 'Roast of the day';
+    const no = r.n ? (r.rerun ? `Rerun #${r.n}` : `#${r.n}`) : '';
+    return `<section class="roast${swap ? ' swap' : ''}" style="--c:${m.color || '#E9566C'}" aria-label="${esc(no ? `${tag}, ${no}` : tag)}">
     <span class="roast-tag">${Art.icon64('flame')}<span>${tag}</span></span>
-    ${avatar(r.target, 52)}
-    <span class="roast-txt">${r.html}</span>
-    <span class="roast-more">${ic('refresh')}</span>
-  </button>`;
+    ${no ? `<span class="roast-no">${no}</span>` : ''}
+    ${avatar(r.who, 52)}
+    <p class="roast-txt">${Jokes.html(r)}</p>
+  </section>`;
   }
 
   /* ------------------------------------------------------------ feed */
@@ -947,14 +971,6 @@ const App = (() => {
     tab: el => go(el.dataset.tab),
     log: () => openLog(),
     'hoat-replay': () => hoatSlam(),
-    roast(el) {
-      const r = S.roast && Array.isArray(S.activeInjuries) && Jokes.next(S.members, S.posts, cfg(), new Date(), S.roast, roastExclusions());
-      if (!r) return;
-      S.roast = { day: Logic.dayKey(new Date()), i: r.i, pos: r.pos, key: r.key, target: r.target };
-      const focused = document.activeElement === el;
-      el.insertAdjacentHTML('afterend', roastHTML(r, true)); el.remove();
-      if (focused) { const b = $('.roast'); if (b) b.focus({ preventScroll: true }); }
-    },
     async 'resolve-injury'(el) {
       const report = S.activeInjuries?.find(row => row.id === el.dataset.id);
       if (!report || !await confirmBox(`Mark ${report.name} recovered?`, 'This closes the active injury report.', 'Mark recovered')) return;

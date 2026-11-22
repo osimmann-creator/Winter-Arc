@@ -9,8 +9,8 @@ for (const entry of ['index.html', 'manifest.webmanifest', 'css', 'js', 'assets/
 for (const name of await readdir('server')) {
   if (name.endsWith('.mjs')) await cp('server/' + name, 'dist/server/' + (name === 'index.mjs' ? 'index.js' : name));
 }
-const [config, logic] = await Promise.all(['config', 'logic'].map(name => readFile('js/' + name + '.js', 'utf8')));
-await writeFile('dist/server/shared.mjs', config + '\n' + logic + '\nexport { CONFIG, CATS, INSIDE_JOKES, HOAT, Logic, ROSTER };\n');
+const [config, logic, jokes] = await Promise.all(['config', 'logic', 'jokes'].map(name => readFile('js/' + name + '.js', 'utf8')));
+await writeFile('dist/server/shared.mjs', config + '\n' + logic + '\n' + jokes + '\nexport { CONFIG, CATS, INSIDE_JOKES, HOAT, Logic, Jokes, ROSTER };\n');
 await writeFile('dist/client/js/config.js', config.replace(/const ROSTER = \[[\s\S]*?\n\];/, 'const ROSTER = [];'));
 const html = await readFile('index.html', 'utf8');
 const paths = [...html.matchAll(/(?:href|src)="((?:css|js)\/[^"?]+)"/g)].map(([, path]) => path);
