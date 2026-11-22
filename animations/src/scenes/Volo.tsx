@@ -2,7 +2,7 @@ import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, plant, rig, C } from '../hero/Hero';
 import { E, kf, seg, shake, clamp, lerp, poseAt, Key } from '../lib/anim';
-import { Stage, camP, Cam } from '../fx/Stage';
+import { Stage, camP, Cam, TOP, FULL_H } from '../fx/Stage';
 import { Cloud, Sfx, Sun, GlowDefs, Glow, Burst, Sparks, Dust, ConfettiRain, Ring, Streaks } from '../fx/fx';
 import { Swoosh, trail } from '../fx/motion';
 import { EndCard } from '../fx/EndCard';
@@ -294,8 +294,8 @@ export const VoloScene: React.FC = () => {
         <Sfx f={f} start={46} text="BOOM!" x={420} y={IMPACT[1] - 330} size={210} rot={6} fill="#F88F4D" dur={30} />
       </g>
       {/* speed streaks while flying up / whipping down */}
-      {rising > 0 ? <Streaks f={f} x0={0} y0={0} w={1080} h={1920} angle={90} n={22} speed={-90} len={340} opacity={0.6 * rising} thick={9} /> : null}
-      {whip > 0 ? <Streaks f={f} x0={0} y0={0} w={1080} h={1920} angle={90} n={26} speed={120} len={420} opacity={0.75 * whip} thick={12} /> : null}
+      {rising > 0 ? <Streaks f={f} x0={0} y0={TOP} w={1080} h={FULL_H} angle={90} n={26} speed={-90} len={340} opacity={0.6 * rising} thick={9} /> : null}
+      {whip > 0 ? <Streaks f={f} x0={0} y0={TOP} w={1080} h={FULL_H} angle={90} n={30} speed={120} len={420} opacity={0.75 * whip} thick={12} /> : null}
       <ConfettiRain f={f} start={86} n={55} seed={14} />
     </Stage>
   );

@@ -3,6 +3,7 @@ import { rng, softStar, starPath, heartPath, cloudPath, circlePath } from '../li
 import { clamp, seg, E, springy, lerp } from '../lib/anim';
 import { SFX_FONT, TITLE_FONT } from '../fonts';
 import { C } from '../hero/Hero';
+import { PAD, TOP } from './Stage';
 
 export const INK = C.ink;
 
@@ -268,11 +269,14 @@ export const Sfx: React.FC<{
 };
 
 /* ---------------- Confetti rain ---------------- */
+const LEAD = Math.ceil(PAD / 9);
 export const ConfettiRain: React.FC<{ f: number; start: number; n?: number; seed?: number; colors?: string[]; hearts?: boolean }> = ({
   f, start, n = 70, seed = 11, colors = ['#EE5982', '#FFD064', '#6A5BE0', '#6ACC86', '#A98BFF', '#F88F4D'], hearts,
 }) => {
+  // Pieces fall in from above the taller frame's top band, so they are already
+  // falling when they reach the design frame at the same moment as before.
   const t = f - start;
-  if (t < 0) return null;
+  if (t < -LEAD) return null;
   const r = rng(seed);
   return (
     <g>
@@ -283,8 +287,8 @@ export const ConfettiRain: React.FC<{ f: number; start: number; n?: number; seed
         const sw = 30 + r() * 50;
         const ph = r() * 6.28;
         const tt = t - delay;
-        if (tt < 0) return null;
         const y = -60 + tt * sp;
+        if (y < TOP - 60) return null;
         const x = x0 + Math.sin(tt / 8 + ph) * sw;
         const col = colors[i % colors.length];
         const rot = tt * (6 + r() * 8) + ph * 50;

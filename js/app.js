@@ -698,6 +698,7 @@ const App = (() => {
       case 'liquor': return `It’s Saturday morning and ${who} is in last with ${P(d.pts)}. Still out on that liquor run.`;
       case 'phil': return `${who} came out after ${d.days} days without a log. He saw his shadow: six more weeks of Winter Arc.`;
       case 'scared': return `Nobody has logged a date in ${d.days} days. The fellas are scared of girls.`;
+      case 'timesheet': return `${who} hit ${P(d.pts)} on a ${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.day] || 'weekend'}. Big night out, so the work time sheet gets filed from the club at 11:59.`;
       default: return '';
     }
   }
@@ -705,7 +706,7 @@ const App = (() => {
     coin: 'Achievement unlocked', bluehair: 'Week leader', iron: 'Saturday morning', hoat: 'Every week, as promised',
     bag: 'Three-way tie', fight: 'Tied for first', crashout: 'Cap called', satellite: 'Beers with the boys', puke: 'Last place',
     mma: 'Fight night', radiator: 'Missing person', mom: 'Sunday night', nets: 'Strike', liquor: 'Saturday morning',
-    phil: 'Sighting', scared: 'Date drought',
+    phil: 'Sighting', scared: 'Date drought', timesheet: 'Last minute',
   };
   /** Every inside joke that has happened goes in the feed (config: feed). */
   const inFeed = e => (e.type === 'hoat' ? HOAT.feed !== false : !!(INSIDE_JOKES[e.type] && INSIDE_JOKES[e.type].feed));

@@ -1,5 +1,6 @@
 #!/bin/bash
 # Renders every video and still the app uses and drops them into ../app/assets.
+# Videos are 1080x2348 (the iPhone 18 Pro's shape) so they fill the phone; the app copies are 720x1566.
 #   ./scripts/build_app_assets.sh                 (everything)
 #   ONLY="GunShow TheCoin" ./scripts/build_app_assets.sh   (just those compositions)
 #   ONLY="Intro" / ONLY="Stills"
@@ -8,6 +9,8 @@ cd "$(dirname "$0")/.."
 # the app's assets folder: ../app/assets in the working copy, ../assets in the GitHub repo (this folder is animations/)
 if [ -d ../app/assets ]; then APP=../app/assets; else APP=../assets; fi
 CHROME=${CHROME:-/usr/bin/google-chrome}
+# CONCURRENCY=2 ./scripts/build_app_assets.sh  renders more frames in parallel
+CONC=${CONCURRENCY:+--concurrency=$CONCURRENCY}
 R="npx remotion"
 mkdir -p out/videos out/frames "$APP/celebrations" "$APP/intro" "$APP/mascot" "$APP/icons" "$APP/demo"
 
@@ -45,28 +48,29 @@ NetsGame:joke-nets:2.3:0
 LiquorRun:joke-liquor:3.4:0
 PunxsutawneyPhil:joke-phil:2.0:0
 ScaredOfGirls:joke-scared:1.2:0
+TimeSheet:joke-timesheet:2.6:0
 "
 want() { [ -z "$ONLY" ] && return 0; for w in $ONLY; do [ "$w" = "$1" ] && return 0; done; return 1; }
 
 for row in $MAP; do
   IFS=: read comp id poster photo <<< "$row"
   want "$comp" || continue
-  $R render "$comp" "out/videos/$id.mp4" --codec=h264 --crf=20 --x264-preset=veryfast --browser-executable="$CHROME" --log=error
-  ffmpeg -y -loglevel error -i "out/videos/$id.mp4" -vf scale=720:1280 -c:v libx264 -crf 26 -preset veryfast \
+  $R render "$comp" "out/videos/$id.mp4" --codec=h264 --crf=20 --x264-preset=veryfast --browser-executable="$CHROME" --log=error $CONC
+  ffmpeg -y -loglevel error -i "out/videos/$id.mp4" -vf scale=720:1566 -c:v libx264 -crf 26 -preset veryfast \
     -pix_fmt yuv420p -movflags +faststart -an "$APP/celebrations/$id.mp4"
-  ffmpeg -y -loglevel error -ss "$poster" -i "out/videos/$id.mp4" -frames:v 1 -vf scale=360:640 -c:v libwebp -quality 80 "$APP/celebrations/$id.webp"
+  ffmpeg -y -loglevel error -ss "$poster" -i "out/videos/$id.mp4" -frames:v 1 -vf scale=360:782 -c:v libwebp -quality 80 "$APP/celebrations/$id.webp"
   if [ "$photo" = "1" ]; then
-    # square "proof photo" for the sample feed
+    # square "proof photo" for the sample feed (the 1080x1920 design frame starts 214px down)
     cat=${id%-1}
-    ffmpeg -y -loglevel error -ss 2.0 -i "out/videos/$id.mp4" -frames:v 1 -vf "crop=1080:1080:0:560,scale=720:720" -c:v libwebp -quality 78 "$APP/demo/$cat.webp"
+    ffmpeg -y -loglevel error -ss 2.0 -i "out/videos/$id.mp4" -frames:v 1 -vf "crop=1080:1080:0:774,scale=720:720" -c:v libwebp -quality 78 "$APP/demo/$cat.webp"
   fi
   echo "done $id"
 done
 if [ -z "$ONLY" ] || want Intro; then
-  $R render Intro out/videos/intro.mp4 --codec=h264 --crf=20 --x264-preset=veryfast --browser-executable="$CHROME" --log=error
-  ffmpeg -y -loglevel error -i out/videos/intro.mp4 -vf scale=720:1280 -c:v libx264 -crf 27 -preset veryfast -pix_fmt yuv420p -movflags +faststart -an "$APP/intro/intro.mp4"
-  ffmpeg -y -loglevel error -i out/videos/intro.mp4 -frames:v 1 -vf scale=720:1280 -c:v libwebp -quality 80 "$APP/intro/intro-first.webp"
-  ffmpeg -y -loglevel error -sseof -0.05 -i out/videos/intro.mp4 -frames:v 1 -vf scale=720:1280 -c:v libwebp -quality 82 "$APP/intro/intro-last.webp"
+  $R render Intro out/videos/intro.mp4 --codec=h264 --crf=20 --x264-preset=veryfast --browser-executable="$CHROME" --log=error $CONC
+  ffmpeg -y -loglevel error -i out/videos/intro.mp4 -vf scale=720:1566 -c:v libx264 -crf 27 -preset veryfast -pix_fmt yuv420p -movflags +faststart -an "$APP/intro/intro.mp4"
+  ffmpeg -y -loglevel error -i out/videos/intro.mp4 -frames:v 1 -vf scale=720:1566 -c:v libwebp -quality 80 "$APP/intro/intro-first.webp"
+  ffmpeg -y -loglevel error -sseof -0.05 -i out/videos/intro.mp4 -frames:v 1 -vf scale=720:1566 -c:v libwebp -quality 82 "$APP/intro/intro-last.webp"
   echo "done intro"
 fi
 if [ -z "$ONLY" ] || want Stills; then

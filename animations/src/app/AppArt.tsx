@@ -5,6 +5,7 @@ import { I } from '../lib/m2';
 import { E, kf, seg, shake, springAt, clamp, lerp } from '../lib/anim';
 import { Cloud, Sun, GlowDefs, Glow, Sparks, Glint, FocusLines, Twinkle } from '../fx/fx';
 import { TITLE_FONT } from '../fonts';
+import { FULL_H, PAD } from '../fx/Stage';
 import { rng } from '../lib/shape';
 
 /* ------------------------------------------------------------------ */
@@ -118,7 +119,7 @@ const IntroTitle: React.FC<{ f: number }> = ({ f }) => {
     <div
       style={{
         position: 'absolute',
-        top: 150,
+        top: 150 + PAD,
         left: 0,
         right: 0,
         display: 'flex',
@@ -194,14 +195,14 @@ export const IntroScene: React.FC = () => {
       eyeMode: f > 34 && f < 46 ? 'star' : 'normal', sy: 1 + (1 - Math.min(1, popK)) * 0.2 + leap * 0.15, sx: 1 - leap * 0.08,
     }),
   );
-  const heroY = 1870 + (1 - Math.min(1.2, popK)) * 1500 - leap * 2400;
+  const heroY = 1870 + (1 - Math.min(1.2, popK)) * 1760 - leap * 2400;
   const r = rig(mp);
   const mouth = [540 + r.mouth()[0], heroY + r.mouth()[1]];
   const sh = shake(f, 30, 12, 18, 3);
   const rr = rng(8);
   return (
     <AbsoluteFill style={{ background: 'linear-gradient(180deg, #82ADFC 0%, #ABDDF9 55%, #F6F2FF 100%)', overflow: 'hidden' }}>
-      <svg width={1080} height={1920} viewBox="0 0 1080 1920" style={{ position: 'absolute', inset: 0 }}>
+      <svg width={1080} height={FULL_H} viewBox={`0 ${-PAD} 1080 ${FULL_H}`} style={{ position: 'absolute', inset: 0 }}>
         <GlowDefs />
         <g transform={`translate(${sh.x} ${sh.y})`}>
           <g opacity={0.3} transform={`rotate(${f * 0.6} 540 980)`}>

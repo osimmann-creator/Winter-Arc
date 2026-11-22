@@ -3,7 +3,7 @@ import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
 import { poseAt, E, kf, seg, Key, springAt, lerp } from '../lib/anim';
-import { Stage, camP, Cam } from '../fx/Stage';
+import { Stage, camP, Cam, TOP, BOT, FULL_H } from '../fx/Stage';
 import { Sparks, Sfx, GlowDefs, Glint, ConfettiRain, Twinkle } from '../fx/fx';
 import { EndCard } from '../fx/EndCard';
 import { GymBG, Platform } from './Gym';
@@ -38,31 +38,35 @@ const Phone: React.FC = () => (
 
 const MirrorFrame: React.FC<{ f: number }> = ({ f }) => {
   const sweep = ((f * 9) % 2600) - 800;
+  // The mirror fills the whole phone: its frame runs along the full-height edges.
+  const t = TOP;
+  const b = BOT;
+  const h = b - t;
   return (
     <g>
       {/* glass streaks */}
       <g opacity={0.22}>
-        <path d={`M${sweep} -100 L${sweep + 140} -100 L${sweep - 860} 2100 L${sweep - 1000} 2100 Z`} fill="#FFFFFF" />
-        <path d={`M${sweep + 220} -100 L${sweep + 270} -100 L${sweep - 730} 2100 L${sweep - 780} 2100 Z`} fill="#FFFFFF" />
+        <path d={`M${sweep} ${t - 100} L${sweep + 140} ${t - 100} L${sweep - 1080} ${b + 100} L${sweep - 1220} ${b + 100} Z`} fill="#FFFFFF" />
+        <path d={`M${sweep + 220} ${t - 100} L${sweep + 270} ${t - 100} L${sweep - 950} ${b + 100} L${sweep - 1000} ${b + 100} Z`} fill="#FFFFFF" />
       </g>
       {/* gold frame */}
-      <path d="M0 0 H1080 V1920 H0 Z M58 58 V1862 H1022 V58 Z" fill={C.gold} fillRule="evenodd" />
-      <path d="M0 0 H1080 V1920 H0 Z M58 58 V1862 H1022 V58 Z" fill="none" stroke={INK} strokeWidth={8} fillRule="evenodd" />
-      <rect x={58} y={58} width={964} height={1804} rx={6} fill="none" stroke={INK} strokeWidth={10} />
-      <rect x={20} y={20} width={1040} height={1880} rx={10} fill="none" stroke={C.goldSh} strokeWidth={8} />
-      <rect x={38} y={38} width={1004} height={1844} rx={8} fill="none" stroke={C.goldHi} strokeWidth={5} opacity={0.9} />
+      <path d={`M0 ${t} H1080 V${b} H0 Z M58 ${t + 58} V${b - 58} H1022 V${t + 58} Z`} fill={C.gold} fillRule="evenodd" />
+      <path d={`M0 ${t} H1080 V${b} H0 Z M58 ${t + 58} V${b - 58} H1022 V${t + 58} Z`} fill="none" stroke={INK} strokeWidth={8} fillRule="evenodd" />
+      <rect x={58} y={t + 58} width={964} height={h - 116} rx={6} fill="none" stroke={INK} strokeWidth={10} />
+      <rect x={20} y={t + 20} width={1040} height={h - 40} rx={10} fill="none" stroke={C.goldSh} strokeWidth={8} />
+      <rect x={38} y={t + 38} width={1004} height={h - 76} rx={8} fill="none" stroke={C.goldHi} strokeWidth={5} opacity={0.9} />
       {[
-        [58, 58],
-        [1022, 58],
-        [58, 1862],
-        [1022, 1862],
+        [58, t + 58],
+        [1022, t + 58],
+        [58, b - 58],
+        [1022, b - 58],
       ].map(([x, y], i) => (
         <g key={i} transform={`translate(${x} ${y})`}>
           <circle r={46} fill={C.gold} stroke={INK} strokeWidth={7} />
           <path d={softStar(0, 0, 32, 12, 4, 45)} fill={C.goldHi} stroke={C.goldSh} strokeWidth={4} />
         </g>
       ))}
-      <g transform="translate(540 30)">
+      <g transform={`translate(540 ${t + 30})`}>
         <path d="M-150 -30 Q-75 -48 0 -30 Q75 -48 150 -30 L130 40 Q65 22 0 40 Q-65 22 -130 40 Z" fill={C.gold} stroke={INK} strokeWidth={7} strokeLinejoin="round" />
         <path d={softStar(0, 4, 24, 9, 5)} fill={C.goldHi} stroke={C.goldSh} strokeWidth={4} />
       </g>
@@ -198,7 +202,7 @@ export const MirrorScene: React.FC = () => {
       {flash > 0 ? (
         <g>
           <circle cx={phone[0]} cy={phone[1]} r={260 + 500 * flash} fill="#FFFFFF" opacity={0.65 * flash} />
-          <rect x={0} y={0} width={1080} height={1920} fill="#FFFFFF" opacity={0.55 * flash} />
+          <rect x={0} y={TOP} width={1080} height={FULL_H} fill="#FFFFFF" opacity={0.55 * flash} />
           <Twinkle x={phone[0]} y={phone[1]} s={2.6} t={0.5 - flash * 0.4} />
         </g>
       ) : null}

@@ -4,6 +4,7 @@ import { C, rig, Pose } from '../hero/Hero';
 import { M } from '../lib/m2';
 import { TITLE_FONT } from '../fonts';
 import { rng } from '../lib/shape';
+import { FULL_H, TOP } from '../fx/Stage';
 
 export const INK = C.ink;
 export type Pt = [number, number];
@@ -90,16 +91,19 @@ export const Steam: React.FC<{ x: number; y: number; f: number; h?: number; o?: 
 };
 
 /** Falling snow (screen space). */
-export const Snow: React.FC<{ f: number; n?: number; seed?: number; speed?: number; wind?: number; o?: number }> = ({ f, n = 70, seed = 4, speed = 5, wind = -2, o = 1 }) => {
+/** Snow over the full-height frame (TOP-90 … BOT+90); n is per 1920px of height, as before. */
+const SPAN = FULL_H + 180;
+export const Snow: React.FC<{ f: number; n?: number; seed?: number; speed?: number; wind?: number; o?: number }> = ({ f, n: n0 = 70, seed = 4, speed = 5, wind = -2, o = 1 }) => {
+  const n = Math.round((n0 * SPAN) / 2100);
   const r = rng(seed);
   return (
     <g opacity={o}>
       {Array.from({ length: n }).map((_, i) => {
         const x0 = r() * 1400 - 160;
-        const y0 = r() * 2100;
+        const y0 = r() * SPAN;
         const s = 5 + r() * 12;
         const sp = speed * (0.6 + r() * 0.8) * (0.6 + s / 18);
-        const y = ((y0 + f * sp) % 2100) - 90;
+        const y = ((y0 + f * sp) % SPAN) + TOP - 90;
         const x = x0 + wind * f * (0.6 + r() * 0.6) + Math.sin(f / 9 + i) * 14;
         const xx = ((x % 1400) + 1400) % 1400 - 160;
         return <circle key={i} cx={xx} cy={y} r={s} fill="#FFFFFF" stroke="#B9C4EE" strokeWidth={2} />;

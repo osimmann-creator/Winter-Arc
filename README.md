@@ -73,6 +73,7 @@ Each one pops up full screen once for everyone, the moment it happens:
 | **The Nets Game** | Jake or Gaurav missed 7 last week. Plays on Monday. | Yes, naming who missed |
 | **Punxsutawney Phil** | Philip logs something after 3+ days without a log. He sees his shadow. Once per post. | Yes |
 | **Scared of Girls** | Nobody has logged a date in 30 days. Again every 30 days it goes on. | Yes |
+| **The Time Sheet** | Jake's post that gets him to 7 lands on a Saturday or Sunday. Big night out, so he files his work time sheet from the club at 11:59. | Yes |
 
 If a few of the same joke are waiting (say Connor capped three posts overnight), it plays once.
 
@@ -80,7 +81,7 @@ If a few of the same joke are waiting (say Connor capped three posts overnight),
 
 **Hoat Guarantee:** whenever Osim reaches 7 points in a week, a red rubber stamp with a thumbs up slams onto his screen. It then sits on his ring card, and a Hoat Guarantee card goes to the feed for everyone (tap the stamp to replay it).
 
-The settings live in `INSIDE_JOKES` and `HOAT` in `js/config.js` and match people by username; the exact rules are in `Logic.jokes` in `js/logic.js`. All 15 videos are in the Me tab gallery too.
+The settings live in `INSIDE_JOKES` and `HOAT` in `js/config.js` and match people by username; the exact rules are in `Logic.jokes` in `js/logic.js`. All 16 videos are in the Me tab gallery too.
 
 **Roast of the day:** the banner at the top of Home roasts whoever a joke fits right now, using live points (183 jokes in `js/jokes.js`). Everyone sees the same one each day. Tap it for another.
 
@@ -117,7 +118,7 @@ Everything else has one (MMA's is Knockout). Each log picks one at random and ne
 
 To add another:
 
-1. Put `gym-6.mp4` (720×1280, H.264, muted) and a `gym-6.webp` poster in `assets/celebrations/`.
+1. Put `gym-6.mp4` (720×1566, H.264, muted) and a `gym-6.webp` poster (360×782) in `assets/celebrations/`. Videos are drawn to the iPhone 18 Pro's shape so they fill the screen; on wider screens the app shows the whole frame.
 2. Add `{ id: 'gym-6', name: 'Your Name' }` to the `gym` list in `CELEBRATIONS` in `js/config.js`.
 
 They all show in the gallery on the Me tab.
@@ -126,4 +127,4 @@ They all show in the gallery on the Me tab.
 
 `Store.mode` is `'demo'` in the preview. That shows the "Sample data" chip, the preview hint and "Or just pick someone" on the sign-in screen, "Switch person" and "Reset sample data". In live mode all of those disappear and the same screens talk to the real backend.
 
-The sample week is set up so the extras show straight away: Dean and Jake are tied at 6.5, Connor leads with 9.5, Ayaad is last, Dylan is on 4 (so he shows as La4), and Osim sits at 5.5, so logging one gym session gets him his stamp. The feed also has Satellite House, Crash Out KNR and The Nets Game cards (Jake missed 7 last week). To set off others, use Switch person: as Connor, call cap on a post; as Amaan, log MMA until it's your 4th this week.
+The sample week is set up so the extras show straight away: Dean and Jake are tied at 6.5, Connor leads with 9.5, Ayaad is last, Dylan is on 4 (so he shows as La4), and Osim sits at 5.5, so logging one gym session gets him his stamp. The feed also has Satellite House, Crash Out KNR, The Nets Game (Jake missed 7 last week) and The Time Sheet (Jake hit 7 on the first week's Saturday) cards. To set off others, use Switch person: as Connor, call cap on a post; as Amaan, log MMA until it's your 4th this week; as Jake on a Saturday or Sunday, log anything to reach 7.

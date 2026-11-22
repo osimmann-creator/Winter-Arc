@@ -138,8 +138,8 @@ export const JokeBlueHairScene: React.FC = () => {
   const gooK = seg(f, POUR + 1, POUR + 4) * (1 - seg(f, SHAKE + 2, SHAKE + 12));
 
   // amphora swoops in from top-right and tips
-  const ax = kf(f, [[0, 1250], [14, 1250], [24, 820, E.out], [POUR + 16, 800], [POUR + 26, 1300, E.in]]);
-  const ay = kf(f, [[0, -300], [14, -300], [24, 330, E.out], [POUR + 16, 340], [POUR + 26, -260, E.in]]);
+  const ax = kf(f, [[0, 1250], [14, 1250], [24, 820, E.out], [POUR + 16, 800], [POUR + 26, 1560, E.in]]);
+  const ay = kf(f, [[0, -300], [14, -300], [24, 330, E.out], [POUR + 16, 340], [POUR + 26, -640, E.in]]);
   const arot = kf(f, [[0, 20], [24, 30, E.out], [POUR, 118, E.inOut], [POUR + 16, 125], [POUR + 26, 60, E.in]]);
   const mouthAng = ((arot - 90) * Math.PI) / 180;
   const mouth: [number, number] = [ax + Math.cos(mouthAng) * 285, ay + Math.sin(mouthAng) * 285];
@@ -184,9 +184,9 @@ export const JokeBlueHairScene: React.FC = () => {
       <g transform={camP(cam, 1, sh)}>
         {/* podium */}
         <g>
-          <rect x={60} y={1560} width={300} height={360} fill="#DCD8EA" stroke={INK} strokeWidth={10} />
-          <rect x={720} y={1610} width={300} height={310} fill="#E8B48A" stroke={INK} strokeWidth={10} />
-          <rect x={330} y={1490} width={420} height={430} fill={C.gold} stroke={INK} strokeWidth={10} />
+          <rect x={60} y={1560} width={300} height={1140} fill="#DCD8EA" stroke={INK} strokeWidth={10} />
+          <rect x={720} y={1610} width={300} height={1090} fill="#E8B48A" stroke={INK} strokeWidth={10} />
+          <rect x={330} y={1490} width={420} height={1210} fill={C.gold} stroke={INK} strokeWidth={10} />
           <rect x={350} y={1506} width={380} height={24} rx={10} fill="#FFFFFF" opacity={0.4} />
           <text x={540} y={1700} textAnchor="middle" dominantBaseline="middle" fontFamily={TITLE_FONT} fontSize={180} fill="#FFFFFF" stroke={INK} strokeWidth={18} paintOrder="stroke">1</text>
           <text x={210} y={1740} textAnchor="middle" dominantBaseline="middle" fontFamily={TITLE_FONT} fontSize={130} fill="#FFFFFF" stroke={INK} strokeWidth={14} paintOrder="stroke">2</text>

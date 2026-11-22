@@ -3,7 +3,7 @@ import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, plant, rig, C } from '../hero/Hero';
 import { E, kf, seg, shake, clamp, lerp, poseAt, Key } from '../lib/anim';
 import { ap } from '../lib/m2';
-import { Stage, camP, Cam } from '../fx/Stage';
+import { Stage, camP, Cam, TOP, FULL_H } from '../fx/Stage';
 import { Cloud, Sfx, GlowDefs, Glow, Burst, Sparks, FocusLines, ConfettiRain, Ring } from '../fx/fx';
 import { Swoosh, trail } from '../fx/motion';
 import { EndCard } from '../fx/EndCard';
@@ -216,7 +216,7 @@ const Crack: React.FC<{ f: number; start: number; x: number; y: number }> = ({ f
           <path d={d} fill="none" stroke="#FFFFFF" strokeWidth={4} strokeLinejoin="round" strokeLinecap="round" />
         </g>
       ))}
-      <rect x={0} y={0} width={1080} height={1920} fill="#FFFFFF" opacity={flash * 0.8} />
+      <rect x={0} y={TOP} width={1080} height={FULL_H} fill="#FFFFFF" opacity={flash * 0.8} />
     </g>
   );
 };

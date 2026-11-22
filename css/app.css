@@ -531,11 +531,14 @@ body.signed-out .toast { bottom: calc(20px + var(--safe-b)); }
 .celebrate { z-index: 90; background: linear-gradient(180deg, #8DBCFF, #F7F3FF); opacity: 0; transition: opacity .22s ease; cursor: pointer; }
 .celebrate.show { opacity: 1; }
 .celebrate.bye { opacity: 0; }
-.celebrate video { width: 100%; height: 100%; object-fit: contain; display: block; }
+.celebrate video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+/* Phones: the videos are drawn to the iPhone's tall shape with spare sky and ground above and below, so they fill the screen.
+   Wider screens show the whole frame. */
+@media (max-aspect-ratio: 9/16) { .celebrate video { object-fit: cover; } }
 .skip { position: absolute; left: 50%; bottom: calc(22px + var(--safe-b)); transform: translateX(-50%); background: rgba(34, 22, 46, .62); color: #fff; border: 2px solid rgba(255, 255, 255, .75); border-radius: 999px; padding: 6px 14px 4px; font-weight: 800; font-size: 13px; pointer-events: none; }
 .celebrate.tap .skip { font-size: 16px; padding: 10px 18px 8px; background: var(--ink); }
 .intro { z-index: 100; background: linear-gradient(180deg, #82ADFC 0%, #ABDDF9 55%, #F6F2FF 100%); cursor: pointer; }
-.intro video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .intro .door { position: absolute; top: 0; bottom: 0; width: 50%; overflow: hidden; display: none; transition: transform .68s cubic-bezier(.65, 0, .35, 1); }
 .intro .door img { position: absolute; top: 0; height: 100%; width: 100vw; max-width: none; object-fit: cover; }
 .intro .door.l { left: 0; border-right: 4px solid var(--ink); }
@@ -744,6 +747,7 @@ h1.center { text-align: center; }
 .joke-liquor { --jk-bg: linear-gradient(135deg, #F6EBFF 0%, #E2C6FA 100%); --jk: #7A3B9E; }
 .joke-phil { --jk-bg: linear-gradient(135deg, #F7EFE6 0%, #E5CFB5 100%); --jk: #7A4A22; }
 .joke-scared { --jk-bg: linear-gradient(135deg, #FFF0F5 0%, #FFD0E0 100%); --jk: #C2185B; }
+.joke-timesheet { --jk-bg: linear-gradient(135deg, #FFF4E0 0%, #FFD9A0 100%); --jk: #A8661A; }
 .gs .gtile.joke-bag { --c: #F2853A; }
 .gs .gtile.joke-fight { --c: #1FA3A0; }
 .gs .gtile.joke-crashout { --c: #E04848; }
@@ -756,6 +760,7 @@ h1.center { text-align: center; }
 .gs .gtile.joke-liquor { --c: #B45AC8; }
 .gs .gtile.joke-phil { --c: #A8692E; }
 .gs .gtile.joke-scared { --c: #E2407E; }
+.gs .gtile.joke-timesheet { --c: #E39A2E; }
 .jk-body h3.long { font-size: 24px; }
 .powered { text-align: center; color: var(--ink2); font-weight: 800; font-size: 13px; letter-spacing: .3px; margin: 4px 0 2px; }
 

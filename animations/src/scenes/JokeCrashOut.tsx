@@ -3,7 +3,7 @@ import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant } from '../hero/Hero';
 import { poseAt, E, kf, shake, seg, Key, clamp, lerp } from '../lib/anim';
-import { Stage, camP, Cam } from '../fx/Stage';
+import { Stage, camP, Cam, TOP, FULL_H } from '../fx/Stage';
 import { Sfx, GlowDefs, ConfettiRain, Sparks, FocusLines, Burst } from '../fx/fx';
 import { EndCard } from '../fx/EndCard';
 import { stageOf, INK, Steam } from './kit';
@@ -99,7 +99,7 @@ export const JokeCrashOutScene: React.FC = () => {
       {/* rage takes over the whole room */}
       {rage > 0 ? (
         <g opacity={rage}>
-          <rect x={-100} y={-100} width={1280} height={2120} fill={flick ? '#FF5A4E' : '#E2384D'} />
+          <rect x={-100} y={TOP - 100} width={1280} height={FULL_H + 200} fill={flick ? '#FF5A4E' : '#E2384D'} />
           <FocusLines f={f} cx={540} cy={1000} r0={420} color={flick ? '#FFB13D' : '#FF8A5C'} opacity={0.75} n={46} width={30} />
         </g>
       ) : null}

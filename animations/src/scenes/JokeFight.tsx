@@ -32,9 +32,9 @@ const Podium: React.FC = () => (
       { x: 270, w: 540, top: TOP, n: '1', c: C.gold, d: C.goldSh },
     ].map((b) => (
       <g key={b.n}>
-        <rect x={b.x} y={b.top} width={b.w} height={1920 - b.top + 200} fill={b.c} stroke={INK} strokeWidth={10} />
+        <rect x={b.x} y={b.top} width={b.w} height={2600 - b.top} fill={b.c} stroke={INK} strokeWidth={10} />
         <rect x={b.x} y={b.top} width={b.w} height={26} fill="#FFFFFF" opacity={0.35} />
-        <rect x={b.x + b.w - 40} y={b.top + 10} width={30} height={1920 - b.top} fill={b.d} opacity={0.5} />
+        <rect x={b.x + b.w - 40} y={b.top + 10} width={30} height={2590 - b.top} fill={b.d} opacity={0.5} />
         <text x={b.x + b.w / 2} y={b.top + 170} textAnchor="middle" dominantBaseline="middle" fontFamily={TITLE_FONT} fontSize={b.n === '1' ? 220 : 150} fill="#FFFFFF" stroke={INK} strokeWidth={14} paintOrder="stroke">
           {b.n}
         </text>

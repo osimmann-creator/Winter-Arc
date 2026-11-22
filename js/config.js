@@ -82,6 +82,7 @@ const INSIDE_JOKES = {
   liquor: { video: 'joke-liquor', title: 'The Liquor Run', users: ['gaurav'], feed: true, playFor: 12, day: 6, from: 6, to: 12 }, // Saturday 6 AM–noon, Gaurav in last
   phil: { video: 'joke-phil', title: 'Punxsutawney Phil', users: ['philip'], feed: true, playFor: 48, days: 3 }, // Philip logs after 3+ days without logging
   scared: { video: 'joke-scared', title: 'Scared of Girls', users: [], feed: true, playFor: 72, days: 30 },  // nobody has logged a date in 30 days
+  timesheet: { video: 'joke-timesheet', title: 'The Time Sheet', users: ['jake'], feed: true, playFor: 48, days: [6, 0] }, // Jake's post that gets him to the weekly minimum lands on a Saturday or Sunday
 };
 /* Name swaps: while Dylan has exactly 4 points this week, the app calls him La4. */
 const ALIASES = [{ username: 'dylan', name: 'La4', pts: 4 }];

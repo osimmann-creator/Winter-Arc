@@ -1,6 +1,6 @@
 # Handoff: hosting Winter Arc for the group
 
-The app is finished: screens, rules engine, 33 videos (17 celebrations, 15 inside jokes and the intro), the Hoat Guarantee stamp and all the sign-in and account screens. It's members only. Everyone's account is made ahead of time, so there is no sign-up page.
+The app is finished: screens, rules engine, 34 full-screen videos (17 celebrations, 16 inside jokes and the intro), the Hoat Guarantee stamp and all the sign-in and account screens. It's members only. Everyone's account is made ahead of time, so there is no sign-up page.
 
 Only one piece is missing: **`js/store.js` still uses sample data**. It needs to be replaced with a version backed by real sign-in, a shared database and photo storage. Every screen already calls the `Store` methods described below, so no UI work is needed.
 
@@ -75,9 +75,9 @@ BUILD
    - The browser notices them (Logic.jokes in js/logic.js) and calls recordEvent({ type, key, data, at }). Make it insert-or-ignore on the unique key, because two phones can notice the same tie at the same moment, and return the stored row.
    - listEvents() returns every event plus `seen` (true if the caller has a row in event_seen). markSeen(eventId) adds that row. That's what makes each video pop up once per person.
    - The Hoat Guarantee is recorded the same way (type 'hoat', key "hoat:<week>") when Osim reaches the weekly minimum, so it shows up as a feed card for everyone.
-   - Server checks: only signed-in members; type is one of the 15 INSIDE_JOKES keys or 'hoat'; data is small JSON; the key has the type's format (<w> = week index from 0, <pts> = points like 6.5, <post> = a post id):
+   - Server checks: only signed-in members; type is one of the 16 INSIDE_JOKES keys or 'hoat'; data is small JSON; the key has the type's format (<w> = week index from 0, <pts> = points like 6.5, <post> = a post id):
      coin:<w>:<pts>  bluehair:<w>  iron:<w>  liquor:<w>  bag:<w>:<pts>  fight:<w>:<pts>  crashout:<post>  satellite:<post>
-     puke:<w>:<n>  mma:<w>  radiator:<post> or radiator:start  mom:<w>  nets:<w>  phil:<post>  scared:<YYYY-MM-DD>:<n>  hoat:<w>
+     puke:<w>:<n>  mma:<w>  radiator:<post> or radiator:start  mom:<w>  nets:<w>  phil:<post>  scared:<YYYY-MM-DD>:<n>  timesheet:<w>  hoat:<w>
    - Recommended extra: run the same rules on the server after every new post, reaction or void, and every hour on the hour, so an event is recorded even if nobody has the app open right then (several rules depend on the clock). Use the exact rules in Logic.jokes. "This week" = the current Monday–Sunday week in the group's timezone; "still in" = not eliminated; voided posts never count:
      - coin: Dean and Jake both have more than 0 points this week and exactly the same points. One event per week per tied score.
      - bluehair: Connor has more points this week than everyone else. One per week.
@@ -94,6 +94,7 @@ BUILD
      - nets: Jake or Gaurav took a strike in the week that just ended (<w> is that week). One per week; data.who lists who missed.
      - phil: Philip posts something dated this week at least 3 days (72 hours) after his previous post, or after the start of his first week if it's his first. One per post.
      - scared: nobody has a date post in the last 30 days, counting from the later of the season start and the most recent date post (that day is the YYYY-MM-DD). <n> = whole 30-day stretches so far, so it fires again every 30 days the drought goes on.
+     - timesheet: the post that takes Jake from under the weekly minimum to at least the minimum this week is dated Saturday or Sunday in the group's timezone. Not in a week where one of his posts was voided as fraud (that week is worth 0). One per week.
      - hoat: Osim has at least the weekly minimum this week. One per week.
    - People are matched by username, so renaming someone in the app doesn't break them.
 
@@ -122,7 +123,7 @@ DONE WHEN
 - Each of the nine people can sign in with their username and temporary password, is made to pick their own password, and stays signed in after reloading or opening from the home screen.
 - Wrong passwords show the friendly message, and repeated failures are throttled.
 - Two phones see each other's posts and reactions within a few seconds.
-- When Dean and Jake are tied above 0, The Coin pops up once on each phone and the feed shows the card with the tied points. When Connor leads the week, Blue Hair does the same. On Saturday morning with Ayaad in last, The Iron does the same. The other 12 inside jokes in INSIDE_JOKES work the same way, each with its own rule (step 6).
+- When Dean and Jake are tied above 0, The Coin pops up once on each phone and the feed shows the card with the tied points. When Connor leads the week, Blue Hair does the same. On Saturday morning with Ayaad in last, The Iron does the same. The other 13 inside jokes in INSIDE_JOKES work the same way, each with its own rule (step 6).
 - MMA is an activity worth 1.5 points, and the server accepts it.
 - While Dylan has exactly 4 points in the week, the app shows him as "La4" (display only; his real name stays in the database).
 - When Osim reaches 7 points in a week, the red HOAT GUARANTEE stamp slams onto his screen, stays on his ring card, and a Hoat Guarantee card appears in everyone's feed.
@@ -135,9 +136,9 @@ DONE WHEN
 
 - **Names are baked into the inside-joke videos** (DEAN, JAKE, CONNOR, AYAAD, DYLAN, AMAAN, GAURAV and PHIL). The rules and feed cards use whatever names people have in the app.
 - **La4:** while Dylan is on exactly 4 points in a week, the app calls him La4 everywhere (board, feed, roasts). It's display only; `ALIASES` in js/config.js.
-- **Already hosted before the new jokes?** Paste this into Codex: "Update the server for the new Winter Arc version: accept event types bag, fight, crashout, satellite, puke, mma, radiator, mom, nets, liquor, phil and scared with the key formats in HANDOFF.md step 6, add mma to the allowed post categories, and add the new rules to the server-side joke runner (run it after every post, reaction or void and every hour)."
+- **Already hosted before the new jokes?** Paste this into Codex: "Update the server for the new Winter Arc version: accept event types bag, fight, crashout, satellite, puke, mma, radiator, mom, nets, liquor, phil, scared and timesheet with the key formats in HANDOFF.md step 6, add mma to the allowed post categories, and add the new rules to the server-side joke runner (run it after every post, reaction or void and every hour)."
 - **Season settings** live in `js/config.js` and in the group row. They're 17 weeks from Monday Nov 2, 2026, 7 points a week and 2 strikes. Osim can change them in Account → Commissioner. Weeks run Monday 00:00 to Sunday 11:59 PM (New York time).
 - **Temporary passwords** only ever appear once: in the setup chat for the first nine, or on Osim's screen after Reset password or Add a friend.
 - **No money is shown anywhere.**
-- **The videos are silent** so they can autoplay on phones.
+- **The videos are silent** so they can autoplay on phones. They're drawn to the iPhone 18 Pro's shape (1080×2348, app copies 720×1566) with extra sky and ground above and below, so they fill the screen. On wider screens the app shows the whole frame instead. Nothing on the server depends on the size.
 - If ChatGPT's hosting can't do sign-in and a database, the same prompt works with Supabase or Firebase (both have free tiers) plus any static host.

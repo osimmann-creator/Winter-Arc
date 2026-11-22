@@ -236,6 +236,23 @@ const Logic = (() => {
       const since = new Date(Math.max(+S.start, last)), days = Math.floor((now - since) / DAY), per = J.scared.days || 30;
       if (days >= per) add('scared', `scared:${dayKey(since)}:${Math.floor(days / per)}`, { days, since: since.toISOString() });
     }
+    if (J.timesheet) {                  // Jake's post that gets him to the minimum lands on a Saturday or Sunday: once per week
+      const j = by(J.timesheet.users[0]);
+      const mine = j ? wk.filter(p => p.memberId === j.id) : [];
+      if (j && !mine.some(p => p.fraud)) {
+        let sum = 0;
+        for (const p of mine) {
+          if (p.voided) continue;
+          const before = sum;
+          sum += (CATS[p.cat] && CATS[p.cat].pts) || 0;
+          if (before < min && sum >= min) {
+            const day = zoned(new Date(p.at), tz).day;
+            if ((J.timesheet.days || [6, 0]).includes(day)) add('timesheet', `timesheet:${w}`, { post: p.id, pts: Math.round(sum * 2) / 2, day, who: j.id });
+            break;
+          }
+        }
+      }
+    }
     if (hoat) {
       const h = by(hoat.username);
       if (h && pts(h) >= hoat.min) add('hoat', `hoat:${w}`, { pts: pts(h), who: h.id });

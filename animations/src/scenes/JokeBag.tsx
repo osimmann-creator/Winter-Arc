@@ -117,7 +117,7 @@ const KEYS = [pk(0), pk(1), pk(2)];
 
 export const JokeBagScene: React.FC = () => {
   const f = useCurrentFrame();
-  const dropY = f < DROP ? -1700 * (1 - E.in(seg(f, 0, DROP))) : -Math.max(0, Math.sin(seg(f, DROP, DROP + 10) * Math.PI)) * 60;
+  const dropY = f < DROP ? -2150 * (1 - E.in(seg(f, 0, DROP))) : -Math.max(0, Math.sin(seg(f, DROP, DROP + 10) * Math.PI)) * 60;
   const squash = f >= DROP && f < DROP + 8 ? 1 - Math.sin(seg(f, DROP, DROP + 8) * Math.PI) * 0.06 : 1;
   const tie = E.out(seg(f, TIE, TIE + 8));
   const cam: Cam = {

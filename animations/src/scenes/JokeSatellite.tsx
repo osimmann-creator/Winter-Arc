@@ -3,7 +3,7 @@ import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
 import { poseAt, E, kf, shake, seg, Key, clamp, lerp } from '../lib/anim';
-import { Stage, camP, Cam, W, H } from '../fx/Stage';
+import { Stage, camP, Cam, W, TOP, FULL_H } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, ConfettiRain, Cloud, Stars, Sparks } from '../fx/fx';
 import { EndCard } from '../fx/EndCard';
 import { stageOf, INK } from './kit';
@@ -174,7 +174,7 @@ export const JokeSatelliteScene: React.FC = () => {
         <rect x={-1400} y={-2800} width={3880} height={4400} fill="url(#skyUp)" />
       </g>
       <g opacity={seg(alt, 0.35, 0.7)}>
-        <Stars f={f} n={60} seed={5} area={[0, 0, W, H]} />
+        <Stars f={f} n={72} seed={5} area={[0, TOP, W, FULL_H]} />
       </g>
       {/* Earth rises into view from below once he's up there (screen space) */}
       <g opacity={seg(f, 70, 80)}>

@@ -24,7 +24,8 @@
               reactions: { [emoji]: [memberId] }, voided, fraud }
      event  { id, type, key (unique), at, data }   type: a key of INSIDE_JOKES
               in config.js (coin, bluehair, iron, bag, fight, crashout, satellite,
-              puke, mma, radiator, mom, nets, liquor, phil, scared) or 'hoat'.
+              puke, mma, radiator, mom, nets, liquor, phil, scared,
+              timesheet) or 'hoat'.
               Inside jokes + the Hoat Guarantee; `seen` is per person
      prefs  { sundayReminder: bool, capAlerts: bool }
 
@@ -65,7 +66,7 @@
      demoRoster(), demoSignInAs(memberId), resetDemo()
    ===================================================================== */
 const Store = (() => {
-  const KEY = 'wa.demo.v5';
+  const KEY = 'wa.demo.v6';
   const PASS = 'winterarc';
   let S = null;
   const subs = new Set();
@@ -136,8 +137,13 @@ const Store = (() => {
         const t = src ? +new Date(src.at) + 6e4 : +curMon + 7 * 36e5;   // just after the post that set it off, or Monday 7 AM
         return Object.assign(e, { id: 'e_seed' + i, at: new Date(Math.max(+curMon + 6e4, Math.min(+now - 6e4, t))).toISOString() });
       });
+    // Jake reached 7 on the first sample week's Saturday: The Time Sheet, already in the feed
+    const end0 = Logic.addDays(start, 6); end0.setHours(23, 30, 0, 0);
+    if (end0 < now) Logic.jokes(members, Logic.compute(members, posts, cfg, end0), INSIDE_JOKES, end0, group.timezone, null, { min: cfg.weeklyMin, posts })
+      .filter(e => e.type === 'timesheet')
+      .forEach(e => { const src = posts.find(p => p.id === e.data.post); events.push(Object.assign(e, { id: 'e_seed' + events.length, at: new Date(+new Date(src ? src.at : end0) + 6e4).toISOString() })); });
     const seen = {}; accounts.forEach(a => { seen[a.id] = events.map(e => e.id); });
-    return { v: 5, seedMonday: Logic.dayKey(curMon), group, accounts, members, posts, events, seen, prefs: {}, session: null };
+    return { v: 6, seedMonday: Logic.dayKey(curMon), group, accounts, members, posts, events, seen, prefs: {}, session: null };
   }
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(S)); }
@@ -173,7 +179,7 @@ const Store = (() => {
       let saved = null;
       try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { saved = null; }
       const cur = Logic.dayKey(Logic.mondayOf(new Date()));
-      S = saved && saved.v === 5 && saved.seedMonday === cur ? saved : seed();
+      S = saved && saved.v === 6 && saved.seedMonday === cur ? saved : seed();
       save();
     },
     config() { const g = S && S.group; return Object.assign({}, CONFIG, g ? { seasonStart: g.seasonStart, seasonWeeks: g.seasonWeeks, weeklyMin: g.weeklyMin, strikesOut: g.strikesOut } : {}); },

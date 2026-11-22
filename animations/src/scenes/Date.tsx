@@ -42,12 +42,12 @@ const Table: React.FC<{ f: number }> = ({ f }) => {
   const fl = Math.sin(f * 0.9) * 3 + Math.sin(f * 2.3) * 2;
   return (
     <g transform={`translate(0 ${Y})`}>
-      <path d="M-40 1450 L1120 1450 L1180 1920 L-100 1920 Z" fill="#FAF7FF" stroke={INK} strokeWidth={9} strokeLinejoin="round" />
+      <path d="M-40 1450 L1120 1450 L1200 2080 L-120 2080 Z" fill="#FAF7FF" stroke={INK} strokeWidth={9} strokeLinejoin="round" />
       <path d="M-40 1450 L1120 1450 L1132 1500 L-52 1500 Z" fill="#EFEAFA" />
-      <path d="M380 1450 L700 1450 L780 1920 L300 1920 Z" fill="#D23C58" />
+      <path d="M380 1450 L700 1450 L807 2080 L273 2080 Z" fill="#D23C58" />
       <path d="M380 1450 L700 1450 L706 1490 L374 1490 Z" fill="#AD2C44" />
       {Array.from({ length: 8 }).map((_, i) => (
-        <path key={i} d={`M${60 + i * 140} 1500 Q${50 + i * 150} 1700 ${30 + i * 160} 1920`} fill="none" stroke="#E4DEF2" strokeWidth={6} />
+        <path key={i} d={`M${60 + i * 140} 1500 Q${50 + i * 150} 1700 ${30 + i * 160} 1920 L${15 + i * 167} 2080`} fill="none" stroke="#E4DEF2" strokeWidth={6} />
       ))}
       <line x1={-40} y1={1450} x2={1120} y2={1450} stroke={INK} strokeWidth={9} />
       {/* candle */}
