@@ -29,19 +29,33 @@ const CATS = {
 const CAT_ORDER = ['gym', 'run', 'bike', 'mma', 'jickle', 'volo', 'soccer', 'date', 'beers', 'reading'];
 
 /* Celebration videos per activity: assets/celebrations/<id>.mp4 (+ <id>.webp poster).
-   One is picked at random per log (never the same one twice in a row). */
+   One is picked at random per log (never the same one twice in a row).
+   users: only plays when one of those usernames logs it (the gallery still shows it). */
 const CELEBRATIONS = {
   gym: [
     { id: 'gym-1', name: 'Beast Mode' }, { id: 'gym-2', name: 'Gun Show' }, { id: 'gym-3', name: 'Leg Day' },
     { id: 'gym-4', name: 'Atlas Mode' }, { id: 'gym-5', name: 'Mirror Check' },
+    { id: 'gym-6', name: 'Raise the Bar' }, { id: 'gym-7', name: 'Box Jump' }, { id: 'gym-8', name: 'Rope Storm' },
+    { id: 'gym-9', name: 'Gains Shake' }, { id: 'gym-10', name: 'Hammer Time' },
   ],
   run: [
     { id: 'run-1', name: 'Speed Demon' }, { id: 'run-2', name: 'Frost Miles' }, { id: 'run-3', name: 'Torch Bearer' },
     { id: 'run-4', name: 'Night Owl' }, { id: 'run-5', name: 'Goose Chase' },
+    { id: 'run-6', name: 'Rush Hour' }, { id: 'run-7', name: 'Green Light' }, { id: 'run-8', name: 'Pigeon Panic' },
+    { id: 'run-9', name: 'Sunrise Miles' }, { id: 'run-10', name: 'Coffee Run' },
   ],
-  bike: [],
-  mma: [{ id: 'mma-1', name: 'Knockout' }],
-  jickle: [{ id: 'jickle-1', name: 'Jickle King' }],
+  bike: [
+    { id: 'bike-1', name: 'King of the Mountain' }, { id: 'bike-2', name: 'Send It' }, { id: 'bike-3', name: 'Sprint Finish' },
+  ],
+  mma: [
+    { id: 'mma-1', name: 'Knockout' },
+    { id: 'mma-2', name: 'Main Event', users: ['amaan'] }, { id: 'mma-3', name: 'Flying Knee', users: ['amaan'] },
+    { id: 'mma-4', name: 'The Champ', users: ['amaan'] },
+  ],
+  jickle: [
+    { id: 'jickle-1', name: 'Jickle King' }, { id: 'jickle-2', name: "Chef's Kiss" }, { id: 'jickle-3', name: 'The Erne' },
+    { id: 'jickle-4', name: 'Jickled!' }, { id: 'jickle-5', name: 'Quick Hands' },
+  ],
   volo: [{ id: 'volo-1', name: 'Sky Spike' }],
   soccer: [{ id: 'soccer-1', name: 'Golazo!' }],
   date: [{ id: 'date-1', name: 'Date Night' }],

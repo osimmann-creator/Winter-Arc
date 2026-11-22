@@ -1,6 +1,6 @@
 # Winter Arc animations (Remotion)
 
-This is the source for the Winter Arc mascot, the 17 celebration videos, the 16 inside-joke videos, the opening animation and the app art. Everything is drawn in code (React + SVG) with [Remotion](https://www.remotion.dev), so poses, timing and colors can all be edited.
+This is the source for the Winter Arc mascot, the 37 celebration videos, the 16 inside-joke videos, the opening animation and the app art. Everything is drawn in code (React + SVG) with [Remotion](https://www.remotion.dev), so poses, timing and colors can all be edited.
 
 ## Setup
 
@@ -38,7 +38,12 @@ npx remotion render Gym out/gym.mp4 --codec=h264 --crf=20
 |---|---|
 | `src/hero/Hero.tsx` | The mascot rig: body, poses, face, hands and toga. `pose()` builds a pose, and `Hero` draws it. |
 | `src/scenes/*.tsx` | The celebrations (1080×2348, 30 fps, 4.5 s): Gym, GunShow, LegDay, Atlas, Mirror; Run, FrostMiles, Torch, NightOwl, GooseChase; Jickle, Volo, Soccer, Date, Beers, Reading |
+| `src/scenes/PullUp.tsx`, `BoxJump`, `RopeStorm`, `GainsShake`, `HammerTime` | Gym 6 to 10, in the new gym room (`GymRoom.tsx`) |
+| `src/scenes/RushHour.tsx`, `GreenLight`, `PigeonPanic`, `BridgeRun`, `CoffeeRun` | Run 6 to 10, down a city street and over the bridge (`CityKit.tsx`) |
 | `src/scenes/MMA.tsx` | The MMA celebration, Knockout (mma-1) |
+| `src/scenes/MMAMainEvent.tsx`, `MMAFlyingKnee`, `MMAChamp` | MMA 2 to 4, Amaan's, in the fight-night arena (`MMAKit.tsx`). His name is drawn in. |
+| `src/scenes/JickleChef.tsx`, `JickleErne`, `JickleJickled`, `JickleQuick` | Jickle 2 to 5 on a perspective court with day, beach-sunset and night looks (`JickleKit.tsx`) |
+| `src/scenes/BikeKOM.tsx`, `BikeSendIt`, `BikeSprint` | Bike 1 to 3: a head-on bicycle he pedals, the helmet and the road world (`BikeKit.tsx`) |
 | `src/scenes/Joke*.tsx` | The inside jokes (about 5.5 s): TheCoin (Dean vs Jake), BlueHair (Connor), TheIron (Ayaad), TheBag (Dean, Connor, Dylan), DylanFights, CrashOut and SatelliteHouse (Connor), PukedOn and MMAGuy (Amaan), TheRadiator and JakesMom (Jake), NetsGame (Jake and Gaurav), LiquorRun (Gaurav), PunxsutawneyPhil (Philip), ScaredOfGirls (everyone), TimeSheet (Jake). Names are drawn into these. |
 | `src/scenes/jokekit.tsx` | Shared bits for the newer jokes: name tags, text bubbles, rooms, clocks, calendars, the cap and the post card |
 | `src/scenes/kit.tsx`, `RunKit.tsx`, `ik.ts` | Shared props (dumbbell, tickets, steam, snow), the themeable running track and gait, and arm IK (`reach`) for putting a hand on a target |
@@ -52,7 +57,7 @@ npx remotion render Gym out/gym.mp4 --codec=h264 --crf=20
 
 1. Copy a scene in `src/scenes/`, for example `GunShow.tsx`. Change the poses and timing, then register it in `src/Root.tsx`.
 2. Add a row to `MAP` in `scripts/build_app_assets.sh` (composition : app id : poster second : 0), then run `ONLY="YourScene" ./scripts/build_app_assets.sh`. It writes `<id>.mp4` and `<id>.webp` into the app's `assets/celebrations/`.
-3. Add `{ id: 'gym-6', name: '…' }` to `CELEBRATIONS.gym` in the app's `js/config.js`.
+3. Add `{ id: 'gym-11', name: '…' }` to `CELEBRATIONS.gym` in the app's `js/config.js`.
 
 The mascot's hair can turn blue: set `hairBlue` (0 to 1) in a pose.
 

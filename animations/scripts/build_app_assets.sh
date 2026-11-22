@@ -49,6 +49,26 @@ LiquorRun:joke-liquor:3.4:0
 PunxsutawneyPhil:joke-phil:2.0:0
 ScaredOfGirls:joke-scared:1.2:0
 TimeSheet:joke-timesheet:2.6:0
+PullUp:gym-6:2.75:0
+BoxJump:gym-7:2.8:0
+RopeStorm:gym-8:1.9:0
+GainsShake:gym-9:2.9:0
+HammerTime:gym-10:2.45:0
+RushHour:run-6:1.5:0
+GreenLight:run-7:1.4:0
+PigeonPanic:run-8:2.0:0
+BridgeRun:run-9:2.9:0
+CoffeeRun:run-10:1.7:0
+MMAMainEvent:mma-2:2.75:0
+MMAFlyingKnee:mma-3:1.75:0
+MMAChamp:mma-4:2.4:0
+JickleChef:jickle-2:3.2:0
+JickleErne:jickle-3:1.17:0
+JickleJickled:jickle-4:2.15:0
+JickleQuick:jickle-5:1.55:0
+BikeKOM:bike-1:2.1:0
+BikeSendIt:bike-2:1.6:0
+BikeSprint:bike-3:1.75:0
 "
 want() { [ -z "$ONLY" ] && return 0; for w in $ONLY; do [ "$w" = "$1" ] && return 0; done; return 1; }
 

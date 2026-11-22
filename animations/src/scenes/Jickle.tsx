@@ -15,7 +15,7 @@ const GY = 1500;
 const SC = 0.84;
 
 /* ------------------------------- paddle ------------------------------- */
-const Paddle: React.FC = () => (
+export const Paddle: React.FC = () => (
   <g>
     <rect x={-17} y={10} width={34} height={150} rx={12} fill="#412633" stroke={INK} strokeWidth={6} />
     {[40, 62, 84, 106].map((y) => (
@@ -28,10 +28,10 @@ const Paddle: React.FC = () => (
     <path d="M-14 262 L0 246 L14 262 L0 278 Z" fill={INK} />
   </g>
 );
-const PADDLE_FACE = [0, 262] as [number, number];
+export const PADDLE_FACE = [0, 262] as [number, number];
 
 /* ------------------------------- ball ------------------------------- */
-const Ball: React.FC<{ x: number; y: number; r: number; rot?: number; fire?: number }> = ({ x, y, r, rot = 0 }) => (
+export const Ball: React.FC<{ x: number; y: number; r: number; rot?: number; fire?: number }> = ({ x, y, r, rot = 0 }) => (
   <g transform={`translate(${x} ${y}) rotate(${rot})`}>
     <circle r={r} fill="#F9EE4E" stroke={INK} strokeWidth={Math.max(3, r * 0.14)} />
     {[

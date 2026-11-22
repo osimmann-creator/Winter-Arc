@@ -20,8 +20,9 @@ const Celebrate = (() => {
     const img = new Image(); img.src = Art.poster(id);
   }
 
-  function choose(cat) {
-    const list = CELEBRATIONS[cat] || [];
+  function choose(cat, user) {
+    const u = String(user || '').toLowerCase();
+    const list = (CELEBRATIONS[cat] || []).filter(c => !c.users || c.users.includes(u));
     if (!list.length) return null;
     let opts = list.filter(c => c.id !== last[cat]);
     if (!opts.length) opts = list;
@@ -30,15 +31,15 @@ const Celebrate = (() => {
 
   /** Called when an activity is selected in the log sheet: choose its
       celebration now and start downloading it. */
-  function prepare(cat) {
+  function prepare(cat, user) {
     if (reduced()) return;
-    if (!prepared[cat]) prepared[cat] = choose(cat);
+    if (!prepared[cat]) prepared[cat] = choose(cat, user);
     prefetch(prepared[cat]);
   }
 
   /** Pick a celebration for an activity, avoiding the one played last time. */
-  function pick(cat) {
-    const id = prepared[cat] || choose(cat);
+  function pick(cat, user) {
+    const id = prepared[cat] || choose(cat, user);
     delete prepared[cat];
     if (id) last[cat] = id;
     return id;

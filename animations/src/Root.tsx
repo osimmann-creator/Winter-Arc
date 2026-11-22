@@ -1,6 +1,26 @@
 import './fonts';
 import { Composition, Folder, Still } from 'remotion';
 import { FULL_H } from './fx/Stage';
+import { BikeSprintScene } from './scenes/BikeSprint';
+import { BikeSendItScene } from './scenes/BikeSendIt';
+import { BikeKOMScene } from './scenes/BikeKOM';
+import { JickleQuickScene } from './scenes/JickleQuick';
+import { JickleJickledScene } from './scenes/JickleJickled';
+import { JickleErneScene } from './scenes/JickleErne';
+import { JickleChefScene } from './scenes/JickleChef';
+import { MMAChampScene } from './scenes/MMAChamp';
+import { MMAFlyingKneeScene } from './scenes/MMAFlyingKnee';
+import { MMAMainEventScene } from './scenes/MMAMainEvent';
+import { CoffeeRunScene } from './scenes/CoffeeRun';
+import { BridgeRunScene } from './scenes/BridgeRun';
+import { PigeonPanicScene } from './scenes/PigeonPanic';
+import { GreenLightScene } from './scenes/GreenLight';
+import { RushHourScene } from './scenes/RushHour';
+import { HammerTimeScene } from './scenes/HammerTime';
+import { GainsShakeScene } from './scenes/GainsShake';
+import { RopeStormScene } from './scenes/RopeStorm';
+import { BoxJumpScene } from './scenes/BoxJump';
+import { PullUpScene } from './scenes/PullUp';
 import { ModelSheet, HeroBig, FaceSheet, StyleSheet } from './sheets/ModelSheet';
 import { GymScene } from './scenes/Gym';
 import { RunScene } from './scenes/Run';
@@ -68,6 +88,36 @@ export const RemotionRoot: React.FC = () => {
         <Composition id="LegDay" component={LegDayScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
         <Composition id="Atlas" component={AtlasScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
         <Composition id="Mirror" component={MirrorScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+      </Folder>
+      <Folder name="GymWinter">
+        <Composition id="HammerTime" component={HammerTimeScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="GainsShake" component={GainsShakeScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="RopeStorm" component={RopeStormScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="BoxJump" component={BoxJumpScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="PullUp" component={PullUpScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+      </Folder>
+      <Folder name="CityRun">
+        <Composition id="CoffeeRun" component={CoffeeRunScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="BridgeRun" component={BridgeRunScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="PigeonPanic" component={PigeonPanicScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="GreenLight" component={GreenLightScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="RushHour" component={RushHourScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+      </Folder>
+      <Folder name="MMAAmaan">
+        <Composition id="MMAChamp" component={MMAChampScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="MMAFlyingKnee" component={MMAFlyingKneeScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="MMAMainEvent" component={MMAMainEventScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+      </Folder>
+      <Folder name="MoreJickle">
+        <Composition id="JickleQuick" component={JickleQuickScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="JickleJickled" component={JickleJickledScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="JickleErne" component={JickleErneScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="JickleChef" component={JickleChefScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+      </Folder>
+      <Folder name="MoreBike">
+        <Composition id="BikeSprint" component={BikeSprintScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="BikeSendIt" component={BikeSendItScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="BikeKOM" component={BikeKOMScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
       </Folder>
       <Folder name="MoreRun">
         <Composition id="FrostMiles" component={FrostMilesScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />

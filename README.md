@@ -99,22 +99,23 @@ Rules the app enforces when you log:
 
 ## Celebration videos
 
-Gym and Run have five each:
+- Gym (10): Beast Mode, Gun Show, Leg Day, Atlas Mode, Mirror Check, Raise the Bar, Box Jump, Rope Storm, Gains Shake, Hammer Time
+- Run (10): Speed Demon, Frost Miles, Torch Bearer, Night Owl, Goose Chase, Rush Hour, Green Light, Pigeon Panic, Sunrise Miles, Coffee Run
+- Bike Ride (3): King of the Mountain, Send It, Sprint Finish
+- MMA (4): Knockout, plus Main Event, Flying Knee and The Champ, which have Amaan's name in them and only play when he logs MMA
+- Jickle (5): Jickle King, Chef's Kiss, The Erne, Jickled!, Quick Hands
 
-- Gym: Beast Mode, Gun Show, Leg Day, Atlas Mode, Mirror Check
-- Run: Speed Demon, Frost Miles, Torch Bearer, Night Owl, Goose Chase
-
-A logged activity picks from the clips assigned to its category. MMA’s celebration is Knockout.
+Everything else has one. A logged activity picks at random from the clips assigned to its category and never repeats the last one. An entry with `users: ['amaan']` only plays for those usernames, though everyone sees it in the gallery.
 
 To add another:
 
-1. Put `gym-6.mp4` (720×1566, H.264, muted) and a `gym-6.webp` poster (360×782) in `assets/celebrations/`. Videos are drawn to the iPhone 18 Pro's shape so they fill the screen; on wider screens the app shows the whole frame.
-2. Add `{ id: 'gym-6', name: 'Your Name' }` to the `gym` list in `CELEBRATIONS` in `js/config.js`.
+1. Put `gym-11.mp4` (720×1566, H.264, muted) and a `gym-11.webp` poster (360×782) in `assets/celebrations/`. Videos are drawn to the iPhone 18 Pro's shape so they fill the screen; on wider screens the app shows the whole frame.
+2. Add `{ id: 'gym-11', name: 'Your Name' }` to the `gym` list in `CELEBRATIONS` in `js/config.js`.
 
 3. Publish the matching Site source and upload the new files to the private media bucket using `scripts/upload-media.mjs`. Set `MEDIA_UPLOAD_SECRET` in the shell that runs the uploader and as a Sites runtime secret. For example:
 
    ```sh
-   node scripts/upload-media.mjs https://winter-arc.osimmann.chatgpt.site celebrations/gym-6.mp4 celebrations/gym-6.webp
+   node scripts/upload-media.mjs https://winter-arc.osimmann.chatgpt.site celebrations/gym-11.mp4 celebrations/gym-11.webp
    ```
 
 For a new inside joke, register the clip in `INSIDE_JOKES`, implement the trigger in `Logic.jokes`, and add the server event validation and a D1 migration when the event type is new. Keep the GitHub and Sites source histories in sync. A GitHub push alone does not publish the Site or upload clips to R2.

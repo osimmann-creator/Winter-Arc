@@ -38,7 +38,7 @@ export const Glove: React.FC<{ s?: number }> = ({ s = 1 }) => (
   </g>
 );
 
-const Headband: React.FC = () => (
+export const Headband: React.FC = () => (
   <g>
     <path d="M-150 -238 Q0 -272 150 -238 L146 -204 Q0 -238 -146 -204 Z" fill="#D9434A" stroke={INK} strokeWidth={7} strokeLinejoin="round" />
     <path d="M146 -224 C190 -230 220 -200 236 -170 M146 -214 C186 -206 200 -176 214 -150" fill="none" stroke={INK} strokeWidth={16} strokeLinecap="round" />

@@ -751,7 +751,7 @@ const App = (() => {
       else {
         S.tab = 'home'; S.ringFrom = oldPts; render(); window.scrollTo(0, 0);
         try { if (navigator.vibrate) navigator.vibrate([16, 50, 16]); } catch (e) { /* not supported */ }
-        await Celebrate.play(Celebrate.pick(post.cat));
+        await Celebrate.play(Celebrate.pick(post.cat, S.me && S.me.username));
         await afterLog(oldPts, oldBadges, post.cat);
       }
     } finally { S.busy = false; }
@@ -1001,7 +1001,7 @@ const App = (() => {
     'pick-photo': () => $('#photoInput').click(),
     'clear-photo': () => { S.draft.photo = null; refreshProof(); refreshFoot(); },
     wit(el) { const w = S.draft.witnesses, id = el.dataset.id, i = w.indexOf(id); if (i >= 0) w.splice(i, 1); else w.push(id); el.setAttribute('aria-pressed', String(i < 0)); refreshFoot(); },
-    cat(el) { S.draft.cat = el.dataset.cat; if (!S.draft.original) Celebrate.prepare(el.dataset.cat); refreshCats(); refreshDetails(); refreshFoot(); },
+    cat(el) { S.draft.cat = el.dataset.cat; if (!S.draft.original) Celebrate.prepare(el.dataset.cat, S.me && S.me.username); refreshCats(); refreshDetails(); refreshFoot(); },
     step(el) {
       const d = S.draft, k = el.dataset.k, dv = parseFloat(el.dataset.d);
       if (k === 'minutes') { d.minutes = U.clamp(d.minutes + dv, 0, 300); $('#minOut').innerHTML = `${d.minutes}<small> min</small>`; const m = $('#minMsg'); m.className = d.minutes >= 45 ? 'ok' : 'warn'; m.textContent = d.minutes >= 45 ? 'Counts. 45 minutes minimum.' : 'Gym needs at least 45 minutes to count.'; }
