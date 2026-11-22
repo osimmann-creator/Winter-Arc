@@ -388,17 +388,17 @@ const Jokes = (() => {
   })();
 
   /* ------------------------------------------------------------ the crew, right now */
-  function build(members, posts, cfg, now) {
+  function build(members, posts, cfg, now, excluded) {
     if (!members || !members.length) return null;
     const calc = Logic.compute(members, posts, cfg, now), se = calc.season;
-    const P = members.map(m => {
+    const P = members.filter(m => !excluded?.has(m.id)).map(m => {
       const R = calc.by[m.id], wk = {}, joinedWeek = Math.max(0, m.joinedWeek || 0);
       const o = {
-        id: m.id, name: m.name, role: m.role, pts: R.thisWeek, total: R.total, strikes: R.strikes, out: R.eliminated,
+        id: m.id, name: Logic.displayName(m, calc), role: m.role, goal: R.goal, pts: R.thisWeek, total: R.total, strikes: R.strikes, out: R.eliminated,
         elim: R.elimWeek != null ? R.elimWeek + 1 : null, streak: R.streak, cat: R.cat, wk, badges: R.badges.length,
         witnessed: R.witnessed, logs: R.counted.length, caps: 0, voided: 0, noPhoto: 0, late: 0, early: 0, given: 0, capsGiven: 0,
         gymMins: [], runMiles: [], lastAt: null,
-        lastwk: se.lastComplete >= joinedWeek ? R.weekPts[se.lastComplete] : null,
+        lastwk: se.lastComplete >= joinedWeek ? R.weekPts[se.lastComplete] : null, lastGoal: R.weekGoals[se.lastComplete],
         inFor: daysBetween(Logic.addDays(se.start, 7 * joinedWeek), now),
       };
       for (const p of R.posts) { o.caps += rx(p, CAP); if (p.voided) o.voided++; }
@@ -415,6 +415,7 @@ const Jokes = (() => {
       o.sports = cat(o, 'jickle') + cat(o, 'volo') + cat(o, 'soccer');
       return o;
     });
+    if (!P.length) return null;
     const byId = {}; P.forEach(o => { byId[o.id] = o; });
     for (const m of members) {
       for (const p of calc.by[m.id].posts) {
@@ -436,7 +437,7 @@ const Jokes = (() => {
 
   const weekTop = c => [...c.alive].sort((a, b) => b.pts - a.pts || b.total - a.total || byName(a, b));
   const lowestOther = (c, o) => { const rest = c.alive.filter(x => x.id !== o.id); if (!rest.length) return null; const lo = Math.min(...rest.map(x => x.pts)); return rotate(rest.filter(x => x.pts === lo), c.day); };
-  const short = c => { const s = c.alive.filter(o => o.pts < c.min), far = s.filter(o => c.min - o.pts >= 2); return every(far.length ? far : s); };
+  const short = c => { const s = c.alive.filter(o => o.pts < o.goal), far = s.filter(o => o.goal - o.pts >= 2); return every(far.length ? far : s); };
   const fromWeek2 = c => c.live && c.se.idx >= 1;
 
   /* ------------------------------------------------------------ situations */
@@ -444,32 +445,32 @@ const Jokes = (() => {
     zero: { when: c => c.live && c.dow >= 2 && c.dow <= 5, pick: c => every(c.alive.filter(o => o.pts === 0)) },
     last: {
       when: c => c.live && c.dow >= 1,
-      pick: c => every(lows(c.alive, o => o.pts).filter(o => o.pts < c.min)),
+      pick: c => every(lows(c.alive, o => o.pts).filter(o => o.pts < o.goal)),
       vars: (c, o) => { const t = weekTop(c)[0]; return { name2: t.name, pts2: t.pts, gap: t.pts - o.pts }; },
     },
     behind: { when: c => c.live && (c.dow === 4 || c.dow === 5), pick: short },
     sunday: { when: c => c.live && c.dow === 6, pick: short },
-    close: { pick: c => every(c.alive.filter(o => o.pts < c.min && c.min - o.pts <= CLOSE)) },
-    safe: { pick: c => every(c.alive.filter(o => o.pts >= c.min)) },
+    close: { pick: c => every(c.alive.filter(o => o.pts < o.goal && o.goal - o.pts <= CLOSE)) },
+    safe: { pick: c => every(c.alive.filter(o => o.pts >= o.goal)) },
     leader: {
       pick: c => { const t = weekTop(c); return t.length >= 2 && t[0].pts > 0 && t[0].pts > t[1].pts ? [{ o: t[0], s: 0 }] : []; },
       vars: (c, o) => { const t = weekTop(c), lo = lowestOther(c, o); return { gap: o.pts - t[1].pts, last: lo && lo.pts < o.pts ? lo.name : null }; },
     },
-    double: { pick: c => most(c.alive, o => o.pts, c.min * 2) },
+    double: { pick: c => most(c.alive.filter(o => o.pts >= o.goal * 2), o => o.pts, 0) },
     seasonLeader: {
       when: fromWeek2,
       pick: c => { const t = [...c.P].sort((a, b) => b.total - a.total); return t.length >= 2 && t[0].total > 0 && t[0].total > t[1].total ? [{ o: t[0], s: 0 }] : []; },
       vars: (c, o) => ({ gap: o.total - Math.max(...c.P.filter(x => x.id !== o.id).map(x => x.total)) }),
     },
     seasonLast: { when: fromWeek2, pick: c => every(lows(c.alive, o => o.total)) },
-    strike: { pick: c => every(c.alive.filter(o => o.strikes >= 1 && o.strikes === c.outN - 1 && o.pts < c.min)) },
+    strike: { pick: c => every(c.alive.filter(o => o.strikes >= 1 && o.strikes === c.outN - 1 && o.pts < o.goal)) },
     out: { pick: c => every(c.P.filter(o => o.out)) },
     streak: { pick: c => most(c.alive, o => o.streak, 3) },
     idle: { pick: c => most(c.alive.filter(o => o.days != null), o => o.days, 3) },
     ghost: { pick: c => every(c.alive.filter(o => o.logs === 0 && o.inFor >= 4)) },
     lastWeekLow: {
       when: c => c.live && c.se.lastComplete >= 0,
-      pick: c => every(lows(c.alive.filter(o => o.lastwk != null), o => o.lastwk).filter(o => o.lastwk < c.min)),
+      pick: c => every(lows(c.alive.filter(o => o.lastwk != null), o => o.lastwk).filter(o => o.lastwk < o.lastGoal)),
     },
     beers: { pick: c => most(c.P, o => cat(o, 'beers'), 2), n: o => cat(o, 'beers') },
     beerWeek: {
@@ -491,7 +492,7 @@ const Jokes = (() => {
     voided: { pick: c => most(c.P, o => o.voided, 1), n: o => o.voided },
     witness: { pick: c => most(c.P.filter(o => o.witnessed > o.logs), o => o.witnessed, 3), n: o => o.witnessed },
     noPhoto: { pick: c => most(c.P, o => o.noPhoto, 2), n: o => o.noPhoto },
-    hype: { pick: c => most(c.alive.filter(o => o.pts < c.min), o => o.given, 5), n: o => o.given },
+    hype: { pick: c => most(c.alive.filter(o => o.pts < o.goal), o => o.given, 5), n: o => o.given },
     capper: { pick: c => most(c.P, o => o.capsGiven, 2), n: o => o.capsGiven },
     late: { pick: c => most(c.P, o => o.late, 2), n: o => o.late },
     early: { pick: c => most(c.P, o => o.early, 2), n: o => o.early },
@@ -500,7 +501,7 @@ const Jokes = (() => {
       when: c => c.live && c.dow >= 1,
       pick: c => {
         const s = [...c.alive].sort((a, b) => a.pts - b.pts || byName(a, b)), hi = s.length ? s[s.length - 1].pts : 0;
-        return every(s.slice(0, Math.floor(s.length / 2)).filter(o => o.pts < c.min && o.pts < hi));
+        return every(s.slice(0, Math.floor(s.length / 2)).filter(o => o.pts < o.goal && o.pts < hi));
       },
     },
     badgeless: { when: fromWeek2, pick: c => c.alive.filter(o => o.badges <= 1).map(o => ({ o, s: -o.badges })), n: o => o.badges },
@@ -535,7 +536,7 @@ const Jokes = (() => {
     const best = Math.max(...cands.map(x => x.s));
     const o = rotate(cands.filter(x => x.s === best).map(x => x.o), c.day * 7 + i);
     const v = {
-      name: o.name, pts: o.pts, left: Math.max(0, c.min - o.pts), total: o.total, min: c.min, strikes: o.strikes,
+      name: o.name, pts: o.pts, left: Math.max(0, o.goal - o.pts), total: o.total, min: o.goal, strikes: o.strikes,
       streak: o.streak, days: o.days, lastwk: o.lastwk, elim: o.elim, day: c.dayName, week: c.week, weeks: c.weeks,
       crew: c.alive.length, datePts: CATS.date.pts, gymPts: CATS.gym.pts, readPts: CATS.reading.pts,
     };
@@ -600,21 +601,21 @@ const Jokes = (() => {
 
   /** Today's roast: the same for the whole crew. Replays the last few days so it
       doesn't repeat yesterday's joke, person or situation. */
-  function daily(members, posts, cfg, now = new Date()) {
+  function daily(members, posts, cfg, now = new Date(), excluded) {
     let prev = null;
     for (let back = 4; back >= 1; back--) {
       const end = new Date(Logic.addDays(midnight(now), 1 - back).getTime() - 1);
-      const c = build(members, posts.filter(p => new Date(p.at) <= end), cfg, end);
+      const c = build(members, posts.filter(p => new Date(p.at) <= end), cfg, end, excluded);
       if (c) prev = choose(c, prev) || prev;
     }
-    const c = build(members, posts, cfg, now);
+    const c = build(members, posts, cfg, now, excluded);
     return c ? choose(c, prev) : null;
   }
   /** The same joke again with fresh numbers (after a new post), or null if it no longer fits. */
-  function again(members, posts, cfg, now, i) { const c = build(members, posts, cfg, now || new Date()); return c && LIST[i] ? withPos(resolve(c, i)) : null; }
+  function again(members, posts, cfg, now, i, excluded) { const c = build(members, posts, cfg, now || new Date(), excluded); return c && LIST[i] ? withPos(resolve(c, i)) : null; }
   /** The next joke after `cur` (tapping the banner): walks the shuffled order, preferring someone else. */
-  function next(members, posts, cfg, now, cur) {
-    const c = build(members, posts, cfg, now || new Date()); if (!c || !cur) return null;
+  function next(members, posts, cfg, now, cur, excluded) {
+    const c = build(members, posts, cfg, now || new Date(), excluded); if (!c || !cur) return null;
     const start = ORDER.indexOf(cur.i) + 1;
     for (const ok of tiers(cur)) {
       for (let k = 0; k < ORDER.length; k++) {
@@ -625,7 +626,7 @@ const Jokes = (() => {
     return null;
   }
   /** Every joke that fits right now, with its target (for testing). */
-  function all(members, posts, cfg, now) { const c = build(members, posts, cfg, now || new Date()); return c ? LIST.map((_, i) => resolve(c, i)) : []; }
+  function all(members, posts, cfg, now, excluded) { const c = build(members, posts, cfg, now || new Date(), excluded); return c ? LIST.map((_, i) => resolve(c, i)) : []; }
 
   return { LIST, WHEN, ORDER, daily, again, next, all };
 })();

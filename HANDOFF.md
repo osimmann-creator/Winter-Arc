@@ -1,5 +1,7 @@
 # Handoff: hosting Winter Arc for the group
 
+> This is the original hosting brief. Winter Arc is now hosted with live sign-in, shared records and private media. See [README.md](README.md) for the active build and publishing instructions.
+
 The app is finished: screens, rules engine, 34 full-screen videos (17 celebrations, 16 inside jokes and the intro), the Hoat Guarantee stamp and all the sign-in and account screens. It's members only. Everyone's account is made ahead of time, so there is no sign-up page.
 
 Only one piece is missing: **`js/store.js` still uses sample data**. It needs to be replaced with a version backed by real sign-in, a shared database and photo storage. Every screen already calls the `Store` methods described below, so no UI work is needed.

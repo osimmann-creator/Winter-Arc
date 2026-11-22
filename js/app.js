@@ -7,7 +7,7 @@ const App = (() => {
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  const S = { tab: 'home', board: 'week', feed: 'week', me: null, group: null, members: [], posts: [], events: [], calc: null, draft: null, ringFrom: null, busy: false,
+  const S = { tab: 'home', board: 'week', messages: [], comments: {}, activeInjuries: [], me: null, group: null, members: [], posts: [], events: [], calc: null, draft: null, ringFrom: null, busy: false,
     acct: null, prefs: null, lastUser: '' };
   const COLORS = ['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F'];
   const isDemo = () => Store.mode === 'demo';
@@ -16,10 +16,11 @@ const App = (() => {
   const ic = (n, cls) => Art.ui(n, cls);
   const member = id => S.members.find(m => m.id === id);
   const isComm = () => !!(S.me && member(S.me.id) && member(S.me.id).role === 'commissioner');
-  const nameOf = id => (S.me && id === S.me.id ? 'You' : (member(id) || {}).name || 'Someone');
+  const displayName = m => m ? Logic.displayName(m, S.calc) : 'Someone';
+  const nameOf = id => (S.me && id === S.me.id ? 'You' : displayName(member(id)));
   const catName = cat => CATS[cat].short || CATS[cat].label;
-  const fmtDay = d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const fmtRange = (a, b) => fmtDay(a) + ' – ' + fmtDay(Logic.addDays(b, -1));
+  const fmtDay = d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: cfg().timezone });
+  const fmtRange = (a, b) => fmtDay(a) + ' – ' + fmtDay(Logic.addDays(b, -1, cfg().timezone));
   function fmtLeft(ms) {
     const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
     return (d ? d + 'd ' : '') + [h, m, s % 60].map(v => String(v).padStart(2, '0')).join(':');
@@ -31,34 +32,37 @@ const App = (() => {
     return fmtDay(iso);
   }
   const ptsWord = v => (v === 1 ? 'point' : 'points');
+  const fmtPace = seconds => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  function parsePace(value) {
+    if (!value.trim()) return null;
+    const match = /^([0-9]{1,3}):([0-5][0-9])$/.exec(value.trim());
+    return match ? Number(match[1]) * 60 + Number(match[2]) || NaN : NaN;
+  }
   function avatar(id, size = 40) {
     const m = member(id) || {};
-    return `<span class="av" style="--c:${m.color || '#1E8FFF'};--s:${size}px" aria-hidden="true">${m.photo ? `<img src="${esc(m.photo)}" alt="">` : esc((m.name || '?').slice(0, 1).toUpperCase())}</span>`;
+    return bigAv(m.name, m.color || '#1E8FFF', m.photo, size);
   }
   const coin = (pts, cls = '') => `<span class="coin ${cls}">+${fmtPts(pts)}</span>`;
+  const postPoints = post => S.calc.cappedPosts.has(post.id) ? 0 : CATS[post.cat].pts;
   const catChip = cat => `<span class="cchip" style="--c:${CATS[cat].color}">${Art.icon64(cat)}${esc(catName(cat))}</span>`;
 
   async function load() {
     S.auth = await Store.getAuth();
-    const inn = !!(S.auth && S.auth.signedIn);
+    const inn = !!(S.auth && S.auth.signedIn && !S.auth.mustChangePassword);
     S.me = inn ? await Store.getMe() : null;
     S.group = S.me ? await Store.getGroup() : null;
-    S.members = S.me ? await Store.listMembers() : [];
+    const [members, posts, events, social] = S.me
+      ? await Promise.all([Store.listMembers(), Store.listPosts(), Store.listEvents(), Store.listSocial()])
+      : [[], [], [], { messages: [], comments: [], activeInjuries: [] }];
+    S.members = members;
     if (S.me && !S.members.some(m => m.id === S.me.id)) S.me = null;
-    S.posts = S.me ? await Store.listPosts() : [];
-    S.events = S.me ? await Store.listEvents() : [];
+    S.posts = posts;
+    S.events = events;
+    S.messages = social.messages;
+    S.activeInjuries = social.activeInjuries;
+    S.comments = {};
+    for (const comment of social.comments) (S.comments[comment.kind + ':' + comment.target] ||= []).push(comment);
     S.calc = Logic.compute(S.members, S.posts, cfg(), new Date());
-    applyAliases();
-  }
-  /** Name swaps from config.js ALIASES (Dylan is "La4" at exactly 4 points). Display only: realName keeps the real one. */
-  function applyAliases() {
-    if (typeof ALIASES === 'undefined') return;
-    S.members = S.members.map(m => {
-      const real = m.realName || m.name, a = Logic.alias(m, S.calc, ALIASES);
-      return Object.assign({}, m, { realName: real, name: a || real, aliased: !!a });
-    });
-    const swap = list => list.map(m => S.members.find(x => x.id === m.id) || m);   // the leaderboards hold member objects too
-    if (S.calc) Object.assign(S.calc, { weekRank: swap(S.calc.weekRank), allRank: swap(S.calc.allRank), alive: swap(S.calc.alive) });
   }
   /** In the app proper (tabs showing), as opposed to the sign-in screens. */
   const inApp = () => !!(S.me && !(S.auth && S.auth.mustChangePassword));
@@ -73,8 +77,8 @@ const App = (() => {
   }
   function renderView() {
     const v = view();
-    if (!S.auth || !S.auth.signedIn || !S.me) v.innerHTML = vSignedOut();
-    else if (!inApp()) v.innerHTML = vSetPassword();
+    if (S.auth?.signedIn && S.auth.mustChangePassword) v.innerHTML = vSetPassword();
+    else if (!inApp()) v.innerHTML = vSignedOut();
     else v.innerHTML = S.tab === 'feed' ? vFeed() : S.tab === 'board' ? vBoard() : S.tab === 'me' ? vMe() : S.tab === 'account' ? vAccount() : vHome();
   }
   function navState() {
@@ -88,7 +92,7 @@ const App = (() => {
 
   /* ------------------------------------------------------------ home */
   function mascotState(R, se, left) {
-    const min = cfg().weeklyMin, behind = left > 0 && se.msLeft < 2 * 864e5;
+    const min = R.goal, behind = left > 0 && se.msLeft < 2 * 864e5;
     if (se.status === 'pre') return ['point', `The Winter Arc starts ${fmtDay(se.start)}. Stretch those biceps.`];
     if (se.status === 'over') {
       const w = S.calc.winners.map(id => nameOf(id));
@@ -115,7 +119,7 @@ const App = (() => {
     </div>`;
   }
   function setRing(pts) {
-    const min = cfg().weeklyMin, C = 2 * Math.PI * 52, f = $('#ringFill'), o = $('#ringOver'); if (!f) return;
+    const min = S.calc.by[S.me.id].goal, C = 2 * Math.PI * 52, f = $('#ringFill'), o = $('#ringOver'); if (!f) return;
     f.style.strokeDashoffset = (C * (1 - Math.min(pts, min) / min)).toFixed(2);
     o.style.strokeDashoffset = (C * (1 - U.clamp((pts - min) / min))).toFixed(2);
     f.classList.toggle('done', pts >= min);
@@ -130,9 +134,9 @@ const App = (() => {
     const n = cfg().strikesOut;
     return `<span class="strikes" role="img" aria-label="${R.strikes} of ${n} strikes">${Array.from({ length: n }, (_, i) => `<i class="${i < R.strikes ? 'on' : ''}">${i < R.strikes ? ic('x') : ''}</i>`).join('')}</span>`;
   }
-  const miniRow = p => `<li>${avatar(p.memberId, 34)}<span class="mtxt"><b>${esc(nameOf(p.memberId))}</b> ${esc(catName(p.cat).toLowerCase() === 'beers' ? 'had beers with the fellas' : 'logged ' + catName(p.cat))}<small>${ago(p.at)}</small></span><span class="mic" style="--c:${CATS[p.cat].color}">${Art.icon64(p.cat)}</span>${coin(CATS[p.cat].pts, 'sm')}</li>`;
+  const miniRow = p => `<li>${avatar(p.memberId, 34)}<span class="mtxt"><b>${esc(nameOf(p.memberId))}</b> ${esc(catName(p.cat).toLowerCase() === 'beers' ? 'had beers with the fellas' : 'logged ' + catName(p.cat))}<small>${ago(p.at)}</small></span><span class="mic" style="--c:${CATS[p.cat].color}">${Art.icon64(p.cat)}</span>${coin(postPoints(p), 'sm')}</li>`;
   function vHome() {
-    const C = S.calc, se = C.season, R = C.by[S.me.id], min = cfg().weeklyMin;
+    const C = S.calc, se = C.season, R = C.by[S.me.id], min = R.goal;
     const pts = S.ringFrom != null ? S.ringFrom : R.thisWeek, left = Math.max(0, min - R.thisWeek);
     const chip = se.status === 'pre' ? ['pre', 'Starts ' + fmtDay(se.start)] : se.status === 'over' ? ['over', 'Season over']
       : R.eliminated ? ['out', 'Eliminated'] : R.thisWeek >= min ? ['safe', isHoat() ? 'Hoat guaranteed' : 'Safe this week'] : ['todo', `${fmtPts(left)} to go`];
@@ -160,7 +164,7 @@ const App = (() => {
   <button class="btn btn-log" data-act="log">${ic('plus')}<span>Log an activity</span></button>
   <div class="card standing">
     <h2>Still standing <small>${C.alive.length} of ${S.members.length}</small></h2>
-    <div class="avs">${S.members.map(m => { const out = C.by[m.id].eliminated; return `<span class="sv${out ? ' out' : ''}">${avatar(m.id, 46)}${out ? `<i class="xmark">${ic('x')}</i>` : ''}<small>${esc(m.id === S.me.id ? 'You' : m.name)}</small></span>`; }).join('')}</div>
+    <div class="avs">${S.members.map(m => { const out = C.by[m.id].eliminated; return `<span class="sv${out ? ' out' : ''}">${avatar(m.id, 46)}${out ? `<i class="xmark">${ic('x')}</i>` : ''}<small>${esc(m.id === S.me.id ? 'You' : displayName(m))}</small></span>`; }).join('')}</div>
     <p class="note">Two strikes and you’re out. Survivors win the Winter Arc.</p>
   </div>
   <div class="card recent">
@@ -171,11 +175,14 @@ const App = (() => {
   }
 
   /* ------------------------------------------------------------ roast of the day (js/jokes.js) */
+  const roastExclusions = () => new Set(S.activeInjuries.map(report => report.memberId));
   function roastPick() {
-    const now = new Date(), day = Logic.dayKey(now);
+    if (!Array.isArray(S.activeInjuries)) return null;
+    const now = new Date(), day = Logic.dayKey(now, cfg().timezone);
     try {
-      let r = S.roast && S.roast.day === day ? Jokes.again(S.members, S.posts, cfg(), now, S.roast.i) : null;
-      if (!r) r = Jokes.daily(S.members, S.posts, cfg(), now);
+      const excluded = roastExclusions();
+      let r = S.roast && S.roast.day === day ? Jokes.again(S.members, S.posts, cfg(), now, S.roast.i, excluded) : null;
+      if (!r) r = Jokes.daily(S.members, S.posts, cfg(), now, excluded);
       S.roast = r ? { day, i: r.i, pos: r.pos, key: r.key, target: r.target } : null;
       return r;
     } catch (e) { console.error(e); return null; }
@@ -193,48 +200,88 @@ const App = (() => {
 
   /* ------------------------------------------------------------ feed */
   const seg = (name, opts, cur) => `<div class="seg" role="tablist" aria-label="${name}">${opts.map(([v, l]) => `<button role="tab" aria-selected="${v === cur}" data-act="seg" data-seg="${name}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  function commentsHTML(kind, id) {
+    const comments = S.comments[kind + ':' + id] || [];
+    return `<div class="feed-comments">
+      ${comments.length ? `<ul>${comments.map(c => `<li>${avatar(c.memberId, 25)}<div><b>${esc(displayName(member(c.memberId)))}</b> <small>${ago(c.at)}</small><p>${esc(c.body)}</p></div></li>`).join('')}</ul>` : ''}
+      <form class="feed-comment" data-feed-form data-comment-for="${esc(id)}" data-comment-kind="${kind}">
+        <input name="body" aria-label="Write a comment" maxlength="300" placeholder="Write a comment…" required>
+        <button class="btn" type="submit">Comment</button>
+      </form>
+    </div>`;
+  }
   function postCard(p) {
     const C0 = CATS[p.cat], mine = p.memberId === S.me.id, caps = (p.reactions[CAP] || []).length, se = S.calc.season;
-    const thisWeek = Logic.weekIdx(new Date(p.at), se.start) === se.idx;
-    const details = [p.cat === 'gym' && p.minutes ? p.minutes + ' min' : '', p.cat === 'run' && p.miles ? p.miles + ' mi' : ''].filter(Boolean).join(' · ');
+    const thisWeek = Logic.weekIdx(p.at, se.start, se.timezone) === se.idx;
+    const details = [p.cat === 'gym' && p.minutes ? p.minutes + ' min' : '', p.miles ? p.miles + ' mi' : '', p.paceSeconds ? fmtPace(p.paceSeconds) + ' /mi' : ''].filter(Boolean).join(' · ');
     const wit = (p.witnesses || []).map(id => esc(nameOf(id))).join(', ');
     return `<article class="post card${p.voided ? ' voided' : ''}" data-id="${p.id}" style="--c:${C0.color}">
-  <header>${avatar(p.memberId, 44)}<div class="who"><b>${esc(nameOf(p.memberId))}</b><span>${catChip(p.cat)}<em>${ago(p.at)}</em></span></div>${coin(C0.pts)}</header>
+  <header>${avatar(p.memberId, 44)}<div class="who"><b>${esc(nameOf(p.memberId))}</b><span>${catChip(p.cat)}<em>${ago(p.at)}</em></span></div>${coin(postPoints(p))}</header>
   ${p.photo ? `<button class="photo" data-act="photo" data-id="${p.id}" aria-label="Open the proof photo"><img src="${esc(Art.photo(p.photo))}" alt="Proof for ${esc(C0.label)}" loading="lazy"></button>` : ''}
   ${p.voided ? '<p class="stamp">Voided · fraud · 0-point week</p>' : ''}
+  ${S.calc.cappedPosts.has(p.id) ? '<p class="note">Weekly limit reached for this activity.</p>' : ''}
   ${p.caption ? `<p class="cap">${esc(p.caption)}</p>` : ''}
   ${details || wit ? `<p class="meta">${details ? `<span>${ic('clock')}${details}</span>` : ''}${wit ? `<span>${ic('users')}Witnessed by ${wit}</span>` : ''}</p>` : ''}
   ${caps >= CAP_DISPUTE && !p.voided ? `<p class="dispute">${ic('flag')}Disputed: ${caps} people called cap</p>` : ''}
   <footer>
     <div class="rx">${REACTIONS.map(e => { const who = p.reactions[e] || [], on = who.includes(S.me.id); return `<button class="${on ? 'on' : ''}" data-act="react" data-id="${p.id}" data-e="${e}" aria-pressed="${on}" aria-label="${e === CAP ? 'Call cap on this post' : 'React ' + e}">${e}<span>${who.length || ''}</span></button>`; }).join('')}</div>
+    ${mine && !p.voided && !p.fraud ? `<button class="link" data-act="edit" data-id="${p.id}">Edit</button>` : ''}
     ${mine && thisWeek ? `<button class="link danger" data-act="del" data-id="${p.id}">Delete</button>` : ''}
     ${!mine && !p.voided && isComm() ? `<button class="link danger" data-act="void" data-id="${p.id}">Void</button>` : ''}
   </footer>
+  ${commentsHTML('activity', p.id)}
 </article>`;
   }
+  function messageCard(message) {
+    const injury = message.kind === 'injury';
+    return `<article class="card post feed-message${injury ? ' injury-report' : ''}">
+      ${injury ? `<p class="eyebrow">Team news</p><h2>${esc(message.title)}</h2><small>${ago(message.at)}</small>`
+        : `<header>${avatar(message.memberId, 40)}<div class="who"><b>${esc(nameOf(message.memberId))}</b><span>${ago(message.at)}</span></div></header>`}
+      <p class="feed-message-body">${esc(message.body)}</p>
+      ${commentsHTML('message', message.id)}
+    </article>`;
+  }
+  function feedComposer() {
+    const { timezone } = cfg(), today = Logic.dayKey(new Date(), timezone);
+    const posted = S.messages.some(p => p.kind === 'text' && p.memberId === S.me.id && Logic.dayKey(p.at, timezone) === today);
+    return `<div class="card feed-composer">
+      ${posted ? '<p class="note">You’ve shared your text post for today.</p>' : `<form id="textFeedForm" class="form" data-feed-form>
+        <label class="fld"><span>Text post</span><textarea name="body" maxlength="600" rows="2" placeholder="What’s happening?" required></textarea></label>
+        <div class="row-h"><small class="note">One per day</small><button class="btn btn-primary" type="submit">Post</button></div>
+      </form>`}
+      ${isComm() ? `<details class="injury-composer"><summary>Manage injury reports</summary>
+        ${(S.activeInjuries || []).length ? `<ul class="injury-statuses">${S.activeInjuries.map(report => `<li class="row-h"><b>${esc(report.name)}</b><button type="button" class="link" data-act="resolve-injury" data-id="${esc(report.id)}">Mark recovered</button></li>`).join('')}</ul>` : ''}
+        <form id="injuryFeedForm" class="form" data-feed-form>
+          <label class="fld"><span>Member</span><select name="memberId" required>${S.members.map(m => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('')}</select></label>
+          <label class="fld"><span>Estimated weeks out</span><input name="weeksOut" type="number" min="1" max="26" required></label>
+          <label class="fld"><span>Injury update</span><textarea name="summary" maxlength="600" rows="2" required></textarea></label>
+          <label class="fld"><span>Closing note (optional)</span><input name="closingNote" maxlength="280"></label>
+          <button class="btn" type="submit">Publish injury report</button>
+        </form></details>` : ''}
+    </div>`;
+  }
   function vFeed() {
-    const se = S.calc.season;
     const evs = S.events.filter(inFeed).map(e => ({ ...e, isEvent: true }));
-    let list = [...S.posts, ...evs].sort((a, b) => new Date(b.at) - new Date(a.at));
-    if (S.feed === 'week') list = list.filter(p => Logic.weekIdx(new Date(p.at), se.start) === se.idx);
-    return `<section class="screen feed"><div class="screen-h"><h1>Feed</h1>${seg('feed', [['week', 'This week'], ['all', 'Everything']], S.feed)}</div>
-  ${list.length ? list.map(p => (p.isEvent ? jokeCard(p) : postCard(p))).join('') : `<div class="card empty"><img src="${Art.mascot('point')}" alt="" width="104" height="160"><h2>Nothing here yet</h2><p class="note">Log something and it shows up here for the fellas.</p></div>`}
+    const list = [...S.posts, ...evs, ...S.messages].sort((a, b) => new Date(b.at) - new Date(a.at));
+    return `<section class="screen feed"><div class="screen-h"><h1>Feed</h1></div>
+  ${feedComposer()}
+  ${list.length ? list.map(p => p.isEvent ? jokeCard(p) : p.kind ? messageCard(p) : postCard(p)).join('') : `<div class="card empty"><img src="${Art.mascot('point')}" alt="" width="104" height="160"><h2>Nothing here yet</h2><p class="note">Log something and it shows up here for the fellas.</p></div>`}
   <p class="cap-hint">Think a post is fake? Tap ${CAP} to call cap. ${CAP_DISPUTE} caps marks it disputed.</p>
 </section>`;
   }
 
   /* ------------------------------------------------------------ leaderboard */
   function boardRow(m, i, week, max) {
-    const R = S.calc.by[m.id], v = week ? R.thisWeek : R.total, min = cfg().weeklyMin, w = week ? Math.min(1, v / min) : max ? v / max : 0;
+    const R = S.calc.by[m.id], v = week ? R.thisWeek : R.total, min = R.goal, w = week ? Math.min(1, v / min) : max ? v / max : 0;
     return `<li class="row${R.eliminated ? ' out' : ''}${m.id === S.me.id ? ' me' : ''}${i < 3 ? ' top' + (i + 1) : ''}" data-id="${m.id}">
   <span class="rk">${i + 1}</span>${avatar(m.id, 44)}
-  <div class="who"><b>${esc(m.name)}${m.id === S.me.id ? ' <small>(you)</small>' : ''}</b><span class="bar${week && v >= min ? ' full' : ''}"><i style="--w:${(w * 100).toFixed(1)}%"></i></span></div>
+  <div class="who"><b>${esc(displayName(m))}${m.id === S.me.id ? ' <small>(you)</small>' : ''}</b><span class="bar${week && v >= min ? ' full' : ''}"><i style="--w:${(w * 100).toFixed(1)}%"></i></span></div>
   <div class="side"><b class="pts">${fmtPts(v)}</b>${R.eliminated ? '<span class="outtag">OUT</span>' : strikesHTML(R)}</div>
 </li>`;
   }
   function podium(top) {
     const order = [top[1], top[0], top[2]], h = [76, 104, 58], n = ['2', '1', '3'];
-    return `<div class="podium" aria-label="Top three all-time">${order.map((m, i) => `<div class="pod p${n[i]}">${i === 1 ? '<span class="crown">' + Art.icon64('trophy') + '</span>' : ''}${avatar(m.id, i === 1 ? 64 : 50)}<b>${esc(m.name)}</b><span class="ppts">${fmtPts(S.calc.by[m.id].total)} pts</span><div class="blk" style="--h:${h[i]}px">${n[i]}</div></div>`).join('')}</div>`;
+    return `<div class="podium" aria-label="Top three all-time">${order.map((m, i) => `<div class="pod p${n[i]}">${i === 1 ? '<span class="crown">' + Art.icon64('trophy') + '</span>' : ''}${avatar(m.id, i === 1 ? 64 : 50)}<b>${esc(displayName(m))}</b><span class="ppts">${fmtPts(S.calc.by[m.id].total)} pts</span><div class="blk" style="--h:${h[i]}px">${n[i]}</div></div>`).join('')}</div>`;
   }
   function vBoard() {
     const C = S.calc, min = cfg().weeklyMin, week = S.board === 'week', list = week ? C.weekRank : C.allRank;
@@ -242,7 +289,7 @@ const App = (() => {
     return `<section class="screen boardS"><div class="screen-h"><h1>Leaderboard</h1>${seg('board', [['week', 'This week'], ['all', 'All-time']], S.board)}</div>
   ${!week && list.length >= 3 ? podium(list.slice(0, 3)) : ''}
   <ol class="board card">${list.map((m, i) => boardRow(m, i, week, max)).join('')}</ol>
-  <p class="note center">${week ? `Everyone needs ${min} points by Sunday 11:59 PM. Miss it and take a strike.` : 'Survivors win the Winter Arc. If nobody survives, most all-time points wins.'}</p>
+  <p class="note center">${week ? `The standard goal is ${min} points. Miss your weekly goal and take a strike.` : 'Survivors win the Winter Arc. If nobody survives, most all-time points wins.'}</p>
 </section>`;
   }
   function flipBoard(update) {
@@ -262,13 +309,13 @@ const App = (() => {
     let g = '';
     for (let w = 0; w < n; w++) {
       const v = R.weekPts[w], x = pad + w * bw + 1.5, cur = se.status === 'live' && w === se.idx, done = w <= se.lastComplete;
-      const cls = cur ? 'cur' : !done ? 'fut' : v >= min ? 'ok' : 'miss';
+      const cls = cur ? 'cur' : !done ? 'fut' : v >= R.weekGoals[w] ? 'ok' : 'miss';
       const hh = cls === 'fut' ? 3 : Math.max(3, H - 20 - y(v));
-      g += `<rect class="${cls}" x="${x.toFixed(1)}" y="${(H - 20 - hh).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${hh.toFixed(1)}" rx="3"><title>Week ${w + 1}: ${fmtPts(v)} pts</title></rect>`;
+      g += `<rect class="${cls}" x="${x.toFixed(1)}" y="${(H - 20 - hh).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${hh.toFixed(1)}" rx="3"><title>Week ${w + 1}: ${fmtPts(v)} pts of ${R.weekGoals[w]} required</title></rect>`;
       if (w % 4 === 0 || w === n - 1) g += `<text x="${(x + (bw - 3) / 2).toFixed(1)}" y="${H - 5}" text-anchor="middle">W${w + 1}</text>`;
     }
     const ly = y(min);
-    return `<svg class="hist" viewBox="0 0 ${W} ${H}" role="img" aria-label="Points per week, the dashed line is the ${min}-point minimum">${g}<line class="minline" x1="${pad}" x2="${W}" y1="${ly.toFixed(1)}" y2="${ly.toFixed(1)}"/><text class="minlab" x="2" y="${(ly + 4).toFixed(1)}">${min}</text></svg>
+    return `<svg class="hist" viewBox="0 0 ${W} ${H}" role="img" aria-label="Points per week, the dashed line is the standard ${min}-point goal">${g}<line class="minline" x1="${pad}" x2="${W}" y1="${ly.toFixed(1)}" y2="${ly.toFixed(1)}"/><text class="minlab" x="2" y="${(ly + 4).toFixed(1)}">${min}</text></svg>
   <p class="legend"><span class="k ok"></span>safe <span class="k miss"></span>strike <span class="k cur"></span>this week</p>`;
   }
   function rulesHTML() {
@@ -277,55 +324,56 @@ const App = (() => {
   <p class="lead"><b>NO EXCUSES.</b> The mission is simple: earn ${min} points every week or face the consequences.</p>
   <h3>Point system</h3>
   <ul class="pts-list">${CAT_ORDER.map(k => `<li><span class="mic" style="--c:${CATS[k].color}">${Art.icon64(k)}</span>${esc(CATS[k].label)}<b>${fmtPts(CATS[k].pts)}</b></li>`).join('')}</ul>
+  <p>Each member can log Reading once and Beers with the fellas once per game week.</p>
   <h3>Official rules</h3>
   <ol>
-    <li><b>Weekly minimum.</b> Every participant must earn at least ${min} points per week. No rolling points into the next week.</li>
+    <li><b>Weekly minimum.</b> The standard goal is ${min} points per week. No rolling points into the next week.</li>
     <li><b>The honor system.</b> All activities must be documented here. No proof = no points. Photos, screenshots, or witnesses count.</li>
     <li><b>No double dipping.</b> One activity cannot count for multiple categories. Each event earns points once.</li>
     <li><b>Gym requirements.</b> Minimum 45-minute workout. Actually lift. Sitting on your phone doesn’t count.</li>
-    <li><b>Running requirements.</b> Minimum 2 miles per run. Walking to the fridge doesn’t count.</li>
+    <li><b>Running and cycling requirements.</b> Minimum 2 miles per run or ${CATS.bike.minMiles} miles per bike ride. Walking to the fridge doesn’t count.</li>
     <li><b>Dating requirements.</b> Must be an actual one-on-one date. Dating apps, texting, and FaceTime do not count. A date with your existing girlfriend does not count.</li>
     <li><b>Bronson Beer requirements.</b> Must physically attend and have at least one beer with the fellas. Drinking alone doesn’t count.</li>
     <li><b>Weekly deadline.</b> Weeks run Monday through Sunday at 11:59 PM. Points reset every Monday.</li>
     <li><b>No fake points.</b> Fraudulent claims result in an automatic 0-point week.</li>
   </ol>
   <h3>Strikes</h3>
-  <p>Miss ${min} points in a week and you take a strike. ${cfg().strikesOut} strikes = elimination. Anyone who survives the entire Winter Arc wins. If nobody survives, the most all-time points wins.</p>
+  <p>Miss your weekly goal and you take a strike. ${cfg().strikesOut} strikes = elimination. Anyone who survives the entire Winter Arc wins. If nobody survives, the most all-time points wins.</p>
 </div>`;
   }
   function vMe() {
     const C = S.calc, R = C.by[S.me.id], m = member(S.me.id), se = C.season;
-    const all = CAT_ORDER.flatMap(cat => (CELEBRATIONS[cat] || []).map(c => ({ ...c, cat })));
-    const jk = Object.entries(INSIDE_JOKES).map(([k, j]) => ({ id: j.video, name: j.title, k }));
+    const runs = R.counted.filter(post => post.cat === 'run' && Logic.weekIdx(post.at, se.start, se.timezone) === se.idx);
+    const miles = runs.reduce((sum, post) => sum + post.miles, 0);
+    const timed = runs.filter(post => post.paceSeconds > 0);
+    const timedMiles = timed.reduce((sum, post) => sum + post.miles, 0);
+    const pace = timedMiles && Math.round(timed.reduce((sum, post) => sum + post.paceSeconds * post.miles, 0) / timedMiles);
     return `<section class="screen me">
-  <div class="card profile">${avatar(m.id, 70)}<div><h1>${esc(m.name)}</h1><p>${m.role === 'commissioner' ? '<span class="chip comm">Commissioner</span>' : ''}<span class="chip ${R.eliminated ? 'out' : 'safe'}">${R.eliminated ? 'Eliminated' : 'Still in'}</span></p>${S.group ? `<p class="crewline">${ic('users')}${esc(S.group.name)} · ${S.members.length} people</p>` : ''}</div><button class="gear" data-act="account" aria-label="Account and settings">${ic('gear')}</button></div>
+  <div class="card profile">${avatar(m.id, 70)}<div><h1>${esc(displayName(m))}</h1><p>${m.role === 'commissioner' ? '<span class="chip comm">Commissioner</span>' : ''}<span class="chip ${R.eliminated ? 'out' : 'safe'}">${R.eliminated ? 'Eliminated' : 'Still in'}</span></p>${S.group ? `<p class="crewline">${ic('users')}${esc(S.group.name)} · ${S.members.length} people</p>` : ''}</div><button class="gear" data-act="account" aria-label="Account and settings">${ic('gear')}</button></div>
   <div class="grid4">
     <div class="tile"><b>${fmtPts(R.total)}</b><small>all-time points</small></div>
     <div class="tile"><b>${R.safeWeeks}</b><small>weeks safe</small></div>
     <div class="tile"><b>${fmtPts(R.bestWeek)}</b><small>best week</small></div>
     <div class="tile">${R.fav ? `<span class="mic big" style="--c:${CATS[R.fav].color}">${Art.icon64(R.fav)}</span>` : '<b>–</b>'}<small>${R.fav ? 'favorite: ' + esc(catName(R.fav)) : 'no favorite yet'}</small></div>
   </div>
+  <div class="card"><h2>Running this week</h2><p class="kv"><b>${Number(miles.toFixed(2))} mi</b>${pace ? `<span>${fmtPace(pace)} /mi average${timed.length < runs.length ? ` · ${timed.length} of ${runs.length} runs` : ''}</span>` : '<span>Average pace available when logged</span>'}</p></div>
   <div class="card"><h2>Your weeks</h2>${historyChart(R, se)}</div>
   <div class="card"><h2>Badges <small>${R.badges.length} of ${BADGES.length}</small></h2><div class="badges">${BADGES.map(b => { const has = R.badges.includes(b.id); return `<button class="badge${has ? '' : ' locked'}" data-act="badge" data-id="${b.id}" aria-label="${esc(b.name)}. ${esc(b.desc)}${has ? '' : ' Locked.'}">${Art.icon64(b.icon)}<span>${esc(b.name)}</span></button>`; }).join('')}</div></div>
-  <div class="card gallery"><h2>Celebrations <small>${all.length}</small></h2><p class="note">Every log plays one for that activity. Tap to watch.</p>
-    <div class="gs">${all.map(c => `<button class="gtile" style="--c:${CATS[c.cat].color}" data-act="play" data-id="${c.id}"><img src="${Art.poster(c.id)}" alt="" loading="lazy" width="180" height="320"><span class="gplay">${ic('play')}</span><span class="gname">${esc(c.name)}</span><span class="gcat">${esc(catName(c.cat))}</span></button>`).join('')}</div>
-    <h3 class="gsub">Inside jokes <small>${jk.length}</small></h3>
-    <p class="note">They pop up by themselves when it happens. Tap to rewatch.</p>
-    <div class="gs">${jk.map(c => `<button class="gtile joke-${c.k}" data-act="play" data-id="${c.id}"><img src="${Art.poster(c.id)}" alt="" loading="lazy" width="180" height="320"><span class="gplay">${ic('play')}</span><span class="gname">${esc(c.name)}</span><span class="gcat">Inside joke</span></button>`).join('')}</div>
-  </div>
   <details class="card rules"><summary><h2>Official rules</h2>${ic('chevron', 'chev')}</summary>${rulesHTML()}</details>
   <div class="card settings"><h2>Settings</h2>
     <button class="btn" data-act="account">${ic('gear')}Account &amp; settings</button>
-    <button class="btn" data-act="intro">${ic('play')}Replay the intro</button>
     ${isDemo() ? `<button class="btn" data-act="switch">${ic('users')}Switch person (preview)</button><button class="btn" data-act="reset">${ic('refresh')}Reset sample data</button>` : ''}
   </div>
 </section>`;
   }
 
   /* ------------------------------------------------------------ sign-in + accounts */
-  const COMM_NAME = (ROSTER.find(r => r.role === 'commissioner') || { name: 'the commissioner' }).name;
-  const bigAv = (name, color, photo, size = 96) =>
-    `<span class="av" style="--c:${color};--s:${size}px" aria-hidden="true">${photo ? `<img src="${esc(photo)}" alt="">` : esc((String(name || '').trim()[0] || '?').toUpperCase())}</span>`;
+  const COMM_NAME = 'Osim';
+  function bigAv(name, color, photo, size = 96) {
+    const style = `--c:${color};--s:${size}px`;
+    if (photo) return `<img class="av av-photo" style="${style}" src="${esc(photo)}" alt="">`;
+    return `<span class="av" style="${style}" aria-hidden="true">${esc((String(name || '').trim()[0] || '?').toUpperCase())}</span>`;
+  }
   const swatches = (cur, act) => `<div class="swatches" role="radiogroup" aria-label="Colour">${COLORS.map(c => `<button type="button" role="radio" aria-checked="${c === cur}" aria-label="Colour ${c}" data-act="${act}" data-c="${c}" style="--c:${c}"></button>`).join('')}</div>`;
   const backBtn = (act, to, label = 'Back') => `<button type="button" class="back" data-act="${act}" data-to="${to}">${ic('back')}${label}</button>`;
   const demoNote = html => (isDemo() ? `<p class="demo-note">${html}</p>` : '');
@@ -353,9 +401,9 @@ const App = (() => {
 
   /* first sign-in with a temporary password: pick your own */
   function vSetPassword() {
-    const m = S.me || {};
+    const m = S.auth.user || {};
     return `<section class="screen auth">
-  <div class="auth-h"><img class="mascot sm" src="${Art.mascot('wave')}" alt="" width="120" height="160"><h1>Welcome, ${esc(m.name || 'champ')}!</h1></div>
+  <div class="auth-h"><img class="mascot sm" src="${Art.mascot('wave')}" alt="" width="120" height="160"><h1>Welcome, ${esc(m.username || 'champ')}!</h1></div>
   <p class="note center">You signed in with a temporary password. Pick your own so it’s just yours.</p>
   <form id="setpwForm" class="card form" novalidate>
     <input class="sr" type="text" autocomplete="username" value="${esc(m.username || '')}" readonly tabindex="-1" aria-hidden="true">
@@ -370,7 +418,7 @@ const App = (() => {
 
   /* account + group settings (from Me, or the avatar in the top bar) */
   function vAccount() {
-    const m = member(S.me.id), u = (S.auth && S.auth.user) || {}, g = S.group || {}, pf = S.prefs || {};
+    const m = member(S.me.id), u = (S.auth && S.auth.user) || {}, g = S.group || {};
     const ac = S.acct || (S.acct = { color: m.color });
     const comm = isComm();
     const others = S.members.filter(x => x.id !== m.id);
@@ -381,8 +429,11 @@ const App = (() => {
   <form id="profileForm" class="card form">
     <h2>Profile</h2>
     <div class="prow">
-      <button type="button" class="avpick sm" data-act="pick-avatar" aria-label="Change profile photo">${bigAv(m.name, ac.color, m.photo, 78)}<span class="cam">${ic('camera')}</span></button>
-      <div class="pcol">${field('acName', 'Name', `maxlength="24" value="${esc(m.realName || m.name)}" required`)}${m.photo ? '<button type="button" class="link small" data-act="acct-clear-photo">Remove photo</button>' : ''}</div>
+      <label class="avpick sm">${bigAv(m.name, ac.color, m.photo, 78)}<span class="cam">${ic('camera')}</span><input id="avatarInput" type="file" accept="image/*,.heic,.heif" aria-label="Choose and crop a profile photo"></label>
+      <div class="pcol">${field('acName', 'Name', `maxlength="24" value="${esc(m.name)}" required`)}
+        <div class="avatar-actions"><label for="avatarInput" class="link small">Choose &amp; crop photo</label>${m.photo ? '<button type="button" class="link small" data-act="crop-avatar">Crop current photo</button><button type="button" class="link small" data-act="acct-clear-photo">Remove photo</button>' : ''}</div>
+        <p id="avatarStatus" class="note" role="status" hidden>Opening photo…</p>
+      </div>
     </div>
     <div class="fld"><span>Colour</span>${swatches(ac.color, 'acct-color')}</div>
     <button class="btn btn-primary" type="submit">${ic('check')}Save profile</button>
@@ -393,14 +444,9 @@ const App = (() => {
     <form id="pwForm" class="form inline"><input class="sr" type="text" autocomplete="username" value="${esc(u.username || m.username || '')}" readonly tabindex="-1" aria-hidden="true">${pwField('acPass', 'New password', 'new-password')}<button class="btn" type="submit">${ic('lock')}Change password</button></form>
   </div>
   <div class="card">
-    <h2>Reminders</h2>
-    <label class="switch"><input type="checkbox" data-pref="sundayReminder" ${pf.sundayReminder ? 'checked' : ''}><span class="knob"></span><span class="sw-t"><b>Sunday nudge</b><small>Remind me Sunday at 6 PM if I’m under ${cfg().weeklyMin} points.</small></span></label>
-    <label class="switch"><input type="checkbox" data-pref="capAlerts" ${pf.capAlerts ? 'checked' : ''}><span class="knob"></span><span class="sw-t"><b>Cap alerts</b><small>Tell me when someone calls 🧢 on my post.</small></span></label>
-  </div>
-  <div class="card">
     <h2>The season</h2>
     <p class="kv"><span>${ic('users')}<b>${esc(g.name || 'Winter Arc')}</b> · ${S.members.length} people</span><span class="chip ${comm ? 'comm' : ''}">${comm ? 'Commissioner' : 'Member'}</span></p>
-    <p class="note">Starts ${fmtDay(Logic.parseDay(g.seasonStart || CONFIG.seasonStart))} · ${g.seasonWeeks} weeks · ${g.weeklyMin} points a week · ${g.strikesOut} strikes and you’re out. Weeks end Sunday 11:59 PM${g.timezone ? ` (${esc(g.timezone.replace(/_/g, ' '))} time)` : ''}.</p>
+    <p class="note">Starts ${fmtDay(Logic.parseDay(g.seasonStart || CONFIG.seasonStart, cfg().timezone))} · ${g.seasonWeeks} weeks · ${g.weeklyMin} points a week · ${g.strikesOut} strikes and you’re out. Weeks end Sunday 11:59 PM${g.timezone ? ` (${esc(g.timezone.replace(/_/g, ' '))} time)` : ''}.</p>
   </div>
   ${comm ? `<form id="groupForm" class="card form comm-card">
     <h2>${ic('crown')}Commissioner</h2>
@@ -448,13 +494,37 @@ const App = (() => {
   }
 
   async function afterAuth() {
-    S.acct = null; S.prefs = null; S.tab = 'home';
+    S.acct = null; S.tab = 'home';
     await load();
-    if (inApp()) toast(`Welcome back, ${S.me.name}.`, 'wave');
+    if (inApp()) toast(`Welcome back, ${displayName(S.me)}.`, 'wave');
     render(); window.scrollTo(0, 0);
     if (inApp()) checkJokes();
   }
-  async function gotAvatar(dataUrl) { await Store.updateProfile({ photo: dataUrl }); await load(); render(); toast('Photo updated.'); }
+  async function editAvatar(source, selector) {
+    const memberId = S.me?.id;
+    if (!memberId) return;
+    const status = $('#avatarStatus');
+    if (status) status.hidden = false;
+    try {
+      await AvatarCrop.edit(source, photo => {
+        if (S.me?.id !== memberId) throw new Error('Sign in again to update your photo.');
+        return gotAvatar(photo);
+      });
+    } finally {
+      if (status) status.hidden = true;
+      $(selector)?.focus({ preventScroll: true });
+    }
+  }
+  async function gotAvatar(dataUrl) {
+    const nameDraft = $('#acName')?.value;
+    const updated = await Store.updateProfile({ photo: dataUrl });
+    S.me = updated;
+    S.members = S.members.map(m => m.id === updated.id ? updated : m);
+    render();
+    const name = $('#acName');
+    if (name && nameDraft !== undefined) name.value = nameDraft;
+    toast('Photo updated.');
+  }
   async function copyText(text, ok = 'Copied.') {
     try { await navigator.clipboard.writeText(text); toast(ok); } catch (e) { toast(text.replace(/\n/g, ' · ')); }
   }
@@ -466,14 +536,14 @@ const App = (() => {
       await Store.demoSignInAs(pick); await afterAuth();
     },
     async signout() { await Store.signOut(); await afterAuth(); },
-    'pick-avatar'() { $('#avatarInput').click(); },
-    async account() { S.prefs = await Store.getPrefs(); S.acct = null; go('account'); },
+    'crop-avatar'() { if (S.me?.photo) return editAvatar(S.me.photo, '[data-act="crop-avatar"]'); },
+    account() { S.acct = null; go('account'); },
     'tab-to': el => go(el.dataset.to),
     'acct-color'(el) { S.acct.color = el.dataset.c; $$('.swatches [data-act="acct-color"]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.c === el.dataset.c))); const av = $('.avpick .av'); if (av) av.style.setProperty('--c', el.dataset.c); },
     async 'acct-clear-photo'() { await Store.updateProfile({ photo: null }); await load(); render(); toast('Photo removed.'); },
     async 'member-menu'(el) {
       const x = member(el.dataset.id); if (!x) return;
-      const pick = await modal(`<h2>${esc(x.realName || x.name)}</h2><p class="note">@${esc(x.username || '')}</p>
+      const pick = await modal(`<h2>${esc(x.name)}</h2><p class="note">@${esc(x.username || '')}</p>
         <div class="menu-list">
           <button class="btn wide" data-ok data-val="reset">${ic('key')}Reset password</button>
           <button class="btn wide" data-ok data-val="comm">${ic('crown')}Make commissioner</button>
@@ -526,30 +596,53 @@ const App = (() => {
       const r = await Store.addFriend({ name, username: un });
       await load(); renderView(); await showTemp(name.trim(), r);
     },
+    async textFeedForm(form) {
+      await Store.addTextPost(new FormData(form).get('body'));
+      await load(); renderView(); toast('Posted to the feed.');
+    },
+    async injuryFeedForm(form) {
+      await Store.createInjuryReport(Object.fromEntries(new FormData(form)));
+      await load(); renderView(); toast('Injury report posted.');
+    },
   };
 
   /* ------------------------------------------------------------ log sheet */
   function weekDays() {
-    const se = S.calc.season, today = new Date(), out = [];
-    for (let d = new Date(se.wkStart); d <= today; d = Logic.addDays(d, 1)) out.push(new Date(d));
-    return out.reverse().map((d, i) => ({ key: Logic.dayKey(d), label: i === 0 ? 'Today' : i === 1 ? 'Yesterday' : d.toLocaleDateString('en-US', { weekday: 'short' }) }));
+    const { timezone } = cfg(), now = new Date(), out = [];
+    const today = Logic.dayKey(now, timezone), yesterday = Logic.dayKey(Logic.addDays(now, -1, timezone), timezone);
+    const start = S.draft.original ? Logic.mondayOf(S.draft.original.at, timezone) : S.calc.season.wkStart;
+    const end = Logic.addDays(start, 7, timezone);
+    for (let d = start; d < end && d <= now; d = Logic.addDays(d, 1, timezone)) {
+      const key = Logic.dayKey(d, timezone);
+      const label = key === today ? 'Today' : key === yesterday ? 'Yesterday' : d.toLocaleDateString('en-US', { weekday:'short', timeZone:timezone });
+      out.push({ key, label });
+    }
+    return out.reverse();
   }
-  function openLog() {
-    if (!S.me) return;
+  function openLog(original = null) {
+    if (!S.me || S.busy) return;
     const se = S.calc.season;
-    if (se.status === 'pre') return toast(`Logging opens ${fmtDay(se.start)} when week 1 starts.`);
-    if (se.status === 'over') return toast('The Winter Arc is over. No more logging.');
-    S.draft = { photo: null, witnesses: [], cat: null, minutes: 60, miles: 2.0, checks: {}, caption: '', day: Logic.dayKey(new Date()), tried: false };
+    if (!original && se.status === 'pre') return toast(`Logging opens ${fmtDay(se.start)} when week 1 starts.`);
+    if (!original && se.status === 'over') return toast('The Winter Arc is over. No more logging.');
+    const cat = original?.cat;
+    S.draft = {
+      original, cat, photo: original?.photo || null, witnesses: [...(original?.witnesses || [])],
+      minutes: original?.minutes ?? 60, miles: original?.cat === 'run' ? original.miles ?? 2 : 2,
+      bikeMiles: original?.cat === 'bike' ? String(original.miles ?? '') : '', caption: original?.caption || '',
+      pace: original?.paceSeconds ? fmtPace(original.paceSeconds) : '',
+      day: Logic.dayKey(original?.at || new Date(), cfg().timezone), tried: false,
+      checks: { lifted: cat === 'gym', oneOnOne: cat === 'date', notGf: cat === 'date', inPerson: cat === 'beers' },
+    };
     const sh = $('#sheet');
     sh.innerHTML = `<div class="scrim" data-act="close-sheet"></div>
 <div class="panel" role="dialog" aria-modal="true" aria-labelledby="logT">
   <div class="grab" aria-hidden="true"></div>
-  <header class="sheet-h"><h2 id="logT">Log an activity</h2><button class="xbtn" data-act="close-sheet" aria-label="Close">${ic('x')}</button></header>
+  <header class="sheet-h"><h2 id="logT">${original ? 'Edit activity' : 'Log an activity'}</h2><button class="xbtn" data-act="close-sheet" aria-label="Close">${ic('x')}</button></header>
   <section class="step"><h3><span class="num">1</span>Proof</h3><div id="shProof"></div></section>
   <section class="step"><h3><span class="num">2</span>What did you do?</h3><div class="cats" id="shCats"></div></section>
   <section class="step" id="shDetails" hidden></section>
   <section class="step"><h3><span class="num" id="whenNum">3</span>When?</h3><div class="days" id="shWhen"></div></section>
-  <label class="capf" for="caption"><span>Caption <small>(optional)</small></span><input id="caption" maxlength="140" placeholder="Leg day survived" autocomplete="off"></label>
+  <label class="capf" for="caption"><span>Caption <small>(optional)</small></span><input id="caption" maxlength="140" value="${esc(S.draft.caption)}" placeholder="Leg day survived" autocomplete="off"></label>
   <div id="shFoot"></div>
   <p class="fine">One activity per post. No double dipping.</p>
 </div>`;
@@ -568,7 +661,7 @@ const App = (() => {
     const d = S.draft, el = $('#shProof'); if (!el) return;
     const others = S.members.filter(m => m.id !== S.me.id);
     el.innerHTML = (d.photo
-      ? `<figure class="shot"><img src="${d.photo}" alt="Your proof photo"></figure><div class="shot-actions"><button class="btn" data-act="pick-photo">${ic('camera')}Change photo</button><button class="btn" data-act="clear-photo">${ic('trash')}Remove</button></div>`
+      ? `<figure class="shot"><img src="${esc(Art.photo(d.photo))}" alt="Your proof photo"></figure><div class="shot-actions"><button class="btn" data-act="pick-photo">${ic('camera')}Change photo</button><button class="btn" data-act="clear-photo">${ic('trash')}Remove</button></div>`
       : `<button class="drop" data-act="pick-photo"><span class="drop-ic">${ic('camera')}</span><b>Add a photo or screenshot</b><span>Workout tracker, a gym pic, your run app, the date spot…</span></button>`)
       + `<div class="wit"><p>${d.photo ? 'Tag witnesses too (optional)' : 'No photo? Tag witnesses instead'}</p><div class="chips">${others.map(m => `<button data-act="wit" data-id="${m.id}" aria-pressed="${d.witnesses.includes(m.id)}">${avatar(m.id, 26)}${esc(m.name)}</button>`).join('')}</div></div>`;
   }
@@ -578,7 +671,7 @@ const App = (() => {
   }
   function refreshDetails() {
     const d = S.draft, el = $('#shDetails'); if (!el) return;
-    const need = d.cat && ['gym', 'run', 'date', 'beers'].includes(d.cat);
+    const need = d.cat && ['gym', 'run', 'bike', 'date', 'beers'].includes(d.cat);
     el.hidden = !need; $('#whenNum').textContent = need ? '4' : '3';
     if (!need) { el.innerHTML = ''; return; }
     const ck = (key, label) => `<label class="check"><input type="checkbox" data-check="${key}"${d.checks[key] ? ' checked' : ''}><span class="box">${ic('check')}</span><span>${label}</span></label>`;
@@ -587,7 +680,9 @@ const App = (() => {
       <p class="${d.minutes >= 45 ? 'ok' : 'warn'}" id="minMsg">${d.minutes >= 45 ? 'Counts. 45 minutes minimum.' : 'Gym needs at least 45 minutes to count.'}</p>
       <div class="checks">${ck('lifted', 'I actually lifted. No sitting on my phone.')}</div>`;
     if (d.cat === 'run') body = `<div class="stepper"><button data-act="step" data-k="miles" data-d="-0.1" aria-label="0.1 miles less">${ic('minus')}</button><output id="miOut">${d.miles.toFixed(1)}<small> mi</small></output><button data-act="step" data-k="miles" data-d="0.1" aria-label="0.1 miles more">${ic('plus')}</button></div>
-      <p class="${d.miles >= 2 ? 'ok' : 'warn'}" id="miMsg">${d.miles >= 2 ? 'Counts. 2 miles minimum.' : 'Runs need at least 2 miles.'}</p>`;
+      <p class="${d.miles >= 2 ? 'ok' : 'warn'}" id="miMsg">${d.miles >= 2 ? 'Counts. 2 miles minimum.' : 'Runs need at least 2 miles.'}</p>
+      <label class="fld"><span>Average pace (optional)</span><input id="runPace" maxlength="6" placeholder="8:30" value="${esc(d.pace)}" inputmode="text" autocomplete="off"><small>Minutes and seconds per mile</small></label>`;
+    if (d.cat === 'bike') body = `<label class="fld"><span>Distance (miles)</span><input id="bikeMiles" type="number" inputmode="decimal" min="${CATS.bike.minMiles}" step="any" required value="${esc(d.bikeMiles)}"><small>${CATS.bike.minMiles} miles minimum</small></label>`;
     if (d.cat === 'date') body = `<div class="checks">${ck('oneOnOne', 'A real one-on-one date, in person. Not apps, texting or FaceTime.')}${ck('notGf', 'Not with my existing girlfriend.')}</div>`;
     if (d.cat === 'beers') body = `<div class="checks">${ck('inPerson', 'I was there in person and had at least one beer with the fellas.')}</div><p class="note">Tip: tag the fellas as witnesses above.</p>`;
     el.innerHTML = `<h3><span class="num">3</span>The fine print</h3>${body}`;
@@ -596,11 +691,21 @@ const App = (() => {
     const el = $('#shWhen'); if (!el) return;
     el.innerHTML = weekDays().map(x => `<button data-act="day" data-day="${x.key}" aria-pressed="${S.draft.day === x.key}">${x.label}</button>`).join('');
   }
+  function draftProblems(draft) {
+    const problems = Logic.draftProblems(draft);
+    if (draft.cat === 'run' && Number.isNaN(parsePace(draft.pace))) problems.push('Enter a pace like 8:30 per mile.');
+    const { season } = S.calc;
+    const reference = draft.original?.at || new Date();
+    if (CATS[draft.cat]?.oncePerWeek && draft.cat !== draft.original?.cat && S.posts.some(post =>
+      post.memberId === S.me.id && !post.voided && post.cat === draft.cat && Logic.weekIdx(post.at, reference, season.timezone) === 0
+    )) problems.push(`You’ve already logged ${catName(draft.cat)} ${draft.original ? 'that' : 'this'} week.`);
+    return problems;
+  }
   function refreshFoot() {
     const d = S.draft, el = $('#shFoot'); if (!el) return;
-    const probs = Logic.draftProblems(d), C0 = d.cat ? CATS[d.cat] : null;
+    const probs = draftProblems(d), C0 = d.cat ? CATS[d.cat] : null;
     el.innerHTML = `${probs.length ? `<ul class="need${d.tried ? ' tried' : ''}" aria-live="polite">${probs.map(p => `<li>${ic('alert')}${esc(p)}</li>`).join('')}</ul>` : ''}
-      <button class="btn btn-primary submit" data-act="submit"${probs.length ? ' aria-disabled="true"' : ''}>${C0 ? `Claim +${fmtPts(C0.pts)} ${ptsWord(C0.pts)}` : 'Claim points'}</button>`;
+      <button class="btn btn-primary submit" data-act="submit"${probs.length ? ' aria-disabled="true"' : ''}>${d.original ? 'Save changes' : C0 ? `Claim +${fmtPts(C0.pts)} ${ptsWord(C0.pts)}` : 'Claim points'}</button>`;
   }
   function downscale(file, max = 1100, q = 0.8) {
     return new Promise((res, rej) => {
@@ -615,33 +720,41 @@ const App = (() => {
     });
   }
   function whenISO(key) {
-    const now = new Date(); if (key === Logic.dayKey(now)) return now.toISOString();
-    const d = Logic.parseDay(key); d.setHours(12, 0, 0, 0); return d.toISOString();
+    const now = new Date(), timezone = cfg().timezone;
+    if (key === Logic.dayKey(now, timezone)) return now.toISOString();
+    return Logic.parseDay(key, timezone, 12).toISOString();
   }
   async function submit() {
-    const d = S.draft, probs = Logic.draftProblems(d);
+    const d = S.draft, probs = draftProblems(d);
     if (probs.length) { d.tried = true; refreshFoot(); const b = $('.submit'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; }
     if (S.busy) return;
     S.busy = true;
     const before = S.calc.by[S.me.id], oldPts = before.thisWeek, oldBadges = new Set(before.badges);
+    const original = d.original;
+    const sameDay = original && d.day === Logic.dayKey(original.at, cfg().timezone);
     const post = {
-      id: 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), memberId: S.me.id, cat: d.cat, at: whenISO(d.day),
-      witnesses: d.witnesses.slice(), reactions: {}, voided: false, fraud: false,
+      id: original?.id || `p_${crypto.randomUUID()}`, cat: d.cat, at: sameDay ? original.at : whenISO(d.day),
+      witnesses: d.witnesses.slice(), caption: d.caption.trim(), photo: null,
     };
     if (d.cat === 'gym') post.minutes = d.minutes;
-    if (d.cat === 'run') post.miles = d.miles;
-    if (d.caption.trim()) post.caption = d.caption.trim();
+    if (d.cat === 'run') { post.miles = d.miles; post.paceSeconds = parsePace(d.pace); }
+    if (d.cat === 'bike') post.miles = Number(d.bikeMiles);
     try {
-      if (d.photo) post.photo = await Store.uploadPhoto(d.photo);
-      await Store.addPost(post);
+      if (d.photo) post.photo = d.photo === original?.photo ? d.photo : await Store.uploadPhoto(d.photo);
+      if (original) await Store.editPost({ ...post, editVersion: original.editVersion });
+      else await Store.addPost(post);
     } catch (e) { S.busy = false; toast('Couldn’t save that post: ' + e.message); return; }
     closeSheet();
-    await load();
-    S.tab = 'home'; S.ringFrom = oldPts; render(); window.scrollTo(0, 0);
-    try { if (navigator.vibrate) navigator.vibrate([16, 50, 16]); } catch (e) { /* not supported */ }
-    await Celebrate.play(Celebrate.pick(post.cat));
-    await afterLog(oldPts, oldBadges, post.cat);
-    S.busy = false;
+    try {
+      await load();
+      if (original) { render(); toast('Activity updated.'); }
+      else {
+        S.tab = 'home'; S.ringFrom = oldPts; render(); window.scrollTo(0, 0);
+        try { if (navigator.vibrate) navigator.vibrate([16, 50, 16]); } catch (e) { /* not supported */ }
+        await Celebrate.play(Celebrate.pick(post.cat));
+        await afterLog(oldPts, oldBadges, post.cat);
+      }
+    } finally { S.busy = false; }
     checkJokes();
   }
   function flyPoints(text) {
@@ -657,7 +770,7 @@ const App = (() => {
     return a.finished.then(() => el.remove(), () => el.remove());
   }
   async function afterLog(oldPts, oldBadges, cat) {
-    const R = S.calc.by[S.me.id], min = cfg().weeklyMin;
+    const R = S.calc.by[S.me.id], min = R.goal;
     await flyPoints('+' + fmtPts(CATS[cat].pts));
     S.ringFrom = null;
     setRing(R.thisWeek); countUp($('#ringNum'), oldPts, R.thisWeek);
@@ -668,55 +781,51 @@ const App = (() => {
       else { const card = $('.ringcard'); if (card) { const st = document.createElement('span'); st.className = 'stamp-safe'; st.textContent = 'SAFE!'; card.appendChild(st); } }
       const g = $('.greet .mascot'); if (g) g.src = Art.mascot(isHoat() ? 'thumbs' : 'flex');
       await Celebrate.confetti();
-      toast(isHoat() ? `${HOAT.text}. ${min} points, as promised.` : R.eliminated ? 'Seven points! Every point still counts toward all-time.' : 'Safe this week! Anything more is bonus glory.', isHoat() ? 'thumbs' : 'flex');
+      toast(isHoat() ? `${HOAT.text}. ${min} points, as promised.` : R.eliminated ? 'You hit your goal! Every point still counts toward all-time.' : 'Safe this week! Anything more is bonus glory.', isHoat() ? 'thumbs' : 'flex');
     } else toast(`+${fmtPts(CATS[cat].pts)} for ${catName(cat)}. ${R.thisWeek >= min ? 'Already safe, now you’re just showing off.' : `${fmtPts(min - R.thisWeek)} to go this week.`}`);
     for (const id of R.badges.filter(b => !oldBadges.has(b))) await showBadge(id, true);
   }
 
   /* ------------------------------------------------------------ inside jokes + Hoat Guarantee */
   const isHoat = () => !!(S.me && String(S.me.username || '').toLowerCase() === HOAT.username);
-  const realName = id => (member(id) || {}).name || 'Someone';
-  const names = ids => { const n = [].concat(ids || []).map(realName); return n.length < 3 ? n.join(' and ') : n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1]; };
-  const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
-  const P = v => `${fmtPts(v)} ${ptsWord(v)}`;
+  const realName = id => displayName(member(id));
   function jokeText(e) {
-    const d = e.data || {}, who = realName(d.who);
-    switch (e.type) {
-      case 'coin': return `${realName(d.a)} and ${realName(d.b)} are tied at ${P(d.pts)} this week. Not even a $1 coin can split them.`;
-      case 'bluehair': return `${who} has the most points this week with ${fmtPts(d.pts)}. Blue hair activated.`;
-      case 'iron': return `It’s Saturday morning and ${who} is in last with ${P(d.pts)}. Ironing his shirt again?`;
-      case 'hoat': return `${who} hit ${P(d.pts)} this week. Stamped and guaranteed.`;
-      case 'bag': return `${names(d.who)} are all tied at ${P(d.pts)} this week. That’s The Bag.`;
-      case 'fight': return `${who} is tied for first with ${names(d.with)} at ${P(d.pts)}. Somebody hold him back.`;
-      case 'crashout': return `${who} called cap on ${realName(d.on)}’s ${CATS[d.cat] ? catName(d.cat) : ''} post. Crash out KNR.`.replace('  ', ' ');
-      case 'satellite': return `${who} had beers with the boys. Now the long trip home to his satellite house.`;
-      case 'puke': return `${who} is alone in last with ${P(d.pts)}. Somebody get him a towel.`;
-      case 'mma': return `${who} just logged his ${ordinal(d.n || 4)} MMA session this week. He’d like you to know he does MMA.`;
-      case 'radiator': return `${who} hasn’t logged anything in ${d.days} days. Somebody check the radiator.`;
-      case 'mom': return `It’s Sunday night and ${who} still needs ${P(d.left)}. His mom found out.`;
-      case 'nets': return `${names(d.who)} missed ${cfg().weeklyMin} points last week, and the train to the Nets game left without ${[].concat(d.who || []).length > 1 ? 'them' : 'him'}.`;
-      case 'liquor': return `It’s Saturday morning and ${who} is in last with ${P(d.pts)}. Still out on that liquor run.`;
-      case 'phil': return `${who} came out after ${d.days} days without a log. He saw his shadow: six more weeks of Winter Arc.`;
-      case 'scared': return `Nobody has logged a date in ${d.days} days. The fellas are scared of girls.`;
-      case 'timesheet': return `${who} hit ${P(d.pts)} on a ${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.day] || 'weekend'}. Big night out, so the work time sheet gets filed from the club at 11:59.`;
-      default: return '';
-    }
+    const d = e.data || {};
+    if (e.type === 'coin') return `${realName(d.a)} and ${realName(d.b)} are tied at ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week. Not even a $1 coin can split them.`;
+    if (e.type === 'bluehair') return `${realName(d.who)} has the most points this week with ${fmtPts(d.pts)}. Blue hair activated.`;
+    if (e.type === 'iron') return `It’s Saturday morning and ${realName(d.who)} is in last with ${fmtPts(d.pts)} ${ptsWord(d.pts)}. Ironing his shirt again?`;
+    const names = (ids = []) => new Intl.ListFormat('en').format(ids.map(realName));
+    if (e.type === 'liquor') return `It’s Saturday morning and ${realName(d.who)} is in last with ${fmtPts(d.pts)} points. Still out on that liquor run?`;
+    if (e.type === 'bag') return `${names(d.who)} are tied at ${fmtPts(d.pts)} points this week. That’s The Bag.`;
+    if (e.type === 'fight') return `${realName(d.who)} shares the lead with ${names(d.tied)} at ${fmtPts(d.pts)} points. Somebody hold him back.`;
+    if (e.type === 'crashout') return `${realName(d.who)} called 🧢 on ${realName(d.target)}’s post. Crash Out KNR.`;
+    if (e.type === 'satellite') return `${realName(d.who)} logged beers with the fellas. Now for the long trip home to his satellite house.`;
+    if (e.type === 'puke') return `${realName(d.who)} dropped into last place on his own. Somebody get him a towel.`;
+    if (e.type === 'mma') return `${realName(d.who)} has logged ${d.n} MMA sessions this week. He’d like you to know he does MMA.`;
+    if (e.type === 'radiator') return `${realName(d.who)} has gone four days without a log. Somebody check the radiator.`;
+    if (e.type === 'mom') return `${realName(d.who)} is still below his weekly goal on Sunday night. His mom found out.`;
+    if (e.type === 'nets') return `${names(d.who)} took a strike last week and missed the train to the Nets game.`;
+    if (e.type === 'phil') return `${realName(d.who)} logged an activity after at least three days away. He saw his shadow. Six more weeks of Winter Arc.`;
+    if (e.type === 'scared') return `No date posts for ${d.days ?? d.n * 30} days. The fellas are scared of girls.`;
+    if (e.type === 'timesheet') return `${realName(d.who)} reached his weekly goal with ${fmtPts(d.pts)} points on ${d.day === 6 ? 'Saturday' : 'Sunday'}. Big night out, so the work time sheet gets filed from the club at 11:59.`;
+    if (e.type === 'hoat') return `${realName(d.who)} hit ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week. Stamped and guaranteed.`;
+    return '';
   }
   const JOKE_EYEBROW = {
-    coin: 'Achievement unlocked', bluehair: 'Week leader', iron: 'Saturday morning', hoat: 'Every week, as promised',
-    bag: 'Three-way tie', fight: 'Tied for first', crashout: 'Cap called', satellite: 'Beers with the boys', puke: 'Last place',
-    mma: 'Fight night', radiator: 'Missing person', mom: 'Sunday night', nets: 'Strike', liquor: 'Saturday morning',
-    phil: 'Sighting', scared: 'Date drought', timesheet: 'Last minute',
+    coin: 'Achievement unlocked', bluehair: 'Week leader', iron: 'Saturday morning', liquor: 'Saturday morning',
+    bag: 'Three-way tie', fight: 'Tied for first', crashout: 'Cap called', satellite: 'Beers with the boys',
+    puke: 'Last place', mma: 'Fight night', radiator: 'Missing person', mom: 'Sunday night', nets: 'Strike',
+    phil: 'Sighting', scared: 'Date drought', timesheet: 'Last minute', hoat: 'Every week, as promised',
   };
   /** Every inside joke that has happened goes in the feed (config: feed). */
   const inFeed = e => (e.type === 'hoat' ? HOAT.feed !== false : !!(INSIDE_JOKES[e.type] && INSIDE_JOKES[e.type].feed));
   function jokeCard(e) {
     const hoat = e.type === 'hoat', J = hoat ? { title: HOAT.title } : INSIDE_JOKES[e.type], d = e.data || {};
-    const who = [...new Set([].concat(d.a || [], d.b || [], d.who || [], d.with || [], d.on || []))].filter(id => member(id)).slice(0, 6);
+    const who = [...new Set([d.a, d.b, d.who, d.tied, d.target].flat().filter(id => id && member(id)))].slice(0, 6);
     const vis = hoat
       ? `<button class="jk-vid jk-stamp" data-act="hoat-replay" aria-label="${esc(HOAT.text)}: play the stamp again">${Art.hoatStamp()}</button>`
-      : `<button class="jk-vid" data-act="play" data-id="${J.video}" aria-label="Play ${esc(J.title)}"><img src="${Art.poster(J.video)}" alt="" loading="lazy" width="96" height="171"><span class="gplay">${ic('play')}</span></button>`;
-    return `<article class="post card joke joke-${e.type}" data-eid="${e.id}">
+      : J.video ? `<button class="jk-vid" data-act="play" data-id="${J.video}" aria-label="Play ${esc(J.title)}"><img src="${Art.poster(J.video)}" alt="" loading="lazy" width="96" height="209"><span class="gplay">${ic('play')}</span></button>` : '';
+    return `<article class="post card joke joke-${e.type}${vis ? '' : ' text-only'}" data-eid="${e.id}">
   ${vis}
   <div class="jk-body">
     <p class="eyebrow">${JOKE_EYEBROW[e.type] || 'Inside joke'}</p>
@@ -724,30 +833,38 @@ const App = (() => {
     <p class="jk-text">${esc(jokeText(e))}</p>
     <p class="jk-meta"><span class="jk-avs">${who.map(id => avatar(id, 28)).join('')}</span><em>${ago(e.at)}</em></p>
   </div>
+  ${commentsHTML('event', e.id)}
 </article>`;
   }
   let jokeBusy = false;
-  const quiet = () => S.busy || Celebrate.busy() || !$('#sheet').hidden || !!$('#layer .modal') || !$('#intro').hidden;
+  const quiet = () => $('#avatarCrop').open || S.busy || Celebrate.busy() || !$('#sheet').hidden || !!$('#layer .modal');
   /** Record any inside joke that's true right now (straight to the feed), then pop up the ones you haven't seen (once each). */
   async function checkJokes() {
     if (!inApp() || jokeBusy) return;
     jokeBusy = true;
     try {
-      const found = Logic.jokes(S.members, S.calc, INSIDE_JOKES, new Date(), (S.group || {}).timezone, HOAT.feed !== false ? { username: HOAT.username, min: cfg().weeklyMin } : null, { min: cfg().weeklyMin, posts: S.posts });
+      const checkedAt = new Date(), { timezone, weeklyMin } = cfg();
+      const found = Logic.jokes(S.members, S.calc, INSIDE_JOKES, checkedAt, timezone, HOAT.feed !== false ? { username: HOAT.username, min: weeklyMin } : null);
+      const cooldownStart = Logic.jokeCooldownStart(checkedAt, timezone).toISOString();
+      const cooling = new Set(S.events.filter(event => INSIDE_JOKES[event.type] && event.at >= cooldownStart).map(event => event.type));
       let added = false;
-      for (const ev of found) {
-        if (S.events.some(e => e.key === ev.key)) continue;
-        try { await Store.recordEvent(ev); added = true; } catch (err) { console.warn('Could not record', ev.key, err); }   // one refusal (e.g. an older server) doesn't block the rest
+      for (const event of found) {
+        if (cooling.has(event.type) || S.events.some(e => e.key === event.key)) continue;
+        const saved = await Store.recordEvent(event).catch(err => {
+          console.warn('Could not record', event.key, err);
+          return null;
+        });
+        if (!saved) continue;
+        if (INSIDE_JOKES[saved.type]) cooling.add(saved.type);
+        added = true;
       }
       if (added) { S.events = await Store.listEvents(); if (S.tab === 'feed' && $('#sheet').hidden) renderView(); }
-      if (quiet()) return;   // something else is on screen: pop-ups wait for the next check
+      if (!Logic.insideJokesStarted(checkedAt, timezone) || quiet()) return;
       const se = S.calc.season, now = Date.now();
-      const due = S.events.filter(e => !e.seen && INSIDE_JOKES[e.type]).sort((a, b) => new Date(a.at) - new Date(b.at));
-      const newest = {};   // several of the same joke waiting (e.g. three caps overnight): play the newest once
-      for (const e of due) newest[e.type] = e;
+      const due = S.events.filter(e => !e.seen && INSIDE_JOKES[e.type]?.video).sort((a, b) => new Date(a.at) - new Date(b.at));
       for (const e of due) {
         const J = INSIDE_JOKES[e.type];
-        if (now - new Date(e.at) > J.playFor * 36e5 || Logic.weekIdx(new Date(e.at), se.start) !== se.idx || newest[e.type] !== e) { await Store.markSeen(e.id); e.seen = true; continue; }
+        if (now - new Date(e.at) > J.playFor * 36e5 || Logic.weekIdx(new Date(e.at), se.start, cfg().timezone) !== se.idx) { await Store.markSeen(e.id); e.seen = true; continue; }
         if (quiet()) break;
         Celebrate.prefetch(J.video);
         await Celebrate.play(J.video);
@@ -824,29 +941,33 @@ const App = (() => {
     log: () => openLog(),
     'hoat-replay': () => hoatSlam(),
     roast(el) {
-      const r = S.roast && Jokes.next(S.members, S.posts, cfg(), new Date(), S.roast);
+      const r = S.roast && Array.isArray(S.activeInjuries) && Jokes.next(S.members, S.posts, cfg(), new Date(), S.roast, roastExclusions());
       if (!r) return;
       S.roast = { day: Logic.dayKey(new Date()), i: r.i, pos: r.pos, key: r.key, target: r.target };
       const focused = document.activeElement === el;
       el.insertAdjacentHTML('afterend', roastHTML(r, true)); el.remove();
       if (focused) { const b = $('.roast'); if (b) b.focus({ preventScroll: true }); }
     },
-    seg(el) {
-      if (el.dataset.seg === 'board') flipBoard(() => { S.board = el.dataset.v; renderView(); });
-      else { S.feed = el.dataset.v; renderView(); }
+    async 'resolve-injury'(el) {
+      const report = S.activeInjuries?.find(row => row.id === el.dataset.id);
+      if (!report || !await confirmBox(`Mark ${report.name} recovered?`, 'This closes the active injury report.', 'Mark recovered')) return;
+      await Store.resolveInjuryReport(report.id);
+      await load(); renderView(); toast('Injury report closed.');
     },
+    seg(el) { flipBoard(() => { S.board = el.dataset.v; renderView(); }); },
     async react(el) {
       const p = await Store.toggleReaction(el.dataset.id, el.dataset.e); if (!p) return;
       const i = S.posts.findIndex(x => x.id === p.id); if (i >= 0) S.posts[i] = p;
       const who = p.reactions[el.dataset.e] || [], on = who.includes(S.me.id);
       el.classList.toggle('on', on); el.setAttribute('aria-pressed', String(on)); el.querySelector('span').textContent = who.length || '';
       if (on) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); floatEmoji(el, el.dataset.e); }
-      if (el.dataset.e === CAP) {
-        const card = el.closest('.post'); setTimeout(() => { if (card && card.isConnected) card.outerHTML = postCard(p); }, 650);
-        if (on) setTimeout(() => checkJokes(), 900);   // e.g. Crash Out KNR
-      }
+      if (el.dataset.e === CAP) { const card = el.closest('.post'); setTimeout(() => { if (card && card.isConnected) card.outerHTML = postCard(p); }, 650); }
     },
     photo(el) { const p = S.posts.find(x => x.id === el.dataset.id); if (p) modal(`<img class="full" src="${esc(Art.photo(p.photo))}" alt="Proof photo"><button class="btn" data-close>Close</button>`, 'photo-modal'); },
+    edit(el) {
+      const post = S.posts.find(p => p.id === el.dataset.id && p.memberId === S.me.id && !p.voided && !p.fraud);
+      if (post) openLog(post);
+    },
     async del(el) {
       if (!(await confirmBox('Delete this post?', 'Its points come off your week.', 'Delete', true))) return;
       await Store.deletePost(el.dataset.id); await load(); renderView(); toast('Post deleted.');
@@ -860,7 +981,6 @@ const App = (() => {
     },
     play: el => Celebrate.play(el.dataset.id),
     badge: el => showBadge(el.dataset.id, false),
-    intro: () => Intro.play(),
     async switch() {
       const pick = await demoChooser('Switch person', 'Preview only: jump into anyone’s account.'); if (!pick) return;
       await Store.demoSignInAs(pick); await afterAuth();
@@ -874,7 +994,7 @@ const App = (() => {
     'pick-photo': () => $('#photoInput').click(),
     'clear-photo': () => { S.draft.photo = null; refreshProof(); refreshFoot(); },
     wit(el) { const w = S.draft.witnesses, id = el.dataset.id, i = w.indexOf(id); if (i >= 0) w.splice(i, 1); else w.push(id); el.setAttribute('aria-pressed', String(i < 0)); refreshFoot(); },
-    cat(el) { S.draft.cat = el.dataset.cat; Celebrate.prepare(el.dataset.cat); refreshCats(); refreshDetails(); refreshFoot(); },
+    cat(el) { S.draft.cat = el.dataset.cat; if (!S.draft.original) Celebrate.prepare(el.dataset.cat); refreshCats(); refreshDetails(); refreshFoot(); },
     step(el) {
       const d = S.draft, k = el.dataset.k, dv = parseFloat(el.dataset.d);
       if (k === 'minutes') { d.minutes = U.clamp(d.minutes + dv, 0, 300); $('#minOut').innerHTML = `${d.minutes}<small> min</small>`; const m = $('#minMsg'); m.className = d.minutes >= 45 ? 'ok' : 'warn'; m.textContent = d.minutes >= 45 ? 'Counts. 45 minutes minimum.' : 'Gym needs at least 45 minutes to count.'; }
@@ -897,8 +1017,9 @@ const App = (() => {
         const f = t.files && t.files[0]; t.value = ''; if (!f || !S.draft) return;
         try { S.draft.photo = await downscale(f); refreshProof(); refreshFoot(); } catch (err) { toast(err.message, 'shrug'); }
       } else if (t.id === 'avatarInput') {
-        const f = t.files && t.files[0]; t.value = ''; if (!f) return;
-        try { await gotAvatar(await downscale(f, 480, 0.85)); } catch (err) { toast(err.message, 'shrug'); }
+        const file = t.files?.[0]; if (!file) return;
+        try { await editAvatar(file, '#avatarInput'); } catch (err) { toast(err.message, 'shrug'); }
+        finally { t.value = ''; }
       } else if (t.dataset && t.dataset.pref) {
         try { S.prefs = await Store.updatePrefs({ [t.dataset.pref]: t.checked }); toast(t.checked ? 'Reminder on.' : 'Reminder off.', 'thumbs'); } catch (err) { t.checked = !t.checked; toast(err.message, 'shrug'); }
       } else if (t.dataset && t.dataset.check && S.draft) { S.draft.checks[t.dataset.check] = t.checked; refreshFoot(); }
@@ -906,12 +1027,19 @@ const App = (() => {
     document.addEventListener('input', e => {
       const t = e.target;
       if (t.id === 'caption' && S.draft) S.draft.caption = t.value;
+      else if (t.id === 'runPace' && S.draft) { S.draft.pace = t.value; refreshFoot(); }
+      else if (t.id === 'bikeMiles' && S.draft) { S.draft.bikeMiles = t.value; refreshFoot(); }
       else if (t.id === 'siUser') S.lastUser = t.value;
       else if (t.id === 'afName') { const u = $('#afUser'); if (u && !u.dataset.touched) u.value = t.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, ''); }
       else if (t.id === 'afUser') t.dataset.touched = '1';
     });
     document.addEventListener('submit', async e => {
-      const fn = FORMS[e.target.id]; if (!fn) return; e.preventDefault();
+      const form = e.target;
+      const fn = form.dataset.commentFor ? async () => {
+        await Store.addFeedComment({ target:form.dataset.commentFor, kind:form.dataset.commentKind, body:new FormData(form).get('body') });
+        await load(); renderView();
+      } : FORMS[form.id];
+      if (!fn) return; e.preventDefault();
       const btn = e.target.querySelector('[type=submit]'); if (btn) btn.disabled = true;
       try { await fn(e.target); } catch (err) { toast(err.message || 'Something went wrong.', 'shrug'); } finally { if (btn && btn.isConnected) btn.disabled = false; }
     });
@@ -920,6 +1048,13 @@ const App = (() => {
   function tick() {
     const el = $('#cd'); if (!S.calc || !inApp()) return;
     const se = Logic.season(cfg(), new Date());
+    const day = Logic.dayKey(new Date(), se.timezone);
+    if (!tick.day) tick.day = day;
+    if (tick.day !== day && !quiet() && !document.activeElement?.closest('[data-feed-form]')) {
+      tick.day = day;
+      load().then(renderView);
+      return;
+    }
     if (se.idx !== S.calc.season.idx || se.status !== S.calc.season.status) { if (!S.busy && !Celebrate.busy() && $('#sheet').hidden) load().then(renderView); return; }
     if (el && se.status !== 'over') el.textContent = fmtLeft(se.msLeft);
     if (Date.now() - (tick.j || 0) > 12000) { tick.j = Date.now(); checkJokes(); }
@@ -928,18 +1063,30 @@ const App = (() => {
   async function start() {
     $$('[data-icon]').forEach(b => b.insertAdjacentHTML('afterbegin', ic(b.dataset.icon)));
     bind();
-    const intro = Intro.play();
+    await Store.init();
+    S.lastUser = Store.setupUsername;
     try { await Promise.race([Promise.all([document.fonts.load('40px "Luckiest Guy"'), document.fonts.load('700 16px "Baloo 2"')]), wait(1500)]); } catch (e) { /* fonts optional */ }
-    await Store.init(); await load();
+    await load();
     render();
     document.body.classList.remove('booting');
-    await intro;
     setInterval(tick, 1000);
     tick.j = Date.now();
     checkJokes();
-    Store.subscribe(async () => { if (S.busy || Celebrate.busy() || !$('#sheet').hidden) return; await load(); renderView(); checkJokes(); });
+    Store.subscribe(async () => {
+      if (quiet() || document.activeElement?.closest('[data-feed-form]')) return false;
+      const wasInApp = inApp();
+      await load();
+      if (inApp() !== wasInApp) render();
+      else if (inApp() && S.tab !== 'account') renderView();
+      checkJokes();
+    });
   }
   return { start, state: S };
 })();
 
-App.start();
+App.start().catch(() => {
+  document.body.classList.remove('booting');
+  document.body.classList.add('signed-out');
+  document.getElementById('view').innerHTML =
+    '<section class="screen auth"><p class="note">Winter Arc couldn’t connect. Reload to try again.</p></section>';
+});

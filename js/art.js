@@ -17,6 +17,9 @@ const Art = (() => {
       <path d="M21 27 L27 25.5 M23 31 L30 29.5 M26 35 L33 33.5" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
       <path d="M36 39 L50 37" stroke="#FFD064" stroke-width="4" stroke-linecap="round"/>
       <path d="M8 31 C10 27 13 25 16 25" stroke="#fff" stroke-width="2.5" fill="none" opacity=".7" stroke-linecap="round"/>`,
+    bike: `<circle cx="14" cy="42" r="11" fill="#E6FBFC" ${st}/><circle cx="50" cy="42" r="11" fill="#E6FBFC" ${st}/>
+      <path d="M14 42 L23 27 H43 L31 42 Z" fill="#24A6AF" ${st}/>
+      <path d="M31 42 L21 21 M17 21 H26 M50 42 L40 17 H47" fill="none" ${st}/>`,
     jickle: `<g transform="rotate(-32 30 30)"><rect x="27" y="36" width="9" height="22" rx="3.5" fill="#412633" ${st}/>
       <rect x="15" y="4" width="33" height="38" rx="14" fill="#45B87A" ${st}/><rect x="20" y="9" width="23" height="28" rx="10" fill="none" stroke="#4C9259" stroke-width="3"/>
       <circle cx="31.5" cy="23" r="5" fill="#FEDF8A" stroke="${K}" stroke-width="2.5"/></g>
@@ -125,8 +128,8 @@ const Art = (() => {
 
   const mascot = pose => `assets/mascot/${pose}.webp`;
   const photo = p => (!p ? '' : p.startsWith('demo:') ? `assets/demo/${p.slice(5)}.webp` : p);
-  const video = id => `assets/celebrations/${id}.mp4`;
-  const poster = id => `assets/celebrations/${id}.webp`;
+  const video = id => `/media/celebrations/${id}.mp4`;
+  const poster = id => `/media/celebrations/${id}.webp`;
 
   return { icon64, ui, mascot, photo, video, poster, hoatStamp, ICON };
 })();

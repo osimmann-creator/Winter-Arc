@@ -1,7 +1,7 @@
 'use strict';
 /* =====================================================================
    WINTER ARC · rules engine (pure functions, no storage)
-   Weeks run Monday 00:00 → Sunday 11:59 PM in the viewer's local time.
+   Weeks run Monday 00:00 through Sunday in the group's timezone.
    ===================================================================== */
 const BADGES = [
   { id: 'first',    name: 'First Rep',          icon: 'gym',     desc: 'Log your first activity.' },
@@ -18,42 +18,104 @@ const BADGES = [
 
 const Logic = (() => {
   const DAY = 864e5;
-  const mondayOf = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
-  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
-  const parseDay = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
-  const dayKey = d => { const x = new Date(d); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
-  const weekIdx = (date, start) => Math.round((mondayOf(date) - mondayOf(start)) / (7 * DAY));
+  const HOUR = 36e5;
+  const calendars = new Map();
 
-  function season(cfg, now = new Date()) {
-    const start = mondayOf(parseDay(cfg.seasonStart)), weeks = cfg.seasonWeeks, end = addDays(start, weeks * 7);
-    const raw = weekIdx(now, start);
-    const status = now < start ? 'pre' : now >= end ? 'over' : 'live';
-    const idx = status === 'pre' ? 0 : status === 'over' ? weeks - 1 : raw;
-    const wkStart = addDays(start, idx * 7), wkEnd = addDays(wkStart, 7);
-    const lastComplete = status === 'pre' ? -1 : status === 'over' ? weeks - 1 : raw - 1;
-    return { start, end, weeks, idx, status, wkStart, wkEnd, lastComplete, msLeft: Math.max(0, (status === 'pre' ? start : wkEnd) - now) };
+  function civilDate(date, tz = CONFIG.timezone) {
+    if (!calendars.has(tz)) {
+      calendars.set(tz, new Intl.DateTimeFormat('en-CA', {
+        timeZone: tz, calendar: 'iso8601', numberingSystem: 'latn',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+      }));
+    }
+    const parts = {};
+    const instant = new Date(date);
+    for (const part of calendars.get(tz).formatToParts(instant)) {
+      if (part.type !== 'literal') parts[part.type] = Number(part.value);
+    }
+    // UTC holds the civil components for calendar arithmetic, independently of the instant.
+    const clock = new Date(instant.getTime());
+    clock.setUTCFullYear(parts.year, parts.month - 1, parts.day);
+    clock.setUTCHours(parts.hour, parts.minute, parts.second);
+    return clock;
   }
 
-  function streakOf(days, now) {
-    let d = new Date(now); if (!days.has(dayKey(d))) d = addDays(d, -1);
-    let n = 0; while (days.has(dayKey(d))) { n++; d = addDays(d, -1); }
+  function inZone(clock, tz) {
+    const wallTime = +clock;
+    const offsets = [-DAY, DAY].map(delta => +civilDate(wallTime + delta, tz) - wallTime - delta);
+    const candidates = offsets.map(offset => wallTime - offset).sort((a, b) => a - b);
+    const exact = candidates.find(candidate => +civilDate(candidate, tz) === wallTime);
+    // Choose the first occurrence of a repeated time and advance through a skipped time.
+    return new Date(exact ?? candidates[1]);
+  }
+
+  function mondayOf(date, tz = CONFIG.timezone) {
+    const clock = civilDate(date, tz);
+    clock.setUTCHours(0, 0, 0, 0);
+    clock.setUTCDate(clock.getUTCDate() - (clock.getUTCDay() + 6) % 7);
+    return inZone(clock, tz);
+  }
+
+  function addDays(date, days, tz = CONFIG.timezone) {
+    const clock = civilDate(date, tz);
+    clock.setUTCDate(clock.getUTCDate() + days);
+    return inZone(clock, tz);
+  }
+
+  function jokeCooldownStart(date, tz = CONFIG.timezone) {
+    return addDays(mondayOf(date, tz), -7, tz);
+  }
+
+  function parseDay(key, tz = CONFIG.timezone, hour = 0) {
+    const date = new Date(`${key}T${String(hour).padStart(2, '0')}:00:00.000Z`);
+    return Number.isFinite(+date) ? inZone(date, tz) : date;
+  }
+
+  const dayKey = (date, tz = CONFIG.timezone) => civilDate(date, tz).toISOString().slice(0, 10);
+  const insideJokesStarted = (date, tz) => dayKey(date, tz) >= CONFIG.insideJokesStart;
+  const ordinal = (date, tz) => Math.floor(+civilDate(date, tz) / DAY);
+  const monday = day => day - ((day + 3) % 7 + 7) % 7;
+  const weekIdx = (date, start, tz = CONFIG.timezone) => (monday(ordinal(date, tz)) - monday(ordinal(start, tz))) / 7;
+
+  function season(cfg, now = new Date()) {
+    const timezone = cfg.timezone || CONFIG.timezone;
+    now = new Date(now);
+    const start = mondayOf(parseDay(cfg.seasonStart, timezone), timezone);
+    const weeks = cfg.seasonWeeks, end = addDays(start, weeks * 7, timezone);
+    const raw = weekIdx(now, start, timezone);
+    const status = now < start ? 'pre' : now >= end ? 'over' : 'live';
+    const idx = status === 'pre' ? 0 : status === 'over' ? weeks - 1 : raw;
+    const wkStart = addDays(start, idx * 7, timezone), wkEnd = addDays(wkStart, 7, timezone);
+    const lastComplete = status === 'pre' ? -1 : status === 'over' ? weeks - 1 : raw - 1;
+    return { start, end, weeks, idx, status, wkStart, wkEnd, lastComplete, timezone, msLeft: Math.max(0, (status === 'pre' ? start : wkEnd) - now) };
+  }
+
+  function streakOf(days, today) {
+    let d = days.has(today) ? today : today - 1;
+    let n = 0; while (days.has(d)) { n++; d--; }
     return n;
   }
   function bestStreakOf(days) {
-    const list = [...days].sort(); let best = 0, run = 0, prev = null;
-    for (const k of list) { const d = parseDay(k); run = prev && Math.round((d - prev) / DAY) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = d; }
+    const list = [...days].sort((a, b) => a - b); let best = 0, run = 0, prev = null;
+    for (const day of list) { run = day - prev === 1 ? run + 1 : 1; best = Math.max(best, run); prev = day; }
     return best;
   }
 
   function compute(members, posts, cfg, now = new Date()) {
     const S = season(cfg, now), by = {};
+    const cappedPosts = cappedPostIds(posts, S.timezone);
+    const firstWeek = monday(ordinal(S.start, S.timezone));
+    const today = ordinal(now, S.timezone);
+    const weekDates = Array.from({ length: S.weeks }, (_, w) => dayKey(addDays(S.start, w * 7, S.timezone), S.timezone));
     for (const m of members) by[m.id] = { id: m.id, weekPts: Array(S.weeks).fill(0), weekGym: Array(S.weeks).fill(0), fraudWeeks: new Set(), posts: [], counted: [], cat: {}, total: 0, strikes: 0, strikeWeeks: [], eliminated: false, elimWeek: null, safeWeeks: 0, streak: 0, bestStreak: 0, witnessed: 0 };
     for (const p of posts) {
       const R = by[p.memberId]; if (!R) continue;
-      const w = weekIdx(new Date(p.at), S.start); if (w < 0 || w >= S.weeks) continue;
+      const w = (monday(ordinal(p.at, S.timezone)) - firstWeek) / 7;
+      if (w < 0 || w >= S.weeks) continue;
       R.posts.push(p);
       if (p.fraud) R.fraudWeeks.add(w);
-      if (p.voided) continue;
+      if (p.voided || cappedPosts.has(p.id)) continue;
       R.counted.push(p);
       R.weekPts[w] += (CATS[p.cat] && CATS[p.cat].pts) || 0;
       if (p.cat === 'gym') R.weekGym[w]++;
@@ -62,18 +124,20 @@ const Logic = (() => {
     }
     for (const m of members) {
       const R = by[m.id];
+      R.weekGoals = weekDates.map(date => (cfg.weeklyGoalOverrides ?? CONFIG.weeklyGoalOverrides)?.[m.username]?.[date] ?? cfg.weeklyMin);
+      R.goal = R.weekGoals[S.idx] ?? cfg.weeklyMin;
       for (const w of R.fraudWeeks) R.weekPts[w] = 0;                       // rule 9: fraud = 0-point week
       R.weekPts = R.weekPts.map(v => Math.round(v * 2) / 2);
       R.total = R.weekPts.reduce((a, b) => a + b, 0);
       const from = Math.max(0, m.joinedWeek || 0);
       for (let w = from; w <= S.lastComplete; w++) {
-        if (R.weekPts[w] >= cfg.weeklyMin) R.safeWeeks++;
+        if (R.weekPts[w] >= R.weekGoals[w]) R.safeWeeks++;
         else if (!R.eliminated) { R.strikes++; R.strikeWeeks.push(w); if (R.strikes >= cfg.strikesOut) { R.eliminated = true; R.elimWeek = w; } }
       }
       R.thisWeek = S.status === 'pre' ? 0 : R.weekPts[S.idx];
       R.bestWeek = Math.max(0, ...R.weekPts);
-      const days = new Set(R.counted.map(p => dayKey(p.at)));
-      R.streak = streakOf(days, now); R.bestStreak = bestStreakOf(days);
+      const days = new Set(R.counted.map(p => ordinal(p.at, S.timezone)));
+      R.streak = streakOf(days, today); R.bestStreak = bestStreakOf(days);
       const fav = Object.entries(R.cat).sort((a, b) => b[1] - a[1])[0];
       R.fav = fav ? fav[0] : null;
       R.badges = badgesFor(R, cfg);
@@ -82,13 +146,13 @@ const Logic = (() => {
     const weekRank = [...members].sort((a, b) => by[b.id].thisWeek - by[a.id].thisWeek || by[b.id].total - by[a.id].total || a.name.localeCompare(b.name));
     const allRank = [...members].sort((a, b) => by[b.id].total - by[a.id].total || a.name.localeCompare(b.name));
     const winners = S.status !== 'over' ? [] : alive.length ? alive.map(m => m.id) : allRank.length ? [allRank[0].id] : [];
-    return { season: S, by, alive, weekRank, allRank, winners };
+    return { season: S, by, alive, weekRank, allRank, winners, cappedPosts, weeklyMin: cfg.weeklyMin };
   }
 
   function badgesFor(R, cfg) {
     const has = {
       first: R.counted.length >= 1,
-      safe: R.weekPts.some(v => v >= cfg.weeklyMin),
+      safe: R.weekPts.some((v, w) => v >= R.weekGoals[w]),
       iron: R.weekGym.some(v => v >= 3),
       road: (R.cat.run || 0) >= 5,
       herc: R.bestWeek >= cfg.weeklyMin * 2,
@@ -108,6 +172,10 @@ const Logic = (() => {
     if (!d.cat) out.push('Pick what you did.');
     if (d.cat === 'gym') { if (!(d.minutes >= 45)) out.push('Gym needs 45+ minutes.'); if (!d.checks.lifted) out.push('Confirm you actually lifted.'); }
     if (d.cat === 'run' && !(d.miles >= 2)) out.push('Runs need 2+ miles.');
+    if (d.cat === 'bike') {
+      const miles = Number(d.bikeMiles);
+      if (!Number.isFinite(miles) || miles < CATS.bike.minMiles) out.push(`Bike rides need at least ${CATS.bike.minMiles} miles.`);
+    }
     if (d.cat === 'date' && !(d.checks.oneOnOne && d.checks.notGf)) out.push('Confirm both date rules.');
     if (d.cat === 'beers' && !d.checks.inPerson) out.push('Confirm you were there in person with the fellas.');
     return out;
@@ -115,171 +183,186 @@ const Logic = (() => {
 
   /* Day of week (0 = Sunday … 6 = Saturday) and hour, in an IANA time zone. */
   function zoned(now, tz) {
-    try {
-      const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz || undefined, weekday: 'short', hour: 'numeric', hourCycle: 'h23' }).formatToParts(now);
-      const wd = parts.find(p => p.type === 'weekday').value, hr = +parts.find(p => p.type === 'hour').value;
-      return { day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(wd), hour: hr % 24 };
-    } catch (e) { return { day: now.getDay(), hour: now.getHours() }; }
+    const clock = civilDate(now, tz);
+    return { day: clock.getUTCDay(), hour: clock.getUTCHours() };
+  }
+
+  const byTime = (a, b) => Date.parse(a.at) - Date.parse(b.at) || String(a.id).localeCompare(String(b.id));
+
+  function cappedPostIds(posts, timezone) {
+    const used = new Set(), capped = new Set();
+    const limited = posts.filter(p => !p.voided && CATS[p.cat]?.oncePerWeek).sort(byTime);
+    for (const post of limited) {
+      const week = monday(ordinal(post.at, timezone));
+      const key = `${post.memberId}:${post.cat}:${week}`;
+      if (used.has(key)) capped.add(post.id);
+      used.add(key);
+    }
+    return capped;
+  }
+
+  function lastPlaceTrips(posts, target, alive, calc) {
+    if (alive.length < 2) return 0;
+    const scores = new Map(alive.map(m => [m.id, 0]));
+    const rivals = alive.filter(m => m.id !== target.id);
+    let trips = 0, wasLast = false;
+    for (const post of posts) {
+      if (!scores.has(post.memberId) || calc.by[post.memberId].fraudWeeks.has(calc.season.idx)) continue;
+      scores.set(post.memberId, scores.get(post.memberId) + (CATS[post.cat]?.pts || 0));
+      const isLast = rivals.every(m => scores.get(m.id) > scores.get(target.id));
+      if (isLast && !wasLast) trips++;
+      wasLast = isLast;
+    }
+    return wasLast ? trips : 0;
   }
 
   /* Inside jokes that are true right now → [{ type, key, data, at }].
-     Each key is recorded once (the store ignores repeats), so the key decides
-     how often a joke can happen: per week, per tied score, per post, per dry spell.
-     hoat = { username, min }: also the Hoat Guarantee (that person reached the weekly minimum).
-     opts = { min: the weekly minimum, posts: every post (defaults to the season's posts in calc) } */
-  function jokes(members, calc, J, now = new Date(), tz, hoat, opts = {}) {
+     The store deduplicates keys and enforces the cooldown for each joke type.
+     hoat = { username, min }: also the Hoat Guarantee (that person reached the weekly minimum). */
+  function jokes(members, calc, J, now = new Date(), tz, hoat) {
     const out = [], S = calc.season;
-    if (S.status !== 'live' || !J) return out;
-    const w = S.idx, by = u => members.find(m => String(m.username || '').toLowerCase() === u);
-    const R = m => calc.by[m.id] || { thisWeek: 0, eliminated: true, strikeWeeks: [], weekPts: [] };
-    const pts = m => R(m).thisWeek;
-    const at = now.toISOString();   // stamped when it's first noticed (right after the post that caused it)
-    const add = (type, key, data) => out.push({ type, key, data: Object.assign({ week: w }, data), at });
-    const min = opts.min || (hoat && hoat.min) || 7;
-    const cap = typeof CAP !== 'undefined' ? CAP : '\u{1F9E2}';
-    const all = (opts.posts || Object.values(calc.by).flatMap(x => x.posts)).filter(p => new Date(p.at) <= now);
-    const wk = all.filter(p => weekIdx(new Date(p.at), S.start) === w).sort((a, b) => new Date(a.at) - new Date(b.at));
-    const z = zoned(now, tz), inWindow = j => z.day === j.day && z.hour >= j.from && z.hour < j.to;
-    const alive = members.filter(m => !R(m).eliminated);
-    const joinedAt = m => addDays(S.start, 7 * Math.max(0, m.joinedWeek || 0));
-    const logsOf = m => all.filter(p => p.memberId === m.id && !p.voided);
-    /* last among the people still in, with at least one of them ahead (ties for last count) */
-    const inLast = y => { const rivals = alive.filter(m => m.id !== y.id); return !R(y).eliminated && rivals.length > 0 && rivals.every(m => pts(m) >= pts(y)) && rivals.some(m => pts(m) > pts(y)); };
+    if (!J || S.status === 'pre') return out;
+    now = new Date(now);
+    tz = tz || S.timezone;
+    const w = S.idx, at = now.toISOString();
+    const insideJokesOpen = insideJokesStarted(now, tz);
+    const byUsername = new Map(members.map(m => [m.username?.toLowerCase(), m]));
+    const people = type => (J[type]?.users || []).map(u => byUsername.get(u));
+    const pts = m => calc.by[m.id].thisWeek;
+    const add = (type, key, data = {}) => {
+      if (insideJokesOpen || type === 'hoat') out.push({ type, key: `${type}:${key}`, data: { week: w, ...data }, at });
+    };
+    const alive = m => m && !calc.by[m.id].eliminated;
 
-    if (J.coin) {                       // Dean & Jake tied above 0: once per week per tied score
-      const [a, b] = J.coin.users.map(by);
-      if (a && b && pts(a) > 0 && pts(a) === pts(b)) add('coin', `coin:${w}:${pts(a)}`, { pts: pts(a), a: a.id, b: b.id });
+    const [lastJake, lastGaurav] = people('nets');
+    if (S.lastComplete >= 0 && (S.status === 'live' || now < addDays(S.end, 7, tz))) {
+      const who = [lastJake, lastGaurav].filter(m => m && calc.by[m.id].strikeWeeks.includes(S.lastComplete)).map(m => m.id);
+      if (who.length) add('nets', S.lastComplete, { week: S.lastComplete, who });
     }
-    if (J.bluehair) {                   // Connor alone in first: once per week
-      const c = by(J.bluehair.users[0]);
-      if (c && pts(c) > 0 && members.every(m => m.id === c.id || pts(m) < pts(c))) add('bluehair', `bluehair:${w}`, { pts: pts(c), who: c.id });
+    if (S.status !== 'live') return out;
+
+    const [dean, jake] = people('coin');
+    if (dean && jake && pts(dean) > 0 && pts(dean) === pts(jake)) {
+      add('coin', `${w}:${pts(dean)}`, { pts: pts(dean), a: dean.id, b: jake.id });
     }
-    if (J.iron) {                       // Saturday morning, Ayaad in last: once per week
-      const y = by(J.iron.users[0]);
-      if (y && inWindow(J.iron) && inLast(y)) add('iron', `iron:${w}`, { pts: pts(y), who: y.id });
+    const [leader] = people('bluehair');
+    if (leader && pts(leader) > 0 && members.every(m => m.id === leader.id || pts(m) < pts(leader))) {
+      add('bluehair', w, { pts: pts(leader), who: leader.id });
     }
-    if (J.liquor) {                     // Saturday morning, Gaurav in last: once per week
-      const g = by(J.liquor.users[0]);
-      if (g && inWindow(J.liquor) && inLast(g)) add('liquor', `liquor:${w}`, { pts: pts(g), who: g.id });
-    }
-    if (J.bag) {                        // Dean, Connor & Dylan all tied above 0: once per week per tied score
-      const ms = J.bag.users.map(by);
-      if (ms.length > 1 && ms.every(Boolean) && pts(ms[0]) > 0 && ms.every(m => pts(m) === pts(ms[0]))) add('bag', `bag:${w}:${pts(ms[0])}`, { pts: pts(ms[0]), who: ms.map(m => m.id) });
-    }
-    if (J.fight) {                      // Dylan tied for first above 0: once per week per tied score
-      const d = by(J.fight.users[0]);
-      if (d && pts(d) > 0 && members.every(m => pts(m) <= pts(d))) {
-        const tied = members.filter(m => m.id !== d.id && pts(m) === pts(d));
-        if (tied.length) add('fight', `fight:${w}:${pts(d)}`, { pts: pts(d), who: d.id, with: tied.map(m => m.id) });
+    const clock = zoned(now, tz);
+    const inWindow = j => clock.day === j.day && clock.hour >= j.from && clock.hour < j.to;
+    for (const type of ['iron', 'liquor']) {
+      const [target] = people(type);
+      if (!alive(target) || !inWindow(J[type])) continue;
+      const rivals = calc.alive.filter(m => m.id !== target.id);
+      if (rivals.every(m => pts(m) >= pts(target)) && rivals.some(m => pts(m) > pts(target))) {
+        add(type, w, { pts: pts(target), who: target.id });
       }
     }
-    if (J.crashout) {                   // Connor calls cap on someone's post from this week: once per post
-      const c = by(J.crashout.users[0]);
-      if (c) for (const p of wk) if (p.memberId !== c.id && ((p.reactions || {})[cap] || []).includes(c.id)) add('crashout', `crashout:${p.id}`, { post: p.id, on: p.memberId, cat: p.cat, who: c.id });
+    const bag = people('bag');
+    if (bag.length && bag.every(m => m && pts(m) > 0 && pts(m) === pts(bag[0]))) {
+      add('bag', `${w}:${pts(bag[0])}`, { pts: pts(bag[0]), who: bag.map(m => m.id) });
     }
-    if (J.satellite) {                  // Connor logs beers with the boys: once per post
-      const c = by(J.satellite.users[0]);
-      if (c) for (const p of wk) if (p.memberId === c.id && p.cat === 'beers' && !p.voided) add('satellite', `satellite:${p.id}`, { post: p.id, who: c.id, with: (p.witnesses || []).slice(0, 8) });
+    const [fighter] = people('fight');
+    if (fighter && pts(fighter) > 0 && members.every(m => pts(m) <= pts(fighter))) {
+      const tied = members.filter(m => m.id !== fighter.id && pts(m) === pts(fighter)).map(m => m.id);
+      if (tied.length) add('fight', `${w}:${pts(fighter)}`, { pts: pts(fighter), who: fighter.id, tied });
     }
-    if (J.puke) {                       // Amaan alone in last: again each separate time he drops back there in a week
-      const a = by(J.puke.users[0]);
-      const soleLast = v => alive.length > 1 && alive.every(m => m.id === a.id || v(m) > v(a));
-      if (a && !R(a).eliminated && soleLast(pts)) {
-        const sum = {}, fraud = new Set(wk.filter(p => p.fraud).map(p => p.memberId));
-        alive.forEach(m => { sum[m.id] = 0; });
-        const v = m => (fraud.has(m.id) ? 0 : Math.round(sum[m.id] * 2) / 2);
-        let n = 0, was = false;
-        for (const p of wk) {           // replay the week in order and count the drops into last
-          if (!(p.memberId in sum) || p.voided) continue;
-          sum[p.memberId] += (CATS[p.cat] && CATS[p.cat].pts) || 0;
-          const is = soleLast(v);
-          if (is && !was) n++;
-          was = is;
+
+    const counted = members.flatMap(m => calc.by[m.id].counted).sort(byTime);
+    const week = counted.filter(p => Date.parse(p.at) >= +S.wkStart && Date.parse(p.at) < +S.wkEnd);
+    const [capper] = people('crashout');
+    const [beerDrinker] = people('satellite');
+    for (const post of week) {
+      if (capper && post.memberId !== capper.id && post.reactions?.[CAP]?.includes(capper.id)) {
+        add('crashout', post.id, { who: capper.id, post: post.id, target: post.memberId });
+      }
+      if (beerDrinker && post.memberId === beerDrinker.id && post.cat === 'beers') {
+        add('satellite', post.id, { who: beerDrinker.id, post: post.id });
+      }
+    }
+
+    const [lastPlace] = people('puke');
+    if (alive(lastPlace)) {
+      const trips = lastPlaceTrips(week, lastPlace, calc.alive, calc);
+      if (trips) add('puke', `${w}:${trips}`, { pts: pts(lastPlace), who: lastPlace.id, n: trips });
+    }
+    const [fighterMma] = people('mma');
+    if (fighterMma) {
+      const n = week.filter(p => p.memberId === fighterMma.id && p.cat === 'mma').length;
+      if (n >= 4) add('mma', w, { who: fighterMma.id, n });
+    }
+
+    const firstWeek = m => +addDays(S.start, (m.joinedWeek || 0) * 7, tz);
+    const [idle] = people('radiator');
+    if (alive(idle)) {
+      const latest = counted.filter(p => p.memberId === idle.id).at(-1);
+      const since = latest ? Date.parse(latest.at) : firstWeek(idle);
+      if (now - since >= 96 * HOUR) add('radiator', latest?.id || 'start', { who: idle.id, post: latest?.id || null });
+    }
+    const [late] = people('mom');
+    if (alive(late) && inWindow(J.mom) && pts(late) < calc.by[late.id].goal) {
+      add('mom', w, { pts: pts(late), who: late.id });
+    }
+    const [phil] = people('phil');
+    if (phil) {
+      let previous = firstWeek(phil);
+      for (const post of counted.filter(p => p.memberId === phil.id)) {
+        const time = Date.parse(post.at);
+        if (time >= +S.wkStart && time < +S.wkEnd && time - previous >= 72 * HOUR) {
+          add('phil', post.id, { who: phil.id, post: post.id });
         }
-        add('puke', `puke:${w}:${Math.max(1, n)}`, { pts: pts(a), who: a.id });
+        previous = time;
       }
     }
-    if (J.mma) {                        // Amaan's 4th MMA session this week: once per week
-      const a = by(J.mma.users[0]);
-      const n = a ? wk.filter(p => p.memberId === a.id && p.cat === 'mma' && !p.voided).length : 0;
-      if (a && n >= (J.mma.count || 4)) add('mma', `mma:${w}`, { n, who: a.id });
+    if (J.scared) {
+      const date = counted.filter(p => p.cat === 'date').at(-1);
+      const since = Math.max(+S.start, date ? Date.parse(date.at) : +S.start);
+      const days = Math.floor((now - since) / DAY), n = Math.floor(days / J.scared.days);
+      if (n > 0) add('scared', `${dayKey(since, tz)}:${n}`, { n, days });
     }
-    if (J.radiator) {                   // Jake hasn't logged in 4 days: once per dry spell
-      const j = by(J.radiator.users[0]);
-      if (j && !R(j).eliminated) {
-        const last = logsOf(j).sort((a, b) => new Date(b.at) - new Date(a.at))[0];
-        const since = new Date(Math.max(+joinedAt(j), last ? +new Date(last.at) : 0)), days = Math.floor((now - since) / DAY);
-        if (days >= (J.radiator.days || 4)) add('radiator', `radiator:${last ? last.id : 'start'}`, { days, since: since.toISOString(), who: j.id });
-      }
-    }
-    if (J.mom) {                        // Sunday evening, Jake still short of the minimum: once per week
-      const j = by(J.mom.users[0]);
-      if (j && inWindow(J.mom) && !R(j).eliminated && pts(j) < min) add('mom', `mom:${w}`, { pts: pts(j), left: Math.round((min - pts(j)) * 2) / 2, who: j.id });
-    }
-    if (J.nets && S.lastComplete >= 0) { // Jake or Gaurav took a strike last week: once per week
-      const lw = S.lastComplete, missed = J.nets.users.map(by).filter(m => m && (R(m).strikeWeeks || []).includes(lw));
-      if (missed.length) add('nets', `nets:${lw}`, { week: lw, who: missed.map(m => m.id), pts: missed.map(m => R(m).weekPts[lw] || 0) });
-    }
-    if (J.phil) {                       // Philip logs after 3+ days without a log: once per post
-      const ph = by(J.phil.users[0]);
-      if (ph) {
-        const mine = logsOf(ph).sort((a, b) => new Date(a.at) - new Date(b.at));
-        mine.forEach((p, i) => {
-          if (weekIdx(new Date(p.at), S.start) !== w) return;
-          const prev = new Date(Math.max(+joinedAt(ph), i ? +new Date(mine[i - 1].at) : 0)), days = Math.floor((new Date(p.at) - prev) / DAY);
-          if (days >= (J.phil.days || 3)) add('phil', `phil:${p.id}`, { post: p.id, days, who: ph.id });
-        });
-      }
-    }
-    if (J.scared) {                     // nobody has logged a date in 30 days: again every 30 days it goes on
-      const last = Math.max(0, ...all.filter(p => p.cat === 'date' && !p.voided).map(p => +new Date(p.at)));
-      const since = new Date(Math.max(+S.start, last)), days = Math.floor((now - since) / DAY), per = J.scared.days || 30;
-      if (days >= per) add('scared', `scared:${dayKey(since)}:${Math.floor(days / per)}`, { days, since: since.toISOString() });
-    }
-    if (J.timesheet) {                  // Jake's post that gets him to the minimum lands on a Saturday or Sunday: once per week
-      const j = by(J.timesheet.users[0]);
-      const mine = j ? wk.filter(p => p.memberId === j.id) : [];
-      if (j && !mine.some(p => p.fraud)) {
-        let sum = 0;
-        for (const p of mine) {
-          if (p.voided) continue;
-          const before = sum;
-          sum += (CATS[p.cat] && CATS[p.cat].pts) || 0;
-          if (before < min && sum >= min) {
-            const day = zoned(new Date(p.at), tz).day;
-            if ((J.timesheet.days || [6, 0]).includes(day)) add('timesheet', `timesheet:${w}`, { post: p.id, pts: Math.round(sum * 2) / 2, day, who: j.id });
-            break;
-          }
+    const [timekeeper] = people('timesheet');
+    if (timekeeper) {
+      const stats = calc.by[timekeeper.id];
+      if (!stats.fraudWeeks.has(w)) {
+        let points = 0;
+        for (const post of week) {
+          if (post.memberId !== timekeeper.id || Date.parse(post.at) > +now) continue;
+          points += CATS[post.cat]?.pts || 0;
+          if (points < stats.goal) continue;
+          const { day } = zoned(post.at, tz);
+          if (J.timesheet.days.includes(day)) add('timesheet', w, { post: post.id, pts: points, day, who: timekeeper.id });
+          break;
         }
       }
     }
     if (hoat) {
-      const h = by(hoat.username);
-      if (h && pts(h) >= hoat.min) add('hoat', `hoat:${w}`, { pts: pts(h), who: h.id });
+      const h = byUsername.get(hoat.username);
+      if (h && pts(h) >= hoat.min) add('hoat', w, { pts: pts(h), who: h.id });
     }
     return out;
   }
 
-  /* Display names: while someone matches an alias (config.js ALIASES), the app shows that name instead. */
-  function alias(m, calc, list) {
-    const R = calc && calc.by[m.id], u = String(m.username || '').toLowerCase();
-    if (!R || !list || calc.season.status !== 'live') return null;
-    const a = list.find(x => x.username === u && R.thisWeek === x.pts);
-    return a ? a.name : null;
+  function displayName(member, calc) {
+    const alias = ALIASES[member.username];
+    return alias && calc?.season.status === 'live' && calc.by[member.id]?.thisWeek === alias.points ? alias.name : member.name;
   }
 
   /* The post that pushed someone to the weekly minimum, one per week (no stamp in a fraud week). */
   function crossings(posts, memberId, cfg) {
-    const start = mondayOf(parseDay(cfg.seasonStart)), wk = {};
-    posts.filter(p => p.memberId === memberId && p.cat).sort((a, b) => new Date(a.at) - new Date(b.at)).forEach(p => {
-      const s = (wk[weekIdx(new Date(p.at), start)] = wk[weekIdx(new Date(p.at), start)] || { sum: 0, id: null, fraud: false });
+    const tz = cfg.timezone || CONFIG.timezone;
+    const start = parseDay(cfg.seasonStart, tz), wk = {};
+    const capped = cappedPostIds(posts, tz);
+    posts.filter(p => p.memberId === memberId && p.cat).sort(byTime).forEach(p => {
+      const w = weekIdx(p.at, start, tz);
+      const s = (wk[w] ||= { sum: 0, id: null, fraud: false });
       if (p.fraud) s.fraud = true;
-      if (p.voided || s.id) return;
+      if (p.voided || capped.has(p.id) || s.id) return;
       s.sum += (CATS[p.cat] && CATS[p.cat].pts) || 0;
       if (s.sum >= cfg.weeklyMin) s.id = p.id;
     });
     return new Set(Object.values(wk).filter(s => s.id && !s.fraud).map(s => s.id));
   }
 
-  return { compute, season, mondayOf, addDays, dayKey, parseDay, weekIdx, draftProblems, zoned, jokes, alias, crossings };
+  return { compute, season, mondayOf, addDays, dayKey, parseDay, weekIdx, draftProblems, zoned, jokes, insideJokesStarted, jokeCooldownStart, crossings, displayName };
 })();

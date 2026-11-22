@@ -3,3 +3,5 @@ node_modules/
 animations/node_modules/
 animations/out/
 .env
+
+dist/
