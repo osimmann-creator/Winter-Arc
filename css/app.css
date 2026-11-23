@@ -34,7 +34,7 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { height: 100%; overflow: hidden; -webkit-text-size-adjust: 100%; background: var(--sky1); }
+html { height: 100%; overflow: hidden; overscroll-behavior-y: none; -webkit-text-size-adjust: 100%; background: var(--sky1); }
 body {
   margin: 0;
   display: flex;
@@ -76,16 +76,16 @@ p { margin: 0; }
 #app {
   flex: 1 1 0; min-height: 0; width: 100%; max-width: 520px; margin: 0 auto;
   padding: 0 14px calc(38px + var(--keyboard-bottom, 0px)); overflow: hidden auto; overscroll-behavior-y: none;
-  scroll-padding: calc(env(safe-area-inset-top, 0px) + 70px + var(--keyboard-top, 0px)) 0 calc(16px + var(--keyboard-bottom, 0px));
+  scroll-padding: 18px 0 calc(16px + var(--keyboard-bottom, 0px));
 }
 body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px)); }
 .topbar {
-  position: sticky; top: var(--keyboard-top, 0px); z-index: 10; isolation: isolate;
+  position: relative; flex: none; width: min(520px, 100%); margin: 0 auto; z-index: 10; isolation: isolate;
   display: flex; align-items: center; justify-content: space-between;
-  padding: calc(env(safe-area-inset-top, 0px) + 10px) 2px 8px;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 8px;
 }
 .topbar::before {
-  content: ''; position: absolute; inset: 0 -14px -18px; z-index: -1; pointer-events: none;
+  content: ''; position: absolute; inset: 0 0 -18px; z-index: -1; pointer-events: none;
   background: linear-gradient(180deg, var(--sky1) 55%, rgba(141, 188, 255, 0));
 }
 .brand { display: flex; align-items: center; gap: 8px; }
