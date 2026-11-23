@@ -10,7 +10,6 @@ const CONFIG = {
   strikesOut: 2,               // strikes that eliminate you
   timezone: 'America/New_York',
   insideJokesStart: '2026-11-23',
-  weeklyGoalOverrides: { jake: { '2026-11-16': 4, '2026-11-23': 8, '2026-11-30': 8, '2026-12-07': 8 } },
 };
 
 /* Point system. Colors match the celebration videos. */
