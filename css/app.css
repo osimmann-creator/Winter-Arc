@@ -302,7 +302,7 @@ body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px));
 .injury-report { background: #FFF3DC; }
 .injury-report > .eyebrow { color: #8A3D19; }
 .feed-comments { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
-.post.joke .feed-comments { grid-column: 1 / -1; }
+.post.joke footer, .post.joke .feed-comments { grid-column: 1 / -1; margin-top: 0; }
 .feed-comments ul { display: grid; gap: 7px; list-style: none; padding: 0; margin: 0 0 8px; }
 .feed-comments li { display: flex; gap: 8px; align-items: start; }
 .comment-copy { flex: 1; min-width: 0; }

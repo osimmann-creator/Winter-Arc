@@ -7,9 +7,10 @@ const App = (() => {
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  const S = { tab: 'home', board: 'week', messages: [], comments: {}, activeInjuries: [], me: null, group: null, members: [], posts: [], events: [], calc: null, draft: null, ringFrom: null, busy: false,
+  const S = { tab: 'home', board: 'week', messages: [], comments: {}, feedReactions: {}, activeInjuries: [], me: null, group: null, members: [], posts: [], events: [], calc: null, draft: null, ringFrom: null, busy: false,
     acct: null, prefs: null, lastUser: '' };
   const pendingCommentHearts = new Set();
+  const pendingFeedReactions = new Set();
   const COLORS = ['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F'];
   const isDemo = () => Store.mode === 'demo';
   const cfg = () => Store.config();
@@ -61,6 +62,7 @@ const App = (() => {
     S.posts = posts;
     S.events = events;
     S.messages = social.messages;
+    S.feedReactions = social.feedReactions || {};
     S.activeInjuries = social.activeInjuries;
     S.comments = {};
     for (const comment of social.comments) (S.comments[comment.kind + ':' + comment.target] ||= []).push(comment);
@@ -266,6 +268,14 @@ const App = (() => {
   /* ------------------------------------------------------------ feed */
   const seg = (name, opts, cur) => `<div class="seg" role="tablist" aria-label="${name}">${opts.map(([v, l]) => `<button role="tab" aria-selected="${v === cur}" data-act="seg" data-seg="${name}" data-v="${v}">${l}</button>`).join('')}</div>`;
   const findComment = id => Object.values(S.comments).flat().find(comment => comment.id === id);
+  function reactionsHTML(kind, id, reactions = S.feedReactions[kind + ':' + id] || {}) {
+    return `<div class="rx">${REACTIONS.map(emoji => {
+      const who = reactions[emoji] || [], on = who.includes(S.me.id);
+      const key = `${kind}:${id}:${emoji}`;
+      return `<button type="button" class="${on ? 'on' : ''}" data-act="react" data-kind="${kind}"
+        data-id="${esc(id)}" data-e="${emoji}" aria-pressed="${on}" aria-label="${emoji === CAP && kind === 'activity' ? 'Call cap on this post' : 'React ' + emoji}"${pendingFeedReactions.has(key) ? ' disabled' : ''}>${emoji}<span>${who.length || ''}</span></button>`;
+    }).join('')}</div>`;
+  }
   function commentsHTML(kind, id) {
     const comments = S.comments[kind + ':' + id] || [];
     return `<div class="feed-comments">
@@ -295,7 +305,7 @@ const App = (() => {
   ${details || wit ? `<p class="meta">${details ? `<span>${ic('clock')}${details}</span>` : ''}${wit ? `<span>${ic('users')}Witnessed by ${wit}</span>` : ''}</p>` : ''}
   ${caps >= CAP_DISPUTE && !p.voided ? `<p class="dispute">${ic('flag')}Disputed: ${caps} people called cap</p>` : ''}
   <footer>
-    <div class="rx">${REACTIONS.map(e => { const who = p.reactions[e] || [], on = who.includes(S.me.id); return `<button class="${on ? 'on' : ''}" data-act="react" data-id="${p.id}" data-e="${e}" aria-pressed="${on}" aria-label="${e === CAP ? 'Call cap on this post' : 'React ' + e}">${e}<span>${who.length || ''}</span></button>`; }).join('')}</div>
+    ${reactionsHTML('activity', p.id, p.reactions)}
     ${mine && !p.voided && !p.fraud ? `<button class="link" data-act="edit" data-id="${p.id}">Edit</button>` : ''}
     ${mine && thisWeek ? `<button class="link danger" data-act="del" data-id="${p.id}">Delete</button>` : ''}
     ${!mine && !p.voided && isComm() ? `<button class="link danger" data-act="void" data-id="${p.id}">Void</button>` : ''}
@@ -309,6 +319,7 @@ const App = (() => {
       ${injury ? `<p class="eyebrow">Team news</p><h2>${esc(message.title)}</h2><small>${ago(message.at)}</small>`
         : `<header>${avatar(message.memberId, 40)}<div class="who"><b>${esc(nameOf(message.memberId))}</b><span>${ago(message.at)}</span></div></header>`}
       <p class="feed-message-body">${esc(message.body)}</p>
+      <footer>${reactionsHTML('message', message.id)}</footer>
       ${commentsHTML('message', message.id)}
     </article>`;
   }
@@ -911,6 +922,7 @@ const App = (() => {
     <p class="jk-text">${esc(jokeText(e))}</p>
     <p class="jk-meta"><span class="jk-avs">${who.map(id => avatar(id, 28)).join('')}</span><em>${ago(e.at)}</em></p>
   </div>
+  <footer>${reactionsHTML('event', e.id)}</footer>
   ${commentsHTML('event', e.id)}
 </article>`;
   }
@@ -1013,6 +1025,39 @@ const App = (() => {
     }
   }
 
+  function updateReactionButton(button, memberIds) {
+    const on = memberIds.includes(S.me.id);
+    button.classList.toggle('on', on);
+    button.setAttribute('aria-pressed', String(on));
+    button.querySelector('span').textContent = memberIds.length || '';
+    if (on) {
+      button.classList.remove('pop'); void button.offsetWidth; button.classList.add('pop');
+      floatEmoji(button, button.dataset.e);
+    }
+  }
+
+  async function reactToFeedPost(el) {
+    const { kind, id, e: emoji } = el.dataset, viewer = S.me?.id;
+    const key = `${kind}:${id}:${emoji}`;
+    if (!viewer || pendingFeedReactions.has(key)) return;
+    pendingFeedReactions.add(key);
+    el.disabled = true;
+    let memberIds;
+    try {
+      const saved = await Store.setFeedReaction(kind, id, emoji, el.getAttribute('aria-pressed') !== 'true');
+      if (S.me?.id !== viewer) return;
+      memberIds = saved;
+      (S.feedReactions[kind + ':' + id] ??= {})[emoji] = memberIds;
+    } finally {
+      pendingFeedReactions.delete(key);
+      const button = $(`.rx button[data-kind="${kind}"][data-id="${CSS.escape(id)}"][data-e="${CSS.escape(emoji)}"]`);
+      if (button) {
+        button.disabled = false;
+        if (memberIds) updateReactionButton(button, memberIds);
+      }
+    }
+  }
+
   /* ------------------------------------------------------------ actions */
   const ACT = {
     tab: el => go(el.dataset.tab),
@@ -1050,11 +1095,10 @@ const App = (() => {
       }
     },
     async react(el) {
+      if (el.dataset.kind !== 'activity') return reactToFeedPost(el);
       const p = await Store.toggleReaction(el.dataset.id, el.dataset.e); if (!p) return;
       const i = S.posts.findIndex(x => x.id === p.id); if (i >= 0) S.posts[i] = p;
-      const who = p.reactions[el.dataset.e] || [], on = who.includes(S.me.id);
-      el.classList.toggle('on', on); el.setAttribute('aria-pressed', String(on)); el.querySelector('span').textContent = who.length || '';
-      if (on) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); floatEmoji(el, el.dataset.e); }
+      updateReactionButton(el, p.reactions[el.dataset.e] || []);
       if (el.dataset.e === CAP) { const card = el.closest('.post'); setTimeout(() => { if (card && card.isConnected) card.outerHTML = postCard(p); }, 650); }
     },
     photo(el) { const p = S.posts.find(x => x.id === el.dataset.id); if (p) modal(`<img class="full" src="${esc(Art.photo(p.photo))}" alt="Proof photo"><button class="btn" data-close>Close</button>`, 'photo-modal'); },
@@ -1171,7 +1215,7 @@ const App = (() => {
     tick.j = Date.now();
     checkJokes();
     Store.subscribe(async () => {
-      if (quiet() || pendingCommentHearts.size || document.activeElement?.closest('[data-feed-form]')) return false;
+      if (quiet() || pendingCommentHearts.size || pendingFeedReactions.size || document.activeElement?.closest('[data-feed-form]')) return false;
       const wasInApp = inApp();
       await load();
       if (inApp() !== wasInApp) render();

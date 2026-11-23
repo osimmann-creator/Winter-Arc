@@ -64,6 +64,13 @@
       "when": 1795320000000,
       "tag": "0008_comment_hearts",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1795323600000,
+      "tag": "0009_feed_reactions",
+      "breakpoints": true
     }
   ]
 }

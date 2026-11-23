@@ -59,16 +59,24 @@ async function publishInjuryReports(env, timezone, now = new Date()) {
 
 export async function listSocial(env, now = new Date(), viewerId = null) {
   const group = await env.DB.prepare('SELECT timezone FROM group_settings WHERE id = 1').first();
-  if (!group) return { messages: [], comments: [], activeInjuries: [] };
+  if (!group) return { messages: [], comments: [], activeInjuries: [], feedReactions: {} };
   await publishInjuryReports(env, group.timezone, now);
-  const [messages, comments, injuries] = await env.DB.batch([
+  const [messages, comments, injuries, reactions] = await env.DB.batch([
     env.DB.prepare('SELECT * FROM feed_messages ORDER BY at DESC, id DESC'),
     env.DB.prepare(`SELECT c.*, ${commentHeartColumns} FROM feed_comments AS c ORDER BY c.at, c.id`).bind(viewerId),
     env.DB.prepare(`SELECT id, member_id, name FROM injury_reports
       WHERE member_id IS NOT NULL AND started_at <= ? AND resolved_at IS NULL ORDER BY name, id`).bind(now.toISOString()),
+    env.DB.prepare('SELECT message_id, event_id, member_id, emoji FROM feed_reactions ORDER BY member_id'),
   ]);
+  const feedReactions = {};
+  for (const row of reactions.results) {
+    const key = row.message_id ? `message:${row.message_id}` : `event:${row.event_id}`;
+    const byEmoji = feedReactions[key] ??= {};
+    (byEmoji[row.emoji] ??= []).push(row.member_id);
+  }
   return {
     messages: messages.results.map(messageShape),
+    feedReactions,
     activeInjuries: injuries.results.map(row => ({ id: row.id, memberId: row.member_id, name: row.name })),
     comments: comments.results.map(row => ({
       id: row.id, memberId: row.member_id, at: row.at, body: row.body,
@@ -136,6 +144,31 @@ export async function setCommentHeart(env, session, input) {
   ]);
   if (!saved.results.length) fail('That comment is no longer available.', 404);
   return heartState(saved.results[0]);
+}
+
+export async function setFeedReaction(env, session, input) {
+  const { kind, target, emoji, active } = input;
+  if ((kind !== 'message' && kind !== 'event') || typeof target !== 'string'
+      || !/^[a-z0-9_-]{1,100}$/i.test(target) || typeof active !== 'boolean') fail('Choose a post reaction.');
+
+  const { table, column } = targets[kind], memberId = session.member_id;
+  const change = active
+    ? env.DB.prepare(`
+        INSERT INTO feed_reactions (${column}, member_id, emoji)
+        SELECT ?, ?, ? WHERE EXISTS (SELECT 1 FROM ${table} WHERE id = ?)
+          AND EXISTS (SELECT 1 FROM members WHERE id = ?)
+        ON CONFLICT (${column}, member_id, emoji) DO NOTHING
+      `).bind(target, memberId, emoji, target, memberId)
+    : env.DB.prepare(`DELETE FROM feed_reactions WHERE ${column} = ? AND member_id = ? AND emoji = ?`)
+      .bind(target, memberId, emoji);
+  const [, saved] = await env.DB.batch([
+    change,
+    env.DB.prepare(`SELECT r.member_id FROM ${table} AS t
+      LEFT JOIN feed_reactions AS r ON r.${column} = t.id AND r.emoji = ?
+      WHERE t.id = ? ORDER BY r.member_id`).bind(emoji, target),
+  ]);
+  if (!saved.results.length) fail('That feed post is no longer available.', 404);
+  return saved.results.map(row => row.member_id).filter(Boolean);
 }
 
 export async function createInjuryReport(env, session, input, now = new Date()) {

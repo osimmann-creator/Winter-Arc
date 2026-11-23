@@ -1,5 +1,5 @@
 import { CATS, CONFIG, HOAT, INSIDE_JOKES, Jokes, Logic } from './shared.mjs';
-import { addFeedComment, addTextPost, createInjuryReport, listSocial, resolveInjuryReport, setCommentHeart } from './social.mjs';
+import { addFeedComment, addTextPost, createInjuryReport, listSocial, resolveInjuryReport, setCommentHeart, setFeedReaction } from './social.mjs';
 
 const COLORS = new Set(['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F']);
 const REACTIONS = new Set(['🔥', '💪', '👏', '😂', '🧢']);
@@ -632,6 +632,10 @@ export async function handleData(action, request, env, payload, session, ctx) {
     case 'addTextPost': data = await addTextPost(env, session, payload); break;
     case 'addFeedComment': data = await addFeedComment(env, session, payload); break;
     case 'setCommentHeart': data = await setCommentHeart(env, session, payload); break;
+    case 'setFeedReaction':
+      if (!REACTIONS.has(payload.emoji)) fail('Choose one of the available reactions.');
+      data = await setFeedReaction(env, session, payload);
+      break;
     case 'createInjuryReport': data = await createInjuryReport(env, session, payload); break;
     case 'resolveInjuryReport': data = await resolveInjuryReport(env, session, payload); break;
     case 'getPrefs': data = await getPrefs(env, session); break;

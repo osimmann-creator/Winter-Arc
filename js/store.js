@@ -96,6 +96,7 @@ const Store = (() => {
     editPost: post => call('editPost', post),
     deletePost: id => call('deletePost', { id }),
     toggleReaction: (postId, emoji) => call('toggleReaction', { postId, emoji }),
+    setFeedReaction: (kind, target, emoji, active) => call('setFeedReaction', { kind, target, emoji, active }),
     voidPost: id => call('voidPost', { id }),
     listEvents: () => call('listEvents'),
     recordEvent: event => call('recordEvent', event),
