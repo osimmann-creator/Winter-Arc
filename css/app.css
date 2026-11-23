@@ -82,11 +82,11 @@ body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px));
 .topbar {
   position: relative; flex: none; width: min(520px, 100%); margin: 0 auto; z-index: 10; isolation: isolate;
   display: flex; align-items: center; justify-content: space-between;
-  padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 8px;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 8px; background: var(--sky1);
 }
-.topbar::before {
-  content: ''; position: absolute; inset: 0 0 -18px; z-index: -1; pointer-events: none;
-  background: linear-gradient(180deg, var(--sky1) 55%, rgba(141, 188, 255, 0));
+.topbar.scrolled::after {
+  content: ''; position: absolute; inset: 100% 0 auto; height: 18px; pointer-events: none;
+  background: linear-gradient(180deg, var(--sky1), transparent);
 }
 .brand { display: flex; align-items: center; gap: 8px; }
 .brand img { width: 42px; height: 42px; border-radius: 50%; border: 3px solid var(--ink); background: #F5F1FE; object-fit: contain; object-position: center; box-shadow: 0 3px 0 var(--ink); }

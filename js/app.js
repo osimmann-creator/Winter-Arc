@@ -1198,6 +1198,10 @@ const App = (() => {
 
   async function start() {
     $$('[data-icon]').forEach(b => b.insertAdjacentHTML('afterbegin', ic(b.dataset.icon)));
+    const app = $('#app'), header = $('.topbar');
+    const syncHeaderFade = () => header.classList.toggle('scrolled', app.scrollTop > 0);
+    app.addEventListener('scroll', syncHeaderFade, { passive: true });
+    syncHeaderFade();
     window.visualViewport?.addEventListener('resize', syncKeyboard);
     window.visualViewport?.addEventListener('scroll', syncKeyboard);
     window.addEventListener('scroll', syncKeyboard, { passive: true });
