@@ -71,7 +71,7 @@ Each video's soundtrack is built from short sound effects placed on frames, then
 |---|---|
 | `sound/cues.py` | What each video plays and when, in frames (30 fps). Helpers cover the shared parts: `card()` (ribbon, points coin, crowd cheer), `gym_card()` (the gym theatre banner), `joke_card()` (slam, ba-dum-tss, laughter), `impact()`, `steps()` and `word()` (a comic word popping in). |
 | `sound/bank/` | About 150 sound effects rendered with [Earshot](https://github.com/Leonxlnx/earshot), stored as Opus. `BANK` in `scripts/sound.py` lists the Earshot design behind each one. |
-| `sound/openverse/` | Real recordings from [Openverse](https://openverse.org), one per slot (`cheer`, `laugh`, `applause`, `goose`, `pigeon`, `bell`, `ooh`), with their credits. [Its README](sound/openverse/README.md) says how to add one. A slot with no file uses its Earshot stand-in. |
+| `sound/openverse/` | Real recordings, one per slot (`cheer`, `laugh`, `applause`, `goose`, `pigeon`, `bell`, `ooh`), from [Openverse](https://openverse.org) or the sites it searches. All seven slots are filled now with CC0 recordings from Freesound. `credits.json` has their credits and the part of each recording used. [Its README](sound/openverse/README.md) says how to swap one. A slot with no file uses its Earshot stand-in. |
 | `scripts/sound.py` | `mix` (every video, or the ids you name), `check` (loudness and peaks), `openverse` (which slots are filled), `render-bank` (re-render the bank; needs Earshot). |
 
 - **Levels.** Mixing sets each video to −16 LUFS with peaks under −2 dBFS, so every clip plays at the same volume.

@@ -203,7 +203,7 @@ class Library:
             if e.max() <= 0:
                 self.cache[key] = None
                 return None
-            first = int(np.argmax(e > 10 ** (-40 / 20) * e.max()))
+            first = int(np.argmax(e > 10 ** (-24 / 20) * e.max()))   # its first real sound, not the room tone
             x = x[max(0, first - int(0.01 * SR)):]
             x = x[:int(float(info.get('seconds', OV_MAX.get(slot, 2.5))) * SR)]
             n = min(len(x), int(0.25 * SR))
