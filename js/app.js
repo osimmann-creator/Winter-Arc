@@ -11,6 +11,7 @@ const App = (() => {
     acct: null, prefs: null, lastUser: '', profileTrail: [] };
   const pendingCommentHearts = new Set();
   const pendingFeedReactions = new Set();
+  let feedRefreshing = false;
   const COLORS = ['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F'];
   const isDemo = () => Store.mode === 'demo';
   const cfg = () => ({ ...Store.config(), injuryPeriods: S.injuryPeriods });
@@ -384,12 +385,69 @@ const App = (() => {
   function vFeed() {
     const evs = S.events.filter(inFeed).map(e => ({ ...e, isEvent: true }));
     const list = [...S.posts, ...evs, ...S.messages].sort(newestFirst);
-    return `<section class="screen feed"><div class="screen-h"><h1>Feed</h1></div>
+    return `<section class="screen feed"><div class="screen-h"><h1>Feed</h1>
+    <button class="feed-refresh" type="button" data-act="refresh-feed" aria-disabled="${feedRefreshing}">${ic('refresh')}<span>${feedRefreshing ? 'Refreshing…' : 'Refresh'}</span></button>
+  </div>
   ${xmasBallotHTML()}
   ${feedComposer()}
   ${list.length ? list.map(renderPost).join('') : `<div class="card empty"><img src="${Art.mascot('point')}" alt="" width="104" height="160"><h2>Nothing here yet</h2><p class="note">Log something and it shows up here for the fellas.</p></div>`}
   <p class="cap-hint">Think a post is fake? Tap ${CAP} to call cap. ${CAP_DISPUTE} caps marks it disputed.</p>
 </section>`;
+  }
+
+  const feedVisible = () => inApp() && S.tab === 'feed' && !openProfileMember();
+  const editingFeed = () => document.activeElement?.closest('[data-feed-form]');
+  const canRefreshFeed = () => feedVisible() && !feedRefreshing && !quiet() && !editingFeed();
+  function updateRefreshButton() {
+    const button = $('.feed-refresh');
+    if (!button) return;
+    button.setAttribute('aria-disabled', String(feedRefreshing));
+    $('span', button).textContent = feedRefreshing ? 'Refreshing…' : 'Refresh';
+  }
+  async function refreshFeed() {
+    if (!canRefreshFeed()) return;
+    feedRefreshing = true;
+    updateRefreshButton();
+    try {
+      await load();
+    } catch (error) {
+      if (feedVisible()) toast('Couldn’t refresh the feed. Try again.', 'shrug');
+      console.warn('Feed refresh failed', error);
+      return;
+    } finally {
+      feedRefreshing = false;
+      updateRefreshButton();
+    }
+    if (!inApp()) render();
+    else if (feedVisible() && !editingFeed()) {
+      const restoreFocus = document.activeElement === $('.feed-refresh');
+      renderView();
+      if (restoreFocus) $('.feed-refresh').focus({ preventScroll: true });
+    }
+  }
+
+  function bindFeedRefresh() {
+    const app = $('#app');
+    let start;
+    const atTop = () => app.scrollTop <= 4;
+    app.addEventListener('touchstart', event => {
+      start = null;
+      if (event.touches.length !== 1 || !atTop() || !canRefreshFeed()
+          || event.target.closest('input, textarea, select')) return;
+      start = event.touches[0];
+    }, { passive: true });
+    app.addEventListener('touchmove', () => {
+      if (!atTop()) start = null;
+    }, { passive: true });
+    app.addEventListener('touchend', event => {
+      const origin = start;
+      start = null;
+      const end = event.changedTouches[0];
+      if (!origin || !end || end.identifier !== origin.identifier || !atTop()) return;
+      const down = end.clientY - origin.clientY;
+      if (down >= 64 && down > Math.abs(end.clientX - origin.clientX) * 1.3) refreshFeed();
+    }, { passive: true });
+    app.addEventListener('touchcancel', () => { start = null; }, { passive: true });
   }
 
   /* ------------------------------------------------------------ leaderboard */
@@ -1374,6 +1432,7 @@ const App = (() => {
   /* ------------------------------------------------------------ actions */
   const ACT = {
     tab: el => go(el.dataset.tab),
+    'refresh-feed': () => refreshFeed(),
     'member-profile': el => openMemberProfile(el.dataset.id),
     'profile-back': () => backFromProfile(),
     'profile-posts'() {
@@ -1537,6 +1596,7 @@ const App = (() => {
     document.addEventListener('focusin', syncKeyboard);
     document.addEventListener('focusout', syncKeyboard);
     bind();
+    bindFeedRefresh();
     await Store.init();
     S.lastUser = Store.setupUsername;
     try { await Promise.race([Promise.all([document.fonts.load('40px "Luckiest Guy"'), document.fonts.load('700 16px "Baloo 2"')]), wait(1500)]); } catch (e) { /* fonts optional */ }
@@ -1547,7 +1607,7 @@ const App = (() => {
     tick.j = Date.now();
     checkJokes();
     Store.subscribe(async () => {
-      if (quiet() || pendingCommentHearts.size || pendingFeedReactions.size || pendingXmas.size || document.activeElement?.closest('[data-feed-form]')) return false;
+      if (feedRefreshing || quiet() || pendingCommentHearts.size || pendingFeedReactions.size || pendingXmas.size || editingFeed()) return false;
       const wasInApp = inApp();
       await load();
       if (inApp() !== wasInApp) render();
