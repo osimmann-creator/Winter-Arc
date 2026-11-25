@@ -1036,7 +1036,9 @@ const App = (() => {
     if (e.type === 'nomap') return `${names(d.who)} haven’t logged anything in ${Math.round((J.hours || 72) / 24)} days. No map. No signal. No idea.`;
     if (e.type === 'grandtheft') return `${realName(d.who)} stole first place from ${realName(d.victim)}${post ? ' on ' + weekday(post.at) : ''}. First place: stolen.`;
     if (e.type === 'wanted') return `${realName(d.who)}’s ${what} has ${d.n} ${CAP}. ${d.n} caps, ${d.n} stars. He’s wanted.`;
-    if (e.type === 'busted') return `${realName(d.who)}’s ${what} got voided, so that week is worth 0 points. Busted.`;
+    if (e.type === 'busted') return d.selfVoided
+      ? `${realName(d.who)} voided their own ${what}. Points police showed up anyway.`
+      : `${realName(d.who)}’s ${what} got voided, so that week is worth 0 points. Busted.`;
     if (e.type === 'wasted') return `${realName(d.who)} took strike ${d.strikes} and he’s out. Wasted. See you next season.`;
     if (e.type === 'parole') return `${realName(d.who)} logged ${post ? catName(post.cat) : 'something'} for the first time since he was eliminated. Out on parole. Still eliminated, but every point counts toward all-time.`;
     if (e.type === 'partners') return `${names(d.who)} both logged ${d.cat && CATS[d.cat] ? catName(d.cat) : 'the same thing'} on the same day and vouched for each other. Partners in crime.`;
@@ -1087,7 +1089,7 @@ const App = (() => {
 </article>`;
   }
   let jokeBusy = false;
-  const quiet = () => $('#avatarCrop').open || S.busy || Celebrate.busy() || !$('#sheet').hidden || !!$('#layer .modal') || !!$('.xmas-reveal');
+  const quiet = () => $('#avatarCrop').open || S.busy || Celebrate.busy() || !$('#sheet').hidden || !!$('#layer .modal:not(.bye)') || !!$('.xmas-reveal');
   /** Record any inside joke that's true right now (straight to the feed), then pop up the ones you haven't seen (once each). */
   async function checkJokes() {
     if (!inApp() || jokeBusy) return;
@@ -1497,6 +1499,7 @@ const App = (() => {
       if (!(await confirmBox(own ? 'Void your post?' : 'Void this post as fraud?', note, 'Void it', true))) return;
       try { await Store.voidPost(p.id); } catch (e) { toast(e.message, 'shrug'); return; }
       await load(); renderView(); toast(own ? 'Activity voided.' : `Voided. ${who} gets a 0-point week.`, 'shrug');
+      if (own && S.events.some(e => e.key === 'busted:' + p.id && !e.seen)) checkJokes();
     },
     play: el => Celebrate.play(el.dataset.id),
     'xmas-vote': el => castXmasVote(el.dataset.id, el.dataset.c),

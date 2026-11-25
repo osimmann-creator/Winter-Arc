@@ -487,11 +487,23 @@ async function toggleReaction(env, session, input, ctx) {
 
 async function voidPost(env, session, id, ctx) {
   requireId(id, 'a post');
-  const result = await statement(env, `
+  const update = statement(env, `
     UPDATE posts SET voided = 1, fraud = CASE WHEN member_id = ? THEN 0 ELSE 1 END
     WHERE id = ? AND voided = 0
       AND EXISTS (SELECT 1 FROM members WHERE id = ? AND (id = posts.member_id OR role = 'commissioner'))
-  `, session.member_id, id, session.member_id).run();
+  `, session.member_id, id, session.member_id);
+  const group = await getGroup(env);
+  const now = new Date();
+  const week = currentWeek(group, now);
+  const statements = [update];
+  if (week.status === 'live' && Logic.insideJokesStarted(now, group.timezone)) {
+    const event = validatedEvent({
+      type: 'busted', key: `busted:${id}`,
+      data: { who: session.member_id, post: id, week: week.idx, selfVoided: true },
+    }, now);
+    statements.push(eventInsert(env, event, group.timezone, { postId: id, ownerId: session.member_id }));
+  }
+  const [result] = await env.DB.batch(statements);
   if (result.meta.changes) await runInBackground(ctx, runEvents(env));
   else {
     const allowed = await statement(env, `SELECT 1 FROM posts JOIN members AS actor ON actor.id = ?
@@ -517,17 +529,22 @@ function validatedEvent(input, now = new Date()) {
   return { id: `e_${crypto.randomUUID()}`, type, key, at: new Date(at).toISOString(), json };
 }
 
-function eventInsert(env, event, timezone) {
+function eventInsert(env, event, timezone, selfVoid = null) {
   const cooldownStart = Logic.jokeCooldownStart(event.at, timezone).toISOString();
   // Check history inside the insert so simultaneous triggers share one cooldown.
+  // Self-voids also require the immediately preceding batch statement to have voided the owner's post.
+  const eligibility = selfVoid ? `changes() = 1 AND EXISTS (
+      SELECT 1 FROM posts WHERE id = ? AND member_id = ? AND voided = 1 AND fraud = 0
+    ) AND ` : '';
   return statement(env, `
     INSERT INTO events (id, type, key, at, data)
     SELECT ?, ?, ?, ?, ?
-    WHERE ? = 'hoat' OR NOT EXISTS (
+    WHERE ${eligibility}(? = 'hoat' OR NOT EXISTS (
       SELECT 1 FROM events WHERE type = ? AND at >= ?
-    )
+    ))
     ON CONFLICT (key) DO NOTHING
-  `, event.id, event.type, event.key, event.at, event.json, event.type, event.type, cooldownStart);
+  `, event.id, event.type, event.key, event.at, event.json,
+    ...(selfVoid ? [selfVoid.postId, selfVoid.ownerId] : []), event.type, event.type, cooldownStart);
 }
 
 async function listEvents(env, session) {
