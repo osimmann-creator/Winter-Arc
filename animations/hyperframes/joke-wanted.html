@@ -1,0 +1,108 @@
+<!doctype html>
+<!--
+  Wanted (joke-wanted): three caps drop onto a guy's head one at a time, and a star lights up above him with each
+  one. Then red and blue lights flash across the screen. Anyone, so no names.
+  Beats (30 fps): cap 1 lands 14, cap 2 38, cap 3 62, sirens 66-118, hands up 72, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/props.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #wa-cam { position: absolute; inset: 0; transform-origin: 540px 1300px; }
+  .wa-cap { position: absolute; left: 315px; width: 450px; height: 450px; opacity: 0; }
+  .wa-star { position: absolute; width: 0; height: 0; }
+  .wa-star svg { position: absolute; left: -70px; top: -70px; overflow: visible; }
+  .wa-on { opacity: 0; }
+  #wa-red, #wa-blue { position: absolute; inset: 0; opacity: 0; mix-blend-mode: multiply; }
+  #wa-red { background: radial-gradient(circle at 0% 40%, #FF2B3B 0%, rgba(255,43,59,.55) 45%, rgba(255,43,59,.15) 80%); }
+  #wa-blue { background: radial-gradient(circle at 100% 40%, #2B5BFF 0%, rgba(43,91,255,.55) 45%, rgba(43,91,255,.15) 80%); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-wanted" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="wa-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#3A3466">
+  <div id="wa-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="wa-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E2A5A"/><stop offset="1" stop-color="#8A5A8E"/></linearGradient>
+      <pattern id="wa-brick" width="120" height="60" patternUnits="userSpaceOnUse"><rect width="120" height="60" fill="#8C4A3C"/><path d="M0 30 L120 30 M0 60 L120 60 M60 0 L60 30 M0 30 L0 60 M120 30 L120 60" stroke="#6A3329" stroke-width="5"/></pattern></defs>
+    <rect width="1080" height="900" fill="url(#wa-sky)"/>
+    <circle cx="200" cy="280" r="70" fill="#FFF3C4" stroke="#341720" stroke-width="7"/>
+    <rect x="0" y="760" width="1080" height="1170" fill="url(#wa-brick)"/>
+    <path d="M0 760 L1080 760" stroke="#341720" stroke-width="9"/>
+    <g stroke="#341720" stroke-width="8">
+      <rect x="80" y="880" width="220" height="300" fill="#2B2540"/><rect x="780" y="880" width="220" height="300" fill="#FFD776"/>
+      <path d="M190 880 L190 1180 M80 1030 L300 1030 M890 880 L890 1180 M780 1030 L1000 1030"/>
+      <rect x="60" y="1180" width="260" height="24" fill="#B5714A"/><rect x="760" y="1180" width="260" height="24" fill="#B5714A"/>
+    </g>
+    <!-- a lamp post -->
+    <g stroke="#341720" stroke-width="9"><rect x="930" y="1260" width="28" height="670" fill="#3A3F52"/><circle cx="944" cy="1240" r="40" fill="#FFF3B0"/></g>
+    <ellipse cx="944" cy="1300" rx="200" ry="120" fill="#FFF3B0" opacity=".18"/>
+    <rect x="0" y="1930" width="1080" height="430" fill="#7D8494"/>
+    <path d="M0 1930 L1080 1930" stroke="#341720" stroke-width="9"/>
+    <path d="M180 1930 L140 2360 M540 1930 L540 2360 M900 1930 L940 2360" stroke="#6A7080" stroke-width="6"/>
+  </svg>
+  <div class="wa-star" id="wa-s0" style="left:300px;top:840px"></div>
+  <div class="wa-star" id="wa-s1" style="left:540px;top:760px"></div>
+  <div class="wa-star" id="wa-s2" style="left:780px;top:840px"></div>
+  <div id="wa-guy"></div>
+  <img class="wa-cap" id="wa-c0" src="assets/cast/prop-cap.svg" />
+  <img class="wa-cap" id="wa-c1" src="assets/cast/prop-cap.svg" />
+  <img class="wa-cap" id="wa-c2" src="assets/cast/prop-cap.svg" />
+  <div class="word" id="wa-plop" style="left:800px;top:1060px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="110" style="fill:#7FB2FF">CAP!</text></svg></div></div>
+  <div class="word" id="wa-plop2" style="left:270px;top:1000px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#7FB2FF">CAP!!</text></svg></div></div>
+  <div class="word" id="wa-plop3" style="left:800px;top:940px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="130" style="fill:#7FB2FF">CAP!!!</text></svg></div></div>
+  </div>
+  <div id="wa-red"></div><div id="wa-blue"></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"WANTED","pts":"3","unit":"STARS","sub":"3 CAPS = 3 STARS","color":"#2F66E6","dark":"#1C46A8","light":"#D6E2FF"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  WA.actor('wa-guy', ['smug', 'annoyed', 'nervous', 'handsup'], { x: 540, y: 1900, s: 0.72 });
+  WA.pose(tl, '#wa-guy', 'smug', 0);
+  for (var i = 0; i < 3; i++) {
+    document.getElementById('wa-s' + i).innerHTML = '<svg width="140" height="140" viewBox="-70 -70 140 140" style="overflow:visible">' + WA.star(84, '#4A4466', 10) +
+      '<g class="wa-on" id="wa-on' + i + '">' + WA.star(84, '#FFD064', 10) + '<path d="M-20 -44 L-6 -16" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/></g></svg>';
+  }
+  // hair top of these poses: feet 1900, scale .72 -> about y 1150; each cap sits on the last
+  var lands = [14, 38, 62], tops = [975, 913, 851], rots = [-6, 8, -3];
+  lands.forEach(function (f, i) {
+    tl.fromTo('#wa-c' + i, { y: -900, rotation: rots[i] * 4, opacity: 1 }, { y: tops[i], rotation: rots[i], opacity: 1, duration: 10 * F, ease: 'power2.in', immediateRender: false }, (f - 10) * F);
+    tl.to('#wa-c' + i, { y: tops[i] - 18, duration: 3 * F, ease: 'power1.out', yoyo: true, repeat: 1 }, f * F);
+    WA.squash(tl, '#wa-guy', f * F, 0.08, 10);
+    gsap.set('#wa-on' + i, { svgOrigin: '0 0' });
+    tl.fromTo('#wa-on' + i, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 8 * F, ease: 'back.out(3)', immediateRender: false }, (f + 1) * F);
+    WA.squash(tl, '#wa-s' + i, (f + 1) * F, 0.2, 10);
+  });
+  WA.word(tl, '#wa-plop', 14 * F, 20, { rot: 8, rot0: -10, seed: 1, amp: 4 });
+  WA.word(tl, '#wa-plop2', 38 * F, 20, { rot: -8, rot0: 10, seed: 2, amp: 5 });
+  WA.word(tl, '#wa-plop3', 62 * F, 22, { rot: 6, rot0: -12, seed: 3, amp: 6 });
+  WA.take(tl, '#wa-guy', 'annoyed', 38 * F, 0.06);
+  WA.take(tl, '#wa-guy', 'nervous', 62 * F, 0.06);
+  // the caps ride along when he flinches
+  WA.take(tl, '#wa-guy', 'handsup', 72 * F, 0.1);
+  tl.to(['#wa-c0', '#wa-c1', '#wa-c2'], { y: '-=14', duration: 3 * F, yoyo: true, repeat: 1, ease: 'power1.out' }, 72 * F);
+  // sirens
+  for (var k = 0; k < 13; k++) {
+    var t = (66 + k * 4) * F;
+    tl.set('#wa-red', { opacity: k % 2 ? 0 : 0.85 }, t);
+    tl.set('#wa-blue', { opacity: k % 2 ? 0.85 : 0 }, t);
+    tl.set(['#wa-on0', '#wa-on1', '#wa-on2'], { opacity: k % 2 ? 1 : 0.55 }, t);
+  }
+  tl.set(['#wa-red', '#wa-blue'], { opacity: 0 }, 118 * F);
+  WA.shake(tl, '#wa-cam', 66 * F, 50 * F, 3, { seed: 4 });
+  tl.fromTo('#wa-cam', { scale: 1 }, { scale: 1.08, duration: 5.5, ease: 'sine.inOut' }, 0);
+
+  window.__timelines['joke-wanted'] = tl;
+})();
+</script>
+</body>
+</html>

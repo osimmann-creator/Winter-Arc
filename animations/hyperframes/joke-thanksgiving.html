@@ -326,7 +326,6 @@
   for (var i = 0; i < 6; i++) {
     tl.fromTo('#tg-p' + i, { scale: 0.2, opacity: 0.95, x: 0, y: 0 }, { scale: 1.5 + (i % 3) * 0.25, opacity: 0, x: (i % 3 - 1) * 40, y: -30 - (i % 2) * 30, duration: 16 * F, ease: 'power2.out', immediateRender: false }, (82 + (i % 3)) * F);
   }
-  tl.set('#tg-pr', { opacity: 0 }, 0);
   WA.popIn(tl, '#tg-pr', 86 * F, 11, { rot0: -30, rot: -6 });
   WA.bob(tl, '#tg-pr', 98 * F, 0.45, 10, 0.5);
   WA.popOut(tl, '#tg-pr', 112 * F, 7);

@@ -22,6 +22,22 @@ const OUT = join(ANIM, 'out', 'videos');
 /** clip id (= <id>.html here = the app's video id) : poster time in seconds */
 export const CLIPS = {
   'joke-thanksgiving': 3.2,
+  'joke-crossing': 3.05,
+  'joke-mycar': 2.7,
+  'joke-finalcall': 3.0,
+  'joke-worthit': 1.9,
+  'joke-basement': 1.7,
+  'joke-nomap': 3.4,
+  'joke-grandtheft': 1.15,
+  'joke-wanted': 2.4,
+  'joke-busted': 2.1,
+  'joke-wasted': 2.9,
+  'joke-parole': 2.4,
+  'joke-partners': 2.8,
+  'joke-xmas': 3.0,
+  'joke-nye': 2.55,
+  'joke-groundhog': 2.9,
+  'joke-valentine': 1.6,
 };
 
 const env = { ...process.env, HYPERFRAMES_NO_TELEMETRY: '1', DO_NOT_TRACK: '1' };

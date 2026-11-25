@@ -1,0 +1,115 @@
+<!doctype html>
+<!--
+  Wasted (joke-wasted): a guy struts down an icy sidewalk, slips on the ice and falls flat. The screen fades to gray
+  and WASTED comes up. Anyone, so no names (it plays when someone takes his last strike).
+  Beats (30 fps): strut 0-38, slip 40, flat + THUD 54, gray 60-78, WASTED 72, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/props.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #ws-world { position: absolute; inset: 0; }
+  #ws-cam { position: absolute; inset: 0; transform-origin: 600px 1800px; }
+  #ws-band { position: absolute; left: 0; top: 1020px; width: 1080px; height: 300px; opacity: 0;
+    background: linear-gradient(rgba(20,16,28,0) 0%, rgba(20,16,28,.72) 22%, rgba(20,16,28,.72) 78%, rgba(20,16,28,0) 100%); }
+  #ws-text { position: absolute; left: 540px; top: 1170px; width: 0; height: 0; opacity: 0; }
+  #ws-text svg { position: absolute; left: -500px; top: -110px; overflow: visible; }
+  .ws-star { position: absolute; width: 0; height: 0; opacity: 0; }
+  .ws-star svg { position: absolute; left: -26px; top: -26px; overflow: visible; }
+  .ws-dust { position: absolute; width: 110px; height: 110px; margin: -55px 0 0 -55px; border-radius: 50%; background: #FFFFFF; border: 6px solid #341720; opacity: 0; }
+  #ws-fx, #ws-snow { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-wasted" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="ws-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#C7E7FB">
+  <div id="ws-world"><div id="ws-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="ws-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9D6F5"/><stop offset="1" stop-color="#E3F3FF"/></linearGradient>
+      <linearGradient id="ws-ice" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9FE0FF"/><stop offset=".5" stop-color="#E4F8FF"/><stop offset="1" stop-color="#8FD3F5"/></linearGradient></defs>
+    <rect width="1080" height="1700" fill="url(#ws-sky)"/>
+    <!-- houses and a fence -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="40" y="1180" width="360" height="400" fill="#F2B866"/><path d="M10 1190 L220 1030 L430 1190 Z" fill="#7254DC"/>
+      <path d="M10 1190 L220 1030 L430 1190" fill="none" stroke="#FFFFFF" stroke-width="20"/><path d="M10 1190 L220 1030 L430 1190" fill="none"/>
+      <rect x="90" y="1260" width="100" height="100" fill="#FFF6D6"/><rect x="250" y="1300" width="100" height="280" fill="#8E5229"/>
+      <rect x="620" y="1140" width="420" height="440" fill="#7FC7A4"/><path d="M590 1150 L830 980 L1070 1150 Z" fill="#E05A47"/>
+      <path d="M590 1150 L830 980 L1070 1150" fill="none" stroke="#FFFFFF" stroke-width="20"/><path d="M590 1150 L830 980 L1070 1150" fill="none"/>
+      <rect x="680" y="1230" width="110" height="110" fill="#FFF6D6"/><rect x="870" y="1230" width="110" height="110" fill="#FFF6D6"/>
+    </g>
+    <path d="M0 1580 L1080 1580" stroke="#341720" stroke-width="8"/>
+    <g fill="#FFFFFF" stroke="#341720" stroke-width="6"><path d="M0 1580 L0 1500 L20 1480 L40 1500 L40 1580 Z M80 1580 L80 1500 L100 1480 L120 1500 L120 1580 Z M160 1580 L160 1500 L180 1480 L200 1500 L200 1580 Z M240 1580 L240 1500 L260 1480 L280 1500 L280 1580 Z M320 1580 L320 1500 L340 1480 L360 1500 L360 1580 Z"/></g>
+    <!-- snowy lawn, sidewalk, ice -->
+    <rect x="0" y="1580" width="1080" height="160" fill="#F4FAFF"/>
+    <rect x="0" y="1740" width="1080" height="260" fill="#C9CED8"/><path d="M0 1740 L1080 1740 M0 2000 L1080 2000" stroke="#341720" stroke-width="8"/>
+    <path d="M260 1740 L230 2000 M620 1740 L620 2000 M980 1740 L1010 2000" stroke="#ADB3C0" stroke-width="6"/>
+    <ellipse cx="560" cy="1880" rx="230" ry="56" fill="url(#ws-ice)" stroke="#5BB8E8" stroke-width="7"/>
+    <path d="M420 1866 L500 1860 M590 1890 L680 1884" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+    <rect x="0" y="2000" width="1080" height="360" fill="#F4FAFF"/>
+    <path d="M60 2140 Q240 2110 420 2146 M600 2240 Q780 2210 960 2246" stroke="#D3E5F2" stroke-width="14" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div id="ws-guy"></div>
+  <div id="ws-fx"></div>
+  <div class="ws-star" id="ws-s0" style="left:150px;top:1700px"></div><div class="ws-star" id="ws-s1" style="left:150px;top:1700px"></div><div class="ws-star" id="ws-s2" style="left:150px;top:1700px"></div>
+  <div class="word" id="ws-whoa" style="left:760px;top:1300px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#7FD3FF">WHOA!</text></svg></div></div>
+  <div class="word" id="ws-thud" style="left:740px;top:1560px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#FFD064">THUD!</text></svg></div></div>
+  </div><div id="ws-snow"></div></div>
+  <div id="ws-band"></div>
+  <div id="ws-text"><svg width="1000" height="220" viewBox="-500 -110 1000 220">
+    <text x="0" y="56" text-anchor="middle" font-family="Luckiest Guy" font-size="170" fill="#E0444E" stroke="#1A1220" stroke-width="12" paint-order="stroke" stroke-linejoin="round" letter-spacing="10">WASTED</text>
+  </svg></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"WASTED","pts":"2","unit":"STRIKES","sub":"SEE YOU NEXT SEASON","color":"#5B6478","dark":"#394052","light":"#DCE2EE"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), s = 0.6;
+  WA.actor('ws-guy', ['proud-a', 'proud-b', 'slip', 'flat'], { x: -220, y: 1890, s: s });
+  gsap.set('#ws-guy', { transformOrigin: (640 * s) + 'px ' + (1340 * s) + 'px' });
+  for (var i = 0; i < 3; i++) document.getElementById('ws-s' + i).innerHTML = '<svg width="52" height="52" viewBox="-26 -26 52 52">' + WA.star(24, '#FFD064', 5) + '</svg>';
+  WA.snow(tl, '#ws-snow', { n: 30, seed: 2, speed: 160, drift: -30, size: [8, 14] });
+
+  // strut
+  WA.cycle(tl, '#ws-guy', ['proud-a', 'proud-b'], 0, 40 * F, 6, 10);
+  tl.fromTo('#ws-guy', { x: 0 }, { x: 690, duration: 40 * F, ease: 'none' }, 0);
+  // the ice
+  WA.pose(tl, '#ws-guy', 'slip', 40 * F);
+  tl.to('#ws-guy', { x: 760, y: -90, rotation: -34, duration: 8 * F, ease: 'power2.out' }, 40 * F);
+  WA.word(tl, '#ws-whoa', 40 * F, 16, { rot: 8, rot0: -14, seed: 2, amp: 6 });
+  WA.pose(tl, '#ws-guy', 'flat', 48 * F);
+  tl.to('#ws-guy', { x: 860, y: -50, rotation: -90, duration: 6 * F, ease: 'power2.in' }, 48 * F);
+  WA.squash(tl, '#ws-guy', 54 * F, 0.1, 10);
+  WA.word(tl, '#ws-thud', 54 * F, 24, { rot: -6, rot0: 12, seed: 4, amp: 7 });
+  WA.shake(tl, '#ws-cam', 54 * F, 12 * F, 14, { decay: true, seed: 5, rot: 0.4 });
+  var fx = document.getElementById('ws-fx');
+  for (var j = 0; j < 6; j++) {
+    var d = document.createElement('div'); d.className = 'ws-dust'; d.style.left = (380 + j * 70) + 'px'; d.style.top = '1860px'; fx.appendChild(d);
+    tl.fromTo(d, { scale: 0.3, opacity: 1, x: 0, y: 0 }, { scale: 1.2, opacity: 0, x: (j - 2.5) * 40, y: -50 - (j % 2) * 40, duration: 16 * F, ease: 'power2.out', immediateRender: false }, 54 * F);
+  }
+  // dizzy stars over his head (he's lying with his head to the left)
+  ['#ws-s0', '#ws-s1', '#ws-s2'].forEach(function (id, i) {
+    tl.set(id, { opacity: 1, x: Math.cos(i * 2.1) * 70, y: Math.sin(i * 2.1) * 20 }, 58 * F);
+    for (var k = 0; k < 14; k++) {
+      var a = i * 2.1 + (k + 1) * 0.9;
+      tl.to(id, { x: Math.cos(a) * 70, y: Math.sin(a) * 20, duration: 4 * F, ease: 'none' }, (58 + k * 4) * F);
+    }
+  });
+  // gray, then WASTED
+  tl.fromTo('#ws-world', { filter: 'grayscale(0) brightness(1)' }, { filter: 'grayscale(1) brightness(0.82)', duration: 18 * F, ease: 'power1.inOut', immediateRender: false }, 60 * F);
+  tl.fromTo('#ws-cam', { scale: 1 }, { scale: 1.12, duration: 60 * F, ease: 'sine.inOut', immediateRender: false }, 56 * F);
+  tl.fromTo('#ws-band', { opacity: 0, scaleY: 0.4 }, { opacity: 1, scaleY: 1, duration: 10 * F, ease: 'power2.out', immediateRender: false }, 70 * F);
+  tl.fromTo('#ws-text', { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 14 * F, ease: 'power2.out', immediateRender: false }, 72 * F);
+  tl.to(['#ws-band', '#ws-text'], { opacity: 0, duration: 6 * F }, 112 * F);
+
+  window.__timelines['joke-wasted'] = tl;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!doctype html>
+<!--
+  Grand Theft #1 (joke-grandtheft): a car with #1 on the door. A guy runs in, pulls the driver out and speeds off
+  with speed lines. Anyone, so no names. Beats (30 fps): run in 4-28, YANK 30, driver lands 46, VROOM 48,
+  car gone 72, driver rages 84, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/buddy.js"></script>
+<script src="assets/props.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #gt-cam { position: absolute; inset: 0; transform-origin: 540px 1600px; }
+  #gt-car { left: 150px; top: 1356px; }
+  .gt-line { position: absolute; height: 14px; border-radius: 7px; background: #FFFFFF; border: 4px solid #341720; opacity: 0; }
+  .gt-dust { position: absolute; width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 50%; background: #D9D2C3; border: 6px solid #341720; opacity: 0; }
+  #gt-fx { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-grandtheft" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="gt-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#C7E7FB">
+  <div id="gt-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <rect width="1080" height="1520" fill="#C7E7FB"/>
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="-20" y="860" width="260" height="660" fill="#B98AE0"/><rect x="240" y="700" width="230" height="820" fill="#F2B866"/>
+      <rect x="470" y="940" width="250" height="580" fill="#7FC7A4"/><rect x="720" y="780" width="380" height="740" fill="#F08A7E"/>
+    </g>
+    <g fill="#FFF6D6" stroke="#341720" stroke-width="6">
+      <rect x="30" y="920" width="60" height="80"/><rect x="130" y="920" width="60" height="80"/><rect x="30" y="1060" width="60" height="80"/><rect x="130" y="1060" width="60" height="80"/>
+      <rect x="280" y="760" width="60" height="80"/><rect x="370" y="760" width="60" height="80"/><rect x="280" y="900" width="60" height="80"/><rect x="370" y="900" width="60" height="80"/><rect x="280" y="1040" width="60" height="80"/><rect x="370" y="1040" width="60" height="80"/>
+      <rect x="510" y="1000" width="70" height="80"/><rect x="620" y="1000" width="70" height="80"/><rect x="510" y="1140" width="70" height="80"/><rect x="620" y="1140" width="70" height="80"/>
+      <rect x="770" y="850" width="70" height="90"/><rect x="880" y="850" width="70" height="90"/><rect x="990" y="850" width="70" height="90"/><rect x="770" y="1000" width="70" height="90"/><rect x="880" y="1000" width="70" height="90"/><rect x="990" y="1000" width="70" height="90"/>
+    </g>
+    <rect x="740" y="1170" width="320" height="70" rx="12" fill="#FFD064" stroke="#341720" stroke-width="7"/>
+    <text x="900" y="1220" text-anchor="middle" font-family="Luckiest Guy" font-size="44" fill="#341720">VALET</text>
+    <rect x="0" y="1520" width="1080" height="110" fill="#C9CED8"/><path d="M0 1520 L1080 1520 M0 1630 L1080 1630" stroke="#341720" stroke-width="8"/>
+    <rect x="0" y="1630" width="1080" height="300" fill="#6E7385"/>
+    <path d="M40 1790 L200 1790 M330 1790 L490 1790 M620 1790 L780 1790 M910 1790 L1070 1790" stroke="#F5E6A8" stroke-width="14" stroke-linecap="round"/>
+    <rect x="0" y="1930" width="1080" height="430" fill="#C9CED8"/><path d="M0 1930 L1080 1930" stroke="#341720" stroke-width="8"/>
+    <path d="M200 1930 L160 2360 M560 1930 L560 2360 M920 1930 L960 2360" stroke="#ADB3C0" stroke-width="6"/>
+  </svg>
+  <div id="gt-car"></div>
+  <div id="gt-fx"></div>
+  <div id="gt-thief"></div>
+  <div id="gt-driver"></div>
+  <div class="word" id="gt-yank" style="left:430px;top:1220px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="130" style="fill:#FFD064">YOINK!</text></svg></div></div>
+  <div class="word" id="gt-vroom" style="left:640px;top:1200px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="160" style="fill:#7CF2B0">VROOOM!</text></svg></div></div>
+  <div class="word" id="gt-hey" style="left:420px;top:1470px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#FF9F6B">HEY!!</text></svg></div></div>
+  </div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"GRAND|THEFT #1","pts":"#1","unit":"","sub":"FIRST PLACE: STOLEN","color":"#E39A2E","dark":"#A8661A","light":"#FFE7C2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  var door = '<circle cx="455" cy="300" r="54" fill="#FFFFFF" stroke="#341720" stroke-width="8"/><text x="455" y="324" text-anchor="middle" font-family="Luckiest Guy" font-size="62" fill="#341720">#1</text>';
+  WA.car.build('gt-car', { color: '#F2C230', dark: '#B8861A', light: '#FFE38A', door: door, scale: 0.9 });
+  var cab = document.getElementById('gt-car-cabin');
+  cab.innerHTML = '<div id="gt-d0"></div><div id="gt-in"></div>';
+  WA.buddyIn('gt-d0', { face: 'smile', hat: 'cap', hatColor: '#E05A47', top: '#2FA36B', arms: 'wheel' }, 560, 470, 0.4);
+  WA.actor('gt-in', ['drive'], { x: 560, y: 465, s: 0.4 });
+  WA.pose(tl, '#gt-in', 'drive', 0);
+  gsap.set('#gt-in', { y: 200 });
+  WA.actor('gt-thief', ['run-a', 'run-b'], { x: -260, y: 1880, s: 0.6 });
+  // the driver once he's out: flying, then sat on the sidewalk, then raging
+  document.getElementById('gt-driver').innerHTML = '<div id="gt-fly"></div><div id="gt-sat"></div><div id="gt-mad"></div>';
+  WA.buddyIn('gt-fly', { face: 'scared', hat: 'cap', hatColor: '#E05A47', top: '#2FA36B', arms: 'flail' }, 0, 0, 0.5);
+  WA.buddyIn('gt-sat', { face: 'dazed', hat: 'cap', hatColor: '#E05A47', top: '#2FA36B', arms: 'down', legs: 'ground' }, 330, 2010, 0.55);
+  WA.buddyIn('gt-mad', { face: 'mad', hat: 'cap', hatColor: '#E05A47', top: '#2FA36B', arms: 'up', legs: 'ground' }, 330, 2010, 0.55);
+  gsap.set(['#gt-fly', '#gt-sat', '#gt-mad'], { opacity: 0 });
+
+  // the thief runs in
+  WA.cycle(tl, '#gt-thief', ['run-a', 'run-b'], 0, 30 * F, 4, 10);
+  tl.fromTo('#gt-thief', { x: 0 }, { x: 640, duration: 26 * F, ease: 'power1.in' }, 4 * F);
+  // YOINK: the driver flies out, the thief dives in
+  tl.set('#gt-d0', { opacity: 0 }, 30 * F);
+  WA.word(tl, '#gt-yank', 30 * F, 24, { rot: -8, rot0: 14, seed: 2, amp: 6 });
+  tl.set('#gt-fly', { opacity: 1 }, 30 * F);
+  tl.fromTo('#gt-fly', { x: 520, y: 1560, rotation: 0 }, { x: 200, y: 1250, rotation: -200, duration: 8 * F, ease: 'power2.out', immediateRender: false }, 30 * F);
+  tl.to('#gt-fly', { x: 30, y: 1500, rotation: -380, duration: 8 * F, ease: 'power2.in' }, 38 * F);
+  tl.set('#gt-fly', { opacity: 0 }, 46 * F);
+  tl.set('#gt-sat', { opacity: 1 }, 46 * F);
+  WA.squash(tl, '#gt-sat', 46 * F, 0.14, 12);
+  WA.shake(tl, '#gt-cam', 46 * F, 8 * F, 8, { decay: true, seed: 3 });
+  tl.to('#gt-thief', { x: 760, y: -160, scale: 0.6, duration: 5 * F, ease: 'power2.in' }, 31 * F);
+  tl.set('#gt-thief', { opacity: 0 }, 36 * F);
+  tl.to('#gt-in', { y: 0, duration: 6 * F, ease: 'back.out(2)' }, 36 * F);
+
+  // VROOOM
+  tl.to('#gt-car', { x: 1300, duration: 18 * F, ease: 'power2.in' }, 48 * F);
+  tl.to('#gt-car', { rotation: -2, duration: 4 * F, ease: 'power1.out', yoyo: true, repeat: 1 }, 48 * F);
+  tl.to(['#gt-car-w0', '#gt-car-w1'], { rotation: 1440, duration: 20 * F, ease: 'power2.in' }, 46 * F);
+  WA.word(tl, '#gt-vroom', 48 * F, 26, { rot: -4, rot0: 10, seed: 6, amp: 6 });
+  var fx = document.getElementById('gt-fx');
+  for (var i = 0; i < 5; i++) {
+    var l = document.createElement('div'); l.className = 'gt-line'; l.style.top = (1420 + i * 60) + 'px'; l.style.left = '0px'; l.style.width = (220 + (i % 3) * 80) + 'px'; fx.appendChild(l);
+    tl.fromTo(l, { x: 100 + i * 30, opacity: 1, scaleX: 0.3 }, { x: 700 + i * 50, opacity: 0, scaleX: 1.4, duration: 16 * F, ease: 'power1.in', immediateRender: false }, (50 + i * 3) * F);
+  }
+  for (var j = 0; j < 6; j++) {
+    var d = document.createElement('div'); d.className = 'gt-dust'; d.style.left = (170 + j * 30) + 'px'; d.style.top = '1740px'; fx.appendChild(d);
+    tl.fromTo(d, { scale: 0.3, opacity: 1, x: 0, y: 0 }, { scale: 1.3 + (j % 2) * 0.4, opacity: 0, x: -60 - j * 20, y: -40 - (j % 3) * 30, duration: 20 * F, ease: 'power2.out', immediateRender: false }, (48 + j * 2) * F);
+  }
+  // HEY!!
+  tl.set('#gt-sat', { opacity: 0 }, 84 * F);
+  tl.set('#gt-mad', { opacity: 1 }, 84 * F);
+  WA.shake(tl, '#gt-mad', 84 * F, 24 * F, 5, { seed: 8, rot: 2 });
+  WA.word(tl, '#gt-hey', 84 * F, 30, { rot: 6, rot0: -14, seed: 9, amp: 7 });
+
+  window.__timelines['joke-grandtheft'] = tl;
+})();
+</script>
+</body>
+</html>

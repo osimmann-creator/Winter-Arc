@@ -1,0 +1,104 @@
+<!doctype html>
+<!--
+  Partners in Crime (joke-partners): two guys walk out of the gym in slow motion carrying duffel bags marked PTS
+  while an alarm light spins. Anyone, so no names (the feed card says which two vouched for each other).
+  Beats (30 fps): doors open 0-12, slow-mo strut 8-118 (steps every 12), coins spill 40-100, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/props.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #pc-beams { position: absolute; left: 540px; top: 1150px; width: 0; height: 0; }
+  #pc-beams svg { position: absolute; left: -700px; top: -260px; overflow: visible; }
+  #pc-red { position: absolute; inset: 0; background: radial-gradient(circle at 50% 49%, rgba(255,40,60,.55) 0%, rgba(255,40,60,.18) 45%, rgba(255,40,60,0) 75%); opacity: 0; mix-blend-mode: screen; pointer-events: none; }
+  .pc-door { position: absolute; top: 1262px; width: 236px; height: 440px; }
+  #pc-coins { position: absolute; inset: 0; }
+  #pc-slowmo { position: absolute; left: 540px; top: 1880px; width: 0; height: 0; opacity: 0; }
+  #pc-slowmo svg { position: absolute; left: -200px; top: -50px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-partners" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="pc-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#15162E">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="pc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E0F26"/><stop offset="1" stop-color="#2A2A55"/></linearGradient>
+      <radialGradient id="pc-in" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#FFF6C8"/><stop offset="1" stop-color="#F2C96B"/></radialGradient></defs>
+    <rect width="1080" height="900" fill="url(#pc-sky)"/>
+    <g fill="#FFF6C8"><circle cx="120" cy="200" r="5"/><circle cx="300" cy="120" r="4"/><circle cx="520" cy="260" r="5"/><circle cx="760" cy="150" r="4"/><circle cx="950" cy="300" r="5"/><circle cx="210" cy="420" r="3"/><circle cx="860" cy="480" r="4"/></g>
+    <!-- the gym -->
+    <rect x="-10" y="860" width="1100" height="860" fill="#3A3F5C" stroke="#341720" stroke-width="10"/>
+    <g fill="#2B2F48" stroke="#341720" stroke-width="7"><rect x="40" y="1000" width="200" height="180"/><rect x="840" y="1000" width="200" height="180"/>
+      <rect x="40" y="1300" width="200" height="300"/><rect x="840" y="1300" width="200" height="300"/></g>
+    <rect x="250" y="900" width="580" height="160" rx="24" fill="#1B1C33" stroke="#341720" stroke-width="9"/>
+    <text x="540" y="1015" text-anchor="middle" font-family="Luckiest Guy" font-size="120" fill="none" stroke="#FF5FA2" stroke-width="18" opacity=".35">24/7 GYM</text>
+    <text x="540" y="1015" text-anchor="middle" font-family="Luckiest Guy" font-size="120" fill="#FFB8D6" stroke="#FF5FA2" stroke-width="5">24/7 GYM</text>
+    <!-- the doorway, lit from inside -->
+    <rect x="300" y="1250" width="480" height="460" fill="url(#pc-in)" stroke="#341720" stroke-width="10"/>
+    <path d="M330 1320 L460 1320 M620 1320 L750 1320 M360 1420 L440 1420" stroke="#E2B04A" stroke-width="10" stroke-linecap="round"/>
+    <g stroke="#341720" stroke-width="8"><rect x="350" y="1480" width="120" height="20" fill="#7D8494"/><rect x="330" y="1460" width="24" height="60" rx="6" fill="#2B2236"/><rect x="466" y="1460" width="24" height="60" rx="6" fill="#2B2236"/></g>
+    <!-- the alarm light -->
+    <rect x="490" y="1170" width="100" height="40" rx="8" fill="#5B6478" stroke="#341720" stroke-width="8"/>
+    <path d="M500 1172 Q500 1100 540 1100 Q580 1100 580 1172 Z" fill="#C9242E" stroke="#341720" stroke-width="8"/>
+    <path d="M520 1150 Q522 1120 540 1114" stroke="#FFFFFF" stroke-width="8" fill="none" stroke-linecap="round" opacity=".7"/>
+    <!-- the street -->
+    <rect x="0" y="1710" width="1080" height="660" fill="#4A4E60"/>
+    <path d="M0 1710 L1080 1710" stroke="#341720" stroke-width="10"/>
+    <path d="M300 1710 L-60 2360 M780 1710 L1140 2360" stroke="#5E6377" stroke-width="10"/>
+    <path d="M0 1860 L1080 1860 M0 2060 L1080 2060 M0 2300 L1080 2300" stroke="#3E4254" stroke-width="6"/>
+  </svg>
+  <svg class="pc-door" id="pc-dl" style="left:302px" viewBox="0 0 236 440"><rect x="4" y="4" width="228" height="432" fill="#BFE3F7" fill-opacity=".45" stroke="#341720" stroke-width="8"/><rect x="190" y="200" width="16" height="80" rx="6" fill="#341720"/><path d="M30 60 L90 140" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity=".6"/></svg>
+  <svg class="pc-door" id="pc-dr" style="left:542px" viewBox="0 0 236 440"><rect x="4" y="4" width="228" height="432" fill="#BFE3F7" fill-opacity=".45" stroke="#341720" stroke-width="8"/><rect x="30" y="200" width="16" height="80" rx="6" fill="#341720"/><path d="M60 60 L120 140" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity=".6"/></svg>
+  <div id="pc-a"></div>
+  <div id="pc-b"></div>
+  <div id="pc-coins"></div>
+  <div id="pc-beams"><svg width="1400" height="520" viewBox="-700 -260 1400 520"><g id="pc-beam" opacity=".55">
+    <path d="M0 0 L-700 -200 L-700 200 Z" fill="#FF3B4A"/><path d="M0 0 L700 -200 L700 200 Z" fill="#FF3B4A"/></g></svg></div>
+  <div id="pc-red"></div>
+  <div class="word" id="pc-weeoo" style="left:540px;top:820px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="110" style="fill:#FF6B78">WEE-OOO!</text></svg></div></div>
+  <div id="pc-slowmo"><svg width="400" height="100" viewBox="-200 -50 400 100"><rect x="-190" y="-40" width="380" height="80" rx="40" fill="#1B1726" stroke="#FFFFFF" stroke-width="6"/>
+    <circle cx="-140" cy="0" r="16" fill="#FF3B4A"/><text x="20" y="18" text-anchor="middle" font-family="Luckiest Guy" font-size="50" fill="#FFFFFF" letter-spacing="4">SLO-MO</text></svg></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"PARTNERS|IN CRIME","pts":"2","unit":"WITNESSES","sub":"THEY VOUCH FOR EACH OTHER","color":"#B45AC8","dark":"#7A3590","light":"#F1D6F7"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), s0 = 0.42;
+  WA.actor('pc-a', ['heist-a', 'heist-b'], { x: 440, y: 1700, s: s0 });
+  WA.actor('pc-b', ['heist-b', 'heist-a'], { x: 640, y: 1700, s: s0, member: 'anon2' });
+  gsap.set(['#pc-a', '#pc-b'], { transformOrigin: (640 * s0) + 'px ' + (1340 * s0) + 'px' });
+  // slow motion: the doors swing, they stride out toward us
+  tl.to('#pc-dl', { scaleX: 0.15, x: -100, duration: 12 * F, ease: 'power2.out' }, 2 * F);
+  tl.to('#pc-dr', { scaleX: 0.15, x: 100, duration: 12 * F, ease: 'power2.out' }, 2 * F);
+  tl.fromTo('#pc-a', { x: 0, y: 0, scale: 1 }, { x: -170, y: 470, scale: 1.75, duration: 110 * F, ease: 'none' }, 8 * F);
+  tl.fromTo('#pc-b', { x: 0, y: 0, scale: 1 }, { x: 170, y: 440, scale: 1.7, duration: 110 * F, ease: 'none' }, 8 * F);
+  WA.cycle(tl, '#pc-a', ['heist-a', 'heist-b'], 0, 5.5, 12, 6);
+  WA.cycle(tl, '#pc-b', ['heist-b', 'heist-a'], 0, 5.5, 12, 6);
+  tl.fromTo('#pc-slowmo', { opacity: 0 }, { opacity: 1, duration: 6 * F, immediateRender: false }, 14 * F);
+  tl.to('#pc-slowmo', { opacity: 0, duration: 6 * F }, 108 * F);
+  tl.fromTo('#pc-slowmo circle', { opacity: 1 }, { opacity: 0.2, duration: 10 * F, yoyo: true, repeat: 9, ease: 'steps(1)' }, 14 * F);
+  // the alarm light spins
+  tl.fromTo('#pc-beam', { scaleX: 1, svgOrigin: '0 0' }, { scaleX: -1, svgOrigin: '0 0', duration: 9 * F, ease: 'sine.inOut', yoyo: true, repeat: 17 }, 0);
+  tl.fromTo('#pc-red', { opacity: 0.2 }, { opacity: 1, duration: 9 * F, ease: 'sine.inOut', yoyo: true, repeat: 17 }, 0);
+  WA.word(tl, '#pc-weeoo', 4 * F, 30, { rot: -4, rot0: 8, seed: 3, amp: 4 });
+  // PTS coins spill out of the bags, slowly
+  var r = WA.rng(7);
+  WA.spawn('#pc-coins', 8, function () {
+    return '<svg width="70" height="70" viewBox="-35 -35 70 70" style="overflow:visible"><circle r="30" fill="#FFD064" stroke="#341720" stroke-width="6"/><circle r="20" fill="none" stroke="#C77928" stroke-width="4"/><text y="9" text-anchor="middle" font-family="Luckiest Guy" font-size="26" fill="#341720">+1</text></svg>';
+  }).forEach(function (c, i) {
+    gsap.set(c, { opacity: 0 });
+    var left = i % 2 === 0, t = 40 + i * 8;
+    WA.toss(tl, c, t * F, { x0: left ? 230 - i * 6 : 820 + i * 6, y0: 1700 + (i % 3) * 30, vx: (left ? -1 : 1) * (2 + r() * 3), vy: -6 - r() * 4, g: 0.35, frames: 46, spin: 4 });
+  });
+
+  window.__timelines['joke-partners'] = tl;
+})();
+</script>
+</body>
+</html>

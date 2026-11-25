@@ -7,7 +7,8 @@ html, body { width: 1080px; height: 2348px; overflow: hidden; background: #C7E7F
 /* ---- shared pieces (see kit.js) ---- */
 .abs { position: absolute; }
 .actor { position: absolute; }
-.actor .squash, .actor .jit { position: absolute; inset: 0; }
+.actor .flip, .actor .squash, .actor .jit { position: absolute; inset: 0; }
+.actor.flipx .flip { transform: scaleX(-1); }
 .actor .pose { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; }
 /* a comic sound word: a 0x0 box at the word's centre; kit.js WA.word pops it in */
 .word { position: absolute; width: 0; height: 0; opacity: 0; }

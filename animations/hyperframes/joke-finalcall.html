@@ -1,0 +1,181 @@
+<!doctype html>
+<!--
+  Final Call (joke-finalcall): the gate door is sliding shut. Osim zooms in from the left with his suitcase and
+  dives through the gap just before it closes. Then the HOAT GUARANTEE stamp slams down (the app's own stamp art).
+  Beats (30 fps): FINAL CALL! 2, doors closing 6-62, run 6-46, DIVE 46-58, SHUNK 62, STAMP 74, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/buddy.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #fc-cam { position: absolute; inset: 0; transform-origin: 600px 1500px; }
+  #fc-shake { position: absolute; inset: 0; }
+  #fc-door { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+  .fc-panel { position: absolute; top: 1176px; width: 172px; height: 590px; }
+  #fc-osim { z-index: 10; }
+  #fc-front { position: absolute; inset: 0; z-index: 12; pointer-events: none; }
+  #fc-stamp { position: absolute; left: 540px; top: 1500px; width: 0; height: 0; opacity: 0; z-index: 20; }
+  #fc-stamp svg { position: absolute; left: -450px; top: -275px; width: 900px; height: 550px; overflow: visible; }
+  #fc-bubble { position: absolute; left: 250px; top: 1290px; width: 0; height: 0; opacity: 0; z-index: 11; }
+  #fc-bubble svg { position: absolute; left: -200px; top: -120px; overflow: visible; }
+  .fc-line { position: absolute; height: 12px; border-radius: 6px; background: #FFFFFF; opacity: 0; z-index: 9; }
+  #fc-ring { position: absolute; left: 540px; top: 1500px; width: 0; height: 0; z-index: 19; }
+  #fc-ring i { position: absolute; left: -300px; top: -300px; width: 600px; height: 600px; border-radius: 50%; border: 22px solid #FFFFFF; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-finalcall" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="fc-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#EAF0F7">
+  <div id="fc-cam"><div id="fc-shake">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="fc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9FD0F2"/><stop offset="1" stop-color="#DDF0FF"/></linearGradient></defs>
+    <rect width="1080" height="1770" fill="#DCE5EF"/>
+    <rect width="1080" height="210" fill="#C9D4E2"/>
+    <path d="M0 210 L1080 210" stroke="#341720" stroke-width="8"/>
+    <g fill="#FFFBEA" stroke="#341720" stroke-width="6"><rect x="120" y="70" width="240" height="40" rx="20"/><rect x="720" y="70" width="240" height="40" rx="20"/></g>
+    <!-- the big window and the plane outside -->
+    <rect x="-10" y="430" width="1100" height="560" fill="url(#fc-sky)" stroke="#341720" stroke-width="10"/>
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <path d="M260 940 Q200 760 360 720 L1100 690 L1100 940 Z" fill="#FFFFFF"/>
+      <path d="M360 720 Q300 780 296 860 L420 860 Q440 760 470 716 Z" fill="#2B3F7A"/>
+      <path d="M520 800 L560 800 M620 798 L660 798 M720 796 L760 796 M820 794 L860 794 M920 792 L960 792" stroke="#2B3F7A" stroke-width="22" stroke-linecap="round"/>
+      <path d="M260 940 L1100 940" />
+      <path d="M560 880 L1100 870" stroke="#7254DC" stroke-width="20"/>
+      <path d="M640 940 L760 1000 L900 1000 L860 940 Z" fill="#C9D4E2"/>
+    </g>
+    <text x="760" y="760" font-family="Luckiest Guy" font-size="44" fill="#7254DC">WINTER ARC AIR</text>
+    <path d="M-10 1000 L1100 1000" stroke="#341720" stroke-width="10"/>
+    <g stroke="#341720" stroke-width="10"><path d="M270 430 L270 990 M540 430 L540 990 M810 430 L810 990"/></g>
+    <path d="M60 470 L180 600 M330 470 L420 560 M600 470 L700 580 M870 470 L960 560" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" opacity=".5"/>
+    <!-- the gate: board, frame, the jet bridge through the gap -->
+    <rect x="560" y="1020" width="400" height="140" rx="16" fill="#2B2236" stroke="#341720" stroke-width="9"/>
+    <text x="760" y="1070" text-anchor="middle" font-family="Luckiest Guy" font-size="38" fill="#FFD064">GATE 7 · BOARDING</text>
+    <rect id="fc-fc" x="590" y="1086" width="340" height="56" rx="10" fill="#C9242E"/>
+    <text id="fc-fct" x="760" y="1131" text-anchor="middle" font-family="Luckiest Guy" font-size="46" fill="#FFFFFF" letter-spacing="3">FINAL CALL</text>
+    <rect x="574" y="1170" width="372" height="600" fill="#5B6478" stroke="#341720" stroke-width="10"/>
+    <path d="M600 1200 L920 1200 L860 1300 L660 1300 Z" fill="#474F63"/>
+    <rect x="660" y="1300" width="200" height="470" fill="#3A4152"/>
+    <path d="M660 1300 L600 1770 M860 1300 L920 1770" stroke="#2B3040" stroke-width="8"/>
+    <circle cx="760" cy="1250" r="14" fill="#FFF3B0"/>
+    <!-- the podium -->
+    <rect x="0" y="1770" width="1080" height="600" fill="#BFC9D6"/>
+    <path d="M0 1770 L1080 1770" stroke="#341720" stroke-width="9"/>
+    <g stroke="#A8B4C4" stroke-width="5"><path d="M0 1880 L1080 1880 M0 2010 L1080 2010 M0 2160 L1080 2160 M180 1770 L120 2360 M420 1770 L390 2360 M660 1770 L690 2360 M900 1770 L960 2360"/></g>
+    <path d="M40 2240 Q300 2200 540 2240 Q780 2280 1040 2240" stroke="#FFFFFF" stroke-width="14" fill="none" opacity=".5" stroke-linecap="round"/>
+    <!-- waiting-area seats and a plant -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="520" y="2160" width="540" height="26" rx="10" fill="#7D8494"/>
+      <path d="M560 2186 L540 2300 M1020 2186 L1040 2300" stroke-width="12"/>
+      <g fill="#2F66E6">
+        <path d="M540 1990 Q540 1960 570 1960 L680 1960 Q710 1960 710 1990 L700 2100 L550 2100 Z"/><rect x="530" y="2090" width="190" height="70" rx="20"/>
+        <path d="M720 1990 Q720 1960 750 1960 L860 1960 Q890 1960 890 1990 L880 2100 L730 2100 Z"/><rect x="710" y="2090" width="190" height="70" rx="20"/>
+        <path d="M900 1990 Q900 1960 930 1960 L1040 1960 Q1070 1960 1070 1990 L1060 2100 L910 2100 Z"/><rect x="890" y="2090" width="190" height="70" rx="20"/>
+      </g>
+      <path d="M150 2290 L120 2120 L300 2120 L270 2290 Z" fill="#C47B42"/>
+      <path d="M210 2120 Q120 2000 60 2020 Q130 2060 190 2120 M210 2120 Q220 1960 290 1930 Q260 2040 230 2120 M210 2120 Q330 2020 380 2060 Q290 2080 240 2120" fill="#45B87A"/>
+    </g>
+    <path d="M560 1990 L590 1975 M740 1990 L770 1975 M920 1990 L950 1975" stroke="#A9C2FF" stroke-width="9" stroke-linecap="round"/>
+  </svg>
+  <div id="fc-agent"></div>
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <path d="M40 1560 L330 1560 L310 1800 L60 1800 Z" fill="#7254DC" stroke="#341720" stroke-width="9" stroke-linejoin="round"/>
+    <rect x="30" y="1540" width="310" height="34" rx="10" fill="#4F35B0" stroke="#341720" stroke-width="8"/>
+    <text x="185" y="1690" text-anchor="middle" font-family="Luckiest Guy" font-size="44" fill="#FFFFFF">GATE 7</text>
+    <path d="M250 1540 L250 1470" stroke="#341720" stroke-width="8"/><circle cx="250" cy="1462" r="14" fill="#2B2236" stroke="#341720" stroke-width="5"/>
+  </svg>
+  <div id="fc-bubble"><svg width="400" height="240" viewBox="-200 -120 400 240">
+    <path d="M-180 -100 Q-180 -120 -160 -120 L160 -120 Q180 -120 180 -100 L180 20 Q180 40 160 40 L-20 40 L-60 96 L-60 40 L-160 40 Q-180 40 -180 20 Z" fill="#341720" transform="translate(8 10)"/>
+    <path d="M-180 -100 Q-180 -120 -160 -120 L160 -120 Q180 -120 180 -100 L180 20 Q180 40 160 40 L-20 40 L-60 96 L-60 40 L-160 40 Q-180 40 -180 20 Z" fill="#FFFFFF" stroke="#341720" stroke-width="9" stroke-linejoin="round"/>
+    <text x="0" y="-18" text-anchor="middle" font-family="Luckiest Guy" font-size="70" fill="#C9242E">FINAL CALL!</text>
+  </svg></div>
+
+  <div id="fc-osim"></div>
+  <div class="fc-line" id="fc-l0" style="left:0;top:1500px;width:260px"></div>
+  <div class="fc-line" id="fc-l1" style="left:0;top:1580px;width:200px"></div>
+  <div class="fc-line" id="fc-l2" style="left:0;top:1660px;width:240px"></div>
+
+  <!-- the door panels slide shut over the gap (they sit above Osim once he's through) -->
+  <div id="fc-door">
+    <svg class="fc-panel" id="fc-pl" style="left:588px" width="172" height="590" viewBox="0 0 172 590"><rect x="4" y="4" width="164" height="582" fill="#9AA6B8" stroke="#341720" stroke-width="9"/><rect x="34" y="90" width="104" height="170" rx="16" fill="#C7E7FB" stroke="#341720" stroke-width="7"/><path d="M50 110 L80 150" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".7"/><rect x="140" y="300" width="14" height="80" rx="7" fill="#341720"/></svg>
+    <svg class="fc-panel" id="fc-pr" style="left:760px" width="172" height="590" viewBox="0 0 172 590"><rect x="4" y="4" width="164" height="582" fill="#9AA6B8" stroke="#341720" stroke-width="9"/><rect x="34" y="90" width="104" height="170" rx="16" fill="#C7E7FB" stroke="#341720" stroke-width="7"/><path d="M50 110 L80 150" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".7"/><rect x="18" y="300" width="14" height="80" rx="7" fill="#341720"/></svg>
+    <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+      <path d="M400 1166 L588 1166 L588 1768 L400 1768 Z M932 1166 L1100 1166 L1100 1768 L932 1768 Z" fill="#DCE5EF"/>
+      <path d="M588 1166 L588 1776 M932 1166 L932 1776" stroke="#341720" stroke-width="10"/>
+      <rect x="574" y="1160" width="372" height="18" fill="#7D8494" stroke="#341720" stroke-width="7"/>
+    </svg>
+  </div>
+  <div class="word" id="fc-shunk" style="left:760px;top:1450px;z-index:13"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#FFD064">SHUNK!</text></svg></div></div>
+  <div class="word" id="fc-zoom" style="left:240px;top:1380px;z-index:13"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#7CF2B0">ZOOM!</text></svg></div></div>
+  </div></div>
+  <div id="fc-ring"><i></i></div>
+  <div id="fc-stamp"><!-- Art.hoatStamp() from js/art.js, inline so it gets Luckiest Guy --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" width="900" height="550">
+  <defs><mask id="hs1" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="220"><rect width="360" height="220" fill="#fff"/><g fill="#000"><circle cx="147.9" cy="116.8" r="1.9"/><circle cx="351.7" cy="73.2" r="2.1"/><circle cx="252.5" cy="23.1" r="3.2"/><circle cx="47.1" cy="1.1" r="2.0"/><circle cx="151.7" cy="174.6" r="2.8"/><circle cx="316.7" cy="211.5" r="2.8"/><circle cx="3.5" cy="177.5" r="3.1"/><circle cx="262.8" cy="182.7" r="1.2"/><circle cx="156.0" cy="96.7" r="2.6"/><circle cx="65.0" cy="196.5" r="1.8"/><circle cx="39.8" cy="61.2" r="3.3"/><circle cx="40.0" cy="65.1" r="2.5"/><circle cx="50.3" cy="55.7" r="1.1"/><circle cx="347.2" cy="100.3" r="2.9"/><circle cx="69.0" cy="123.3" r="2.5"/><circle cx="315.7" cy="45.3" r="2.8"/><circle cx="274.5" cy="54.8" r="2.2"/><circle cx="159.2" cy="154.0" r="1.3"/><circle cx="308.0" cy="168.1" r="1.5"/><circle cx="175.6" cy="107.8" r="3.2"/><circle cx="242.2" cy="164.5" r="1.8"/><circle cx="135.3" cy="129.0" r="1.4"/><circle cx="26.1" cy="53.6" r="1.2"/><circle cx="278.3" cy="57.2" r="3.0"/><circle cx="169.0" cy="210.8" r="2.0"/><circle cx="298.1" cy="196.9" r="3.3"/><circle cx="31.9" cy="148.6" r="2.1"/><circle cx="37.1" cy="211.9" r="1.9"/><circle cx="25.4" cy="37.8" r="3.3"/><circle cx="260.2" cy="35.7" r="2.5"/><circle cx="165.1" cy="60.0" r="1.7"/><circle cx="300.0" cy="121.3" r="1.5"/><circle cx="218.6" cy="205.0" r="2.1"/><circle cx="341.8" cy="41.5" r="1.5"/><circle cx="226.0" cy="136.8" r="3.1"/><circle cx="315.9" cy="184.2" r="1.1"/><circle cx="62.1" cy="172.8" r="1.5"/><circle cx="358.2" cy="201.2" r="1.9"/><circle cx="263.4" cy="193.4" r="1.7"/><circle cx="186.9" cy="102.2" r="2.4"/><circle cx="258.3" cy="105.0" r="2.2"/><circle cx="121.8" cy="156.4" r="1.3"/><circle cx="194.4" cy="66.2" r="2.3"/><circle cx="296.7" cy="34.4" r="2.0"/><circle cx="232.4" cy="153.2" r="3.0"/><circle cx="33.5" cy="83.9" r="2.8"/><circle cx="256.5" cy="78.9" r="2.2"/><circle cx="93.0" cy="37.3" r="2.1"/><circle cx="323.4" cy="161.2" r="1.2"/><circle cx="226.9" cy="93.2" r="2.8"/><circle cx="284.2" cy="198.7" r="1.4"/><circle cx="135.0" cy="27.8" r="1.7"/><circle cx="210.0" cy="144.1" r="3.1"/><circle cx="60.9" cy="76.4" r="3.1"/><circle cx="212.6" cy="29.0" r="1.8"/><circle cx="244.0" cy="141.0" r="2.9"/><circle cx="156.9" cy="191.1" r="3.1"/><circle cx="203.2" cy="20.5" r="2.1"/><circle cx="339.8" cy="72.1" r="2.6"/><circle cx="7.0" cy="92.2" r="0.8"/><circle cx="240.6" cy="35.5" r="2.2"/><circle cx="281.7" cy="187.4" r="2.8"/><circle cx="328.7" cy="135.5" r="2.9"/><circle cx="53.4" cy="164.0" r="3.1"/><circle cx="358.8" cy="132.0" r="1.3"/><circle cx="285.5" cy="182.5" r="2.3"/><circle cx="341.6" cy="46.9" r="1.5"/><circle cx="92.1" cy="118.2" r="2.9"/><circle cx="322.8" cy="194.5" r="1.6"/><circle cx="311.7" cy="166.4" r="2.7"/></g>
+    <path d="M30 170 Q120 150 200 178" stroke="#000" stroke-width="3" fill="none" opacity=".6"/><path d="M210 40 Q280 30 340 52" stroke="#000" stroke-width="2.5" fill="none" opacity=".5"/></mask></defs>
+  <g mask="url(#hs1)">
+    <rect x="9" y="9" width="342" height="202" rx="30" fill="none" stroke="#D7263D" stroke-width="12"/>
+    <rect x="25" y="25" width="310" height="170" rx="18" fill="none" stroke="#D7263D" stroke-width="4"/>
+    <g transform="translate(88 112)">
+      <circle r="58" fill="none" stroke="#D7263D" stroke-width="7"/>
+      <rect x="-44" y="-8" width="22" height="56" rx="6" fill="#D7263D"/>
+      <path d="M-16 -6C-10-16-6-30-6-44C-6-58 12-60 13-44C14-32 11-18 9-10L33-10C46-10 48 2 40 6C48 10 46 20 38 22C46 26 44 36 36 37C42 41 38 48 30 48L-16 48Z" fill="#D7263D"/>
+      <path d="M12 8H36M12 22H36M12 36H31" stroke="#FFF6F6" stroke-width="3.5" stroke-linecap="round" opacity=".9"/>
+    </g>
+    <text x="244" y="120" text-anchor="middle" textLength="168" lengthAdjust="spacingAndGlyphs" font-family="'Luckiest Guy', Impact, sans-serif" font-size="70" fill="#D7263D">HOAT</text>
+    <text x="244" y="156" text-anchor="middle" textLength="168" lengthAdjust="spacingAndGlyphs" font-family="'Luckiest Guy', Impact, sans-serif" font-size="25" fill="#D7263D">GUARANTEE</text>
+    <path d="M178 174h132" stroke="#D7263D" stroke-width="4" stroke-linecap="round"/>
+    <path transform="translate(214 36) scale(.8)" d="M0 0l4.2 8.6 9.5 1.4-6.9 6.7 1.6 9.4-8.4-4.4-8.4 4.4 1.6-9.4-6.9-6.7 9.5-1.4z" fill="#D7263D"/><path transform="translate(244 36) scale(.8)" d="M0 0l4.2 8.6 9.5 1.4-6.9 6.7 1.6 9.4-8.4-4.4-8.4 4.4 1.6-9.4-6.9-6.7 9.5-1.4z" fill="#D7263D"/><path transform="translate(274 36) scale(.8)" d="M0 0l4.2 8.6 9.5 1.4-6.9 6.7 1.6 9.4-8.4-4.4-8.4 4.4 1.6-9.4-6.9-6.7 9.5-1.4z" fill="#D7263D"/>
+  </g>
+</svg></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"FINAL CALL","pts":"7","unit":"PTS","sub":"BOARDED. BARELY.","color":"#7254DC","dark":"#4F35B0","light":"#E2D9FF"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  WA.buddyIn('fc-agent', { face: 'mad', coat: 'coat', top: '#2B3F7A', shirt: '#FFFFFF', tie: '#C9242E', hat: 'cap', hatColor: '#2B3F7A', arms: 'hold' }, 185, 1790, 0.42);
+  WA.actor('fc-osim', ['luggage-a', 'luggage-b', 'dive'], { x: -300, y: 1840, s: 0.6, tag: 'OSIM', color: '#7254DC', tagY: 40 });
+
+  // FINAL CALL!
+  WA.popIn(tl, '#fc-bubble', 2 * F, 10, { rot0: -14, rot: -4 });
+  WA.popOut(tl, '#fc-bubble', 40 * F, 6);
+  for (var k = 0; k < 14; k++) tl.set(['#fc-fc', '#fc-fct'], { opacity: k % 2 ? 1 : 0.25 }, (4 + k * 8) * F);
+
+  // the doors: slowly, then SHUNK
+  tl.fromTo('#fc-pl', { x: -150 }, { x: -48, duration: 50 * F, ease: 'none' }, 6 * F);
+  tl.fromTo('#fc-pr', { x: 150 }, { x: 48, duration: 50 * F, ease: 'none' }, 6 * F);
+  tl.to('#fc-pl', { x: 0, duration: 6 * F, ease: 'power3.in' }, 56 * F);
+  tl.to('#fc-pr', { x: 0, duration: 6 * F, ease: 'power3.in' }, 56 * F);
+  WA.shake(tl, '#fc-shake', 62 * F, 12 * F, 12, { decay: true, seed: 4, rot: 0.3 });
+  WA.word(tl, '#fc-shunk', 62 * F, 26, { rot: -6, rot0: 14, seed: 5, amp: 6 });
+
+  // Osim zooms in, dives through the gap
+  WA.cycle(tl, '#fc-osim', ['luggage-a', 'luggage-b'], 0, 46 * F, 4, 10);
+  tl.fromTo('#fc-osim', { x: 0 }, { x: 720, duration: 40 * F, ease: 'power1.in' }, 6 * F);
+  WA.word(tl, '#fc-zoom', 16 * F, 22, { rot: -8, rot0: 10, seed: 8, amp: 5 });
+  ['#fc-l0', '#fc-l1', '#fc-l2'].forEach(function (id, i) {
+    tl.fromTo(id, { opacity: 0.9, x: 0, scaleX: 1 }, { opacity: 0, x: 600, scaleX: 0.4, duration: 14 * F, ease: 'power1.out', immediateRender: false }, (18 + i * 6) * F);
+  });
+  WA.pose(tl, '#fc-osim', 'dive', 46 * F);
+  tl.to('#fc-osim .tag', { opacity: 0, duration: 4 * F }, 44 * F);
+  tl.to('#fc-osim', { x: 1010, y: -210, rotation: 78, scale: 0.55, duration: 12 * F, ease: 'power2.in' }, 46 * F);
+  tl.set('#fc-osim', { zIndex: 1 }, 55 * F);
+  tl.to('#fc-osim', { opacity: 0, duration: 2 * F }, 58 * F);
+
+  // HOAT GUARANTEE
+  tl.fromTo('#fc-stamp', { scale: 3.2, rotation: -22, opacity: 0 }, { scale: 0.88, rotation: -8, opacity: 1, duration: 8 * F, ease: 'power3.in', immediateRender: false }, 74 * F);
+  tl.to('#fc-stamp', { scale: 1, duration: 6 * F, ease: 'back.out(3)' }, 82 * F);
+  tl.fromTo('#fc-ring i', { scale: 0.4, opacity: 0.9 }, { scale: 1.6, opacity: 0, duration: 14 * F, ease: 'power2.out', immediateRender: false }, 82 * F);
+  WA.shake(tl, '#fc-shake', 82 * F, 12 * F, 16, { decay: true, seed: 9, rot: 0.5 });
+
+  window.__timelines['joke-finalcall'] = tl;
+})();
+</script>
+</body>
+</html>

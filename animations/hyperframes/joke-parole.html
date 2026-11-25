@@ -1,0 +1,125 @@
+<!doctype html>
+<!--
+  Out on Parole (joke-parole): prison bars slide open and the guy walks out into the sunshine, grinning, with a
+  blinking ankle monitor. Anyone, so no names (it plays when an eliminated member logs again).
+  Beats (30 fps): behind bars 0-30, BZZZT 26, bars slide 30-44, walks out 46-118, BEEP 70/96, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #pa-bars { position: absolute; left: 318px; top: 1070px; width: 444px; height: 580px; }
+  #pa-glow { position: absolute; inset: 0; background: radial-gradient(circle at 80% 12%, rgba(255,246,200,.95) 0%, rgba(255,246,200,.35) 35%, rgba(255,246,200,0) 70%); opacity: 0; pointer-events: none; }
+  #pa-rays { position: absolute; left: 870px; top: 270px; width: 0; height: 0; }
+  #pa-rays svg { position: absolute; left: -600px; top: -600px; }
+  .mon { pointer-events: none; }
+  .mon svg { position: absolute; overflow: visible; }
+  .pa-beep { position: absolute; width: 0; height: 0; opacity: 0; }
+  .pa-beep svg { position: absolute; left: -20px; top: -40px; overflow: visible; }
+  .pa-bird { position: absolute; width: 0; height: 0; }
+  .pa-bird svg { position: absolute; left: -30px; top: -14px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-parole" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="pa-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#C7E7FB">
+  <div id="pa-rays"><svg width="1200" height="1200" viewBox="-600 -600 1200 1200"><g fill="#FFF3B0" opacity=".55">
+    <path d="M0 0 L-40 -600 L40 -600 Z"/><path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(30)"/><path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(60)"/>
+    <path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(90)"/><path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(120)"/><path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(150)"/>
+    <path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(180)"/><path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(210)"/><path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(240)"/>
+    <path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(270)"/><path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(300)"/><path d="M0 0 L-40 -600 L40 -600 Z" transform="rotate(330)"/></g></svg></div>
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <circle cx="870" cy="270" r="110" fill="#FFD95A" stroke="#341720" stroke-width="9"/>
+    <g fill="#FFFFFF" stroke="#341720" stroke-width="7"><path d="M90 520 Q110 470 170 476 Q206 436 260 460 Q320 450 326 506 Q360 520 342 550 L110 550 Q74 544 90 520 Z"/></g>
+    <!-- the prison wall -->
+    <rect x="0" y="880" width="1080" height="780" fill="#A3A9B8" stroke="#341720" stroke-width="9"/>
+    <g stroke="#8A90A0" stroke-width="6"><path d="M0 960 L1080 960 M0 1040 L1080 1040 M0 1120 L1080 1120 M0 1200 L1080 1200 M0 1280 L1080 1280 M0 1360 L1080 1360 M0 1440 L1080 1440 M0 1520 L1080 1520 M0 1600 L1080 1600"/>
+      <path d="M120 880 L120 960 M300 960 L300 1040 M80 1040 L80 1120 M240 1120 L240 1200 M160 1200 L160 1280 M60 1280 L60 1360 M220 1360 L220 1440 M120 1440 L120 1520 M260 1520 L260 1600 M840 880 L840 960 M960 960 L960 1040 M880 1040 L880 1120 M1000 1120 L1000 1200 M860 1200 L860 1280 M980 1280 L980 1360 M900 1360 L900 1440 M1010 1440 L1010 1520 M870 1520 L870 1600"/></g>
+    <path d="M0 880 L1080 880" stroke="#341720" stroke-width="9"/>
+    <!-- razor wire -->
+    <g fill="none" stroke="#5B6478" stroke-width="7"><path d="M0 850 q30 -50 60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0"/>
+      <path d="M30 852 q30 50 60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0"/></g>
+    <!-- the sign -->
+    <rect x="290" y="930" width="500" height="110" rx="14" fill="#2B2236" stroke="#341720" stroke-width="8"/>
+    <text x="540" y="1000" text-anchor="middle" font-family="Luckiest Guy" font-size="44" fill="#FFD064">POINTS PENITENTIARY</text>
+    <!-- the gateway (dark inside) -->
+    <rect x="320" y="1076" width="440" height="576" fill="#2F3344" stroke="#341720" stroke-width="10"/>
+    <path d="M320 1076 L760 1076 L700 1150 L380 1150 Z" fill="#262A38"/>
+    <!-- the yard outside -->
+    <rect x="0" y="1660" width="1080" height="700" fill="#9FD17A"/>
+    <path d="M0 1660 L1080 1660" stroke="#341720" stroke-width="9"/>
+    <path d="M380 1660 L700 1660 L860 2360 L220 2360 Z" fill="#E9D7B0" stroke="#341720" stroke-width="8"/>
+    <g stroke="#7DB55A" stroke-width="10" stroke-linecap="round"><path d="M80 1760 l10 -30 l10 30 M150 1900 l10 -30 l10 30 M60 2100 l10 -30 l10 30 M940 1800 l10 -30 l10 30 M1000 2000 l10 -30 l10 30 M900 2200 l10 -30 l10 30"/></g>
+  </svg>
+  <div id="pa-guy"></div>
+  <div id="pa-bars"><svg width="444" height="580" viewBox="0 0 444 580">
+    <rect x="6" y="6" width="432" height="568" fill="none" stroke="#341720" stroke-width="12"/>
+    <rect x="6" y="40" width="432" height="26" fill="#5B6478" stroke="#341720" stroke-width="7"/>
+    <rect x="6" y="500" width="432" height="26" fill="#5B6478" stroke="#341720" stroke-width="7"/>
+    <g fill="#7D8494" stroke="#341720" stroke-width="7">
+      <rect x="22" y="6" width="22" height="568" rx="10"/><rect x="85" y="6" width="22" height="568" rx="10"/><rect x="148" y="6" width="22" height="568" rx="10"/>
+      <rect x="211" y="6" width="22" height="568" rx="10"/><rect x="274" y="6" width="22" height="568" rx="10"/><rect x="337" y="6" width="22" height="568" rx="10"/><rect x="400" y="6" width="22" height="568" rx="10"/>
+    </g>
+    <path d="M30 20 L30 560 M93 20 L93 560 M156 20 L156 560 M219 20 L219 560 M282 20 L282 560 M345 20 L345 560 M408 20 L408 560" stroke="#B9C1D3" stroke-width="5" opacity=".7"/>
+  </svg></div>
+  <div class="pa-bird" id="pa-b0" style="left:-80px;top:620px"><svg width="60" height="28" viewBox="-30 -14 60 28"><path d="M-28 4 Q-14 -14 0 2 Q14 -14 28 4" fill="none" stroke="#341720" stroke-width="7" stroke-linecap="round"/></svg></div>
+  <div class="pa-bird" id="pa-b1" style="left:-140px;top:700px"><svg width="60" height="28" viewBox="-30 -14 60 28"><path d="M-28 4 Q-14 -14 0 2 Q14 -14 28 4" fill="none" stroke="#341720" stroke-width="7" stroke-linecap="round"/></svg></div>
+  <div id="pa-glow"></div>
+  <div class="word" id="pa-bzzt" style="left:540px;top:1000px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#FFD064">BZZZT!</text></svg></div></div>
+  <div class="word" id="pa-free" style="left:300px;top:1250px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="130" style="fill:#7CF2B0">FREE!</text></svg></div></div>
+  <div class="pa-beep" id="pa-beep0"><svg width="1" height="1"><text class="wt" font-size="84" style="fill:#FF5A5A;stroke-width:12px">BEEP</text></svg></div>
+  <div class="pa-beep" id="pa-beep1"><svg width="1" height="1"><text class="wt" font-size="84" style="fill:#FF5A5A;stroke-width:12px">BEEP</text></svg></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"OUT ON|PAROLE","pts":"1","unit":"LOG","sub":"STILL ELIMINATED","color":"#45B87A","dark":"#2A7D52","light":"#D3F5E2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), s = 0.5;
+  WA.actor('pa-guy', ['bars', 'free-a', 'free-b'], { x: 540, y: 1650, s: s });
+  // the ankle monitor rides on his right ankle in each pose (anchors from cast/flex.json)
+  var ank = { bars: [698, 1315], 'free-a': [692, 1308] };   // in free-b that foot is lifted behind him, so no monitor
+  var jit = document.querySelector('#pa-guy .jit');
+  Object.keys(ank).forEach(function (p) {
+    var d = document.createElement('div'); d.className = 'pose mon'; d.dataset.pose = p;
+    d.innerHTML = '<svg width="112" height="84" viewBox="-40 -30 80 60" style="left:' + (ank[p][0] * s - 56) + 'px;top:' + (ank[p][1] * s - 60) + 'px">' +
+      '<rect x="-34" y="-12" width="68" height="30" rx="10" fill="#2B2236" stroke="#341720" stroke-width="5"/>' +
+      '<rect x="-16" y="-24" width="32" height="20" rx="6" fill="#3A3350" stroke="#341720" stroke-width="5"/>' +
+      '<circle class="pa-led" cx="0" cy="-14" r="7" fill="#FF3B4A"/></svg>';
+    jit.appendChild(d);
+  });
+  WA.pose(tl, '#pa-guy', 'bars', 0);
+  gsap.set('#pa-guy', { filter: 'brightness(0.55)', transformOrigin: (640 * s) + 'px ' + (1340 * s) + 'px' });
+  for (var k = 0; k < 28; k++) tl.set('.pa-led', { opacity: k % 2 ? 0.15 : 1 }, k * 6 * F);
+  tl.fromTo('#pa-rays', { rotation: 0 }, { rotation: 40, duration: 5.5, ease: 'none' }, 0);
+
+  // behind bars, sad; the buzzer; the bars slide away
+  WA.shake(tl, '#pa-bars', 26 * F, 4 * F, 3, { seed: 3 });
+  WA.word(tl, '#pa-bzzt', 26 * F, 20, { rot: -6, rot0: 10, seed: 4, amp: 6 });
+  tl.to('#pa-bars', { x: 520, duration: 14 * F, ease: 'power2.inOut' }, 30 * F);
+  // he walks out into the sun, toward us
+  WA.cycle(tl, '#pa-guy', ['free-a', 'free-b'], 46 * F, 5.5, 7, 12);
+  tl.to('#pa-guy', { y: 380, scale: 1.55, duration: 72 * F, ease: 'power1.out' }, 46 * F);
+  tl.to('#pa-guy', { filter: 'brightness(1)', duration: 16 * F, ease: 'power1.out' }, 44 * F);
+  tl.fromTo('#pa-glow', { opacity: 0 }, { opacity: 0.6, duration: 20 * F, ease: 'power1.out', immediateRender: false }, 46 * F);
+  WA.word(tl, '#pa-free', 56 * F, 26, { rot: -8, rot0: 12, seed: 6, amp: 6 });
+  // BEEP. BEEP.
+  [[70, 760, 1860], [96, 840, 1990]].forEach(function (b, i) {
+    gsap.set('#pa-beep' + i, { left: b[1], top: b[2] });
+    tl.fromTo('#pa-beep' + i, { opacity: 1, scale: 0.4, y: 0 }, { opacity: 0, scale: 1.2, y: -60, duration: 16 * F, ease: 'power1.out', immediateRender: false }, b[0] * F);
+  });
+  // birds
+  tl.fromTo('#pa-b0', { x: 0, y: 0 }, { x: 1300, y: -120, duration: 3.4, ease: 'none' }, 1.6);
+  tl.fromTo('#pa-b1', { x: 0, y: 0 }, { x: 1300, y: -60, duration: 3.8, ease: 'none' }, 1.8);
+  [0, 1].forEach(function (i) { tl.fromTo('#pa-b' + i + ' svg', { scaleY: 1 }, { scaleY: -0.6, duration: 4 * F, yoyo: true, repeat: 25, ease: 'sine.inOut' }, 0); });
+
+  window.__timelines['joke-parole'] = tl;
+})();
+</script>
+</body>
+</html>

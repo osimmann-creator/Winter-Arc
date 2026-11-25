@@ -1,0 +1,161 @@
+<!doctype html>
+<!--
+  The Crossing (joke-crossing): Osim and two friends who aren't in the app drift in a canoe toward a black
+  island through heavy snow. Nobody paddles. The camera creeps closer as the sky darkens, a lightning flash lights
+  up TURN BACK on the shore, the grins turn to terror, and everything fades to black.
+  Beats (30 fps): drift 0-86, thunder 84, FLASH 88 (+ second flash 99), terror 92, fade 104-118, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/buddy.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #cr-cam { position: absolute; inset: 0; transform-origin: 540px 1480px; }
+  #cr-sky { position: absolute; inset: 0; background: linear-gradient(#232A45 0%, #3A4766 34%, #56688A 53%, #3A4766 100%); }
+  #cr-dark { position: absolute; inset: 0; background: #0B0A12; opacity: 0; }
+  #cr-flash { position: absolute; inset: 0; background: #F4F7FF; opacity: 0; }
+  #cr-black { position: absolute; inset: 0; background: #07060B; opacity: 0; }
+  #cr-snow, #cr-snow2 { position: absolute; inset: 0; }
+  .cr-lit { opacity: 0; }
+  #cr-boat { position: absolute; left: 0; top: 0; width: 1080px; height: 2348px; transform-origin: 540px 1680px; }
+  .cr-mark { position: absolute; width: 0; height: 0; opacity: 0; }
+  .cr-mark svg { position: absolute; left: -40px; top: -90px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-crossing" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="cr-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#232A45">
+  <div id="cr-cam">
+   <div id="cr-sky"></div>
+   <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+     <!-- clouds -->
+     <g fill="#2C3552" stroke="#1A1F33" stroke-width="8">
+       <path id="cr-cl1" d="M-120 520 Q-40 380 110 430 Q180 300 340 370 Q450 290 560 380 Q700 330 760 450 Q880 430 900 540 Z"/>
+       <path id="cr-cl2" d="M420 760 Q500 650 640 690 Q720 590 860 660 Q980 620 1040 720 Q1180 720 1200 830 L420 830 Z" opacity=".85"/>
+     </g>
+     <!-- lightning bolt (flash only) -->
+     <path id="cr-bolt" class="cr-lit" d="M720 300 L640 640 L716 640 L600 1010 L780 560 L700 560 L800 300 Z" fill="#FFF6B8" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round"/>
+     <!-- the island -->
+     <g id="cr-island">
+       <path d="M380 1262 Q430 1130 520 1070 Q560 940 660 900 Q720 790 820 810 Q880 700 960 760 Q1040 700 1100 800 Q1140 900 1140 1000 L1140 1262 Z" fill="#100D16" stroke="#07060B" stroke-width="8"/>
+       <path d="M960 760 L960 590 M960 630 L905 550 M960 660 L1030 580 M1030 580 L1056 552 M905 550 L878 524" stroke="#100D16" stroke-width="20" stroke-linecap="round" fill="none"/>
+       <!-- the sign: a silhouette, lit by the lightning -->
+       <g transform="translate(700 905) rotate(-6) scale(1.3)">
+         <path d="M-6 0 L-6 150 M74 0 L74 150" stroke="#100D16" stroke-width="16"/>
+         <rect x="-70" y="-90" width="210" height="110" rx="8" fill="#14101C"/>
+         <g class="cr-lit" id="cr-sign">
+           <path d="M-6 0 L-6 150 M74 0 L74 150" stroke="#7A4524" stroke-width="14"/>
+           <rect x="-70" y="-90" width="210" height="110" rx="8" fill="#C99A5E" stroke="#341720" stroke-width="7"/>
+           <path d="M-56 -70 L120 -74 M-60 -10 L126 -8" stroke="#A8743D" stroke-width="5"/>
+           <text x="35" y="-46" text-anchor="middle" font-family="Luckiest Guy" font-size="40" fill="#C9242E">TURN</text>
+           <text x="35" y="2" text-anchor="middle" font-family="Luckiest Guy" font-size="40" fill="#C9242E">BACK</text>
+         </g>
+       </g>
+     </g>
+     <!-- the sea -->
+     <rect x="0" y="1258" width="1080" height="1100" fill="#24384A"/>
+     <path d="M0 1258 L1080 1258" stroke="#162433" stroke-width="8"/>
+     <g id="cr-waves1" stroke="#3B5870" stroke-width="10" fill="none" stroke-linecap="round">
+       <path d="M-200 1330 q60 -24 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0"/>
+       <path d="M-140 1430 q60 -24 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0"/>
+     </g>
+     <g id="cr-waves2" stroke="#2E4A5E" stroke-width="12" fill="none" stroke-linecap="round">
+       <path d="M-200 1900 q70 -30 140 0 t140 0 t140 0 t140 0 t140 0 t140 0 t140 0 t140 0 t140 0 t140 0"/>
+       <path d="M-120 2120 q70 -30 140 0 t140 0 t140 0 t140 0 t140 0 t140 0 t140 0 t140 0 t140 0 t140 0"/>
+     </g>
+   </svg>
+   <div id="cr-snow2"></div>
+
+   <!-- the canoe and its crew -->
+   <div id="cr-boat">
+     <div id="cr-b1"></div>
+     <div id="cr-osim"></div>
+     <div id="cr-b2"></div>
+     <svg class="abs" style="left:0;top:0;overflow:visible" width="1080" height="2348" viewBox="0 232 1080 2348">
+       <path d="M60 1770 Q110 1760 170 1792 L910 1792 Q970 1760 1020 1770 Q1000 1860 900 1920 Q540 1960 180 1920 Q80 1860 60 1770 Z" fill="#9C5A2E" stroke="#341720" stroke-width="10" stroke-linejoin="round"/>
+       <path d="M120 1820 Q540 1860 960 1820" stroke="#7A4524" stroke-width="10" fill="none"/>
+       <path d="M150 1800 Q540 1830 930 1800" stroke="#C47B42" stroke-width="12" fill="none" stroke-linecap="round"/>
+       <path d="M60 1770 Q110 1760 170 1792 L910 1792 Q970 1760 1020 1770" stroke="#341720" stroke-width="10" fill="none"/>
+       <!-- the paddle nobody uses -->
+       <g transform="rotate(-8 540 1800)">
+         <rect x="250" y="1770" width="520" height="18" rx="9" fill="#C99A5E" stroke="#341720" stroke-width="6"/>
+         <path d="M760 1758 Q840 1750 880 1779 Q840 1808 760 1800 Z" fill="#C99A5E" stroke="#341720" stroke-width="6" stroke-linejoin="round"/>
+       </g>
+       <path d="M60 1910 Q300 1890 540 1950 Q780 1890 1020 1910" stroke="#BFD3E6" stroke-width="10" fill="none" stroke-linecap="round" opacity=".5"/>
+     </svg>
+     <div class="cr-mark" id="cr-m0" style="left:250px;top:1030px"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#FFD064">!</text></svg></div>
+     <div class="cr-mark" id="cr-m1" style="left:545px;top:920px"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#FFD064">!!</text></svg></div>
+     <div class="cr-mark" id="cr-m2" style="left:850px;top:1000px"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#FFD064">!</text></svg></div>
+   </div>
+   <div id="cr-snow"></div>
+   <div id="cr-dark"></div>
+  </div>
+  <div id="cr-flash"></div>
+  <div class="word" id="cr-w1" style="left:540px;top:600px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="150" style="fill:#FFF6B8">KRAKOOM!</text></svg></div></div>
+  <div id="cr-black"></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"THE|CROSSING","pts":"3","unit":"MEN","sub":"IN LOVING MEMORY (THEY’RE FINE)","color":"#3A4766","dark":"#232A45","light":"#C9D6F2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  // the crew: a friend, Osim, a friend (only their top halves show over the hull)
+  WA.buddyIn('cr-b1', { face: 'grin', hair: 'curly', hairColor: '#2A1A12', skin: '#C98B5E', top: '#E07B39', arms: 'down' }, 262, 1712, 0.6);
+  WA.actor('cr-osim', ['grin', 'scared'], { x: 545, y: 1715, s: 0.66, tag: 'OSIM', color: '#7254DC', tagY: 125 });
+  WA.buddyIn('cr-b2', { face: 'grin', hat: 'beanie', hatColor: '#2FA36B', top: '#C9442E', arms: 'down' }, 825, 1712, 0.6);
+  var scared = { face: 'scared', arms: 'up' };
+  // terrified versions of the friends, swapped in on the flash
+  var b1s = document.createElement('div'); b1s.id = 'cr-b1s'; document.getElementById('cr-boat').insertBefore(b1s, document.getElementById('cr-osim'));
+  var b2s = document.createElement('div'); b2s.id = 'cr-b2s'; document.getElementById('cr-boat').insertBefore(b2s, document.getElementById('cr-b2').nextSibling);
+  WA.buddyIn('cr-b1s', Object.assign({ hair: 'curly', hairColor: '#2A1A12', skin: '#C98B5E', top: '#E07B39' }, scared), 262, 1712, 0.6);
+  WA.buddyIn('cr-b2s', Object.assign({ hat: 'beanie', hatColor: '#2FA36B', top: '#C9442E' }, scared), 825, 1712, 0.6);
+  gsap.set(['#cr-b1s', '#cr-b2s'], { opacity: 0 });
+
+  WA.snow(tl, '#cr-snow', { n: 70, seed: 3, speed: 520, drift: -160, size: [10, 22] });
+  WA.snow(tl, '#cr-snow2', { n: 60, seed: 8, speed: 300, drift: -90, size: [5, 10] });
+
+  // one slow shot: creep closer, sky darkens, the canoe drifts toward the island
+  tl.fromTo('#cr-cam', { scale: 1, y: 0 }, { scale: 1.18, y: -30, duration: 3.9, ease: 'sine.inOut' }, 0);
+  tl.fromTo('#cr-dark', { opacity: 0 }, { opacity: 0.42, duration: 3.6, ease: 'power1.in' }, 0);
+  tl.fromTo('#cr-boat', { x: -30 }, { x: 40, duration: 3.9, ease: 'none' }, 0);
+  tl.fromTo('#cr-boat', { rotation: -1.6, y: 0 }, { rotation: 1.6, y: 10, duration: 0.9, ease: 'sine.inOut', yoyo: true, repeat: 5 }, 0);
+  tl.fromTo('#cr-waves1', { x: 0 }, { x: -120, duration: 5.5, ease: 'none' }, 0);
+  tl.fromTo('#cr-waves2', { x: -60 }, { x: 80, duration: 5.5, ease: 'none' }, 0);
+  tl.fromTo('#cr-cl1', { x: 0 }, { x: 90, duration: 5.5, ease: 'none' }, 0);
+  tl.fromTo('#cr-cl2', { x: 0 }, { x: -70, duration: 5.5, ease: 'none' }, 0);
+  WA.pose(tl, '#cr-osim', 'grin', 0);
+  WA.bob(tl, '#cr-osim .tag', 0.2, 2.6, 8, 1.2);
+
+  // lightning: two flashes, the bolt, TURN BACK lit up
+  [[88, 0.95, 7], [99, 0.6, 5]].forEach(function (fl) {
+    tl.fromTo('#cr-flash', { opacity: fl[1] }, { opacity: 0, duration: fl[2] * F, ease: 'power2.out', immediateRender: false }, fl[0] * F);
+    tl.fromTo(['#cr-bolt', '#cr-sign'], { opacity: 1 }, { opacity: 0, duration: (fl[2] + 6) * F, ease: 'power1.in', immediateRender: false }, fl[0] * F);
+  });
+  tl.to('#cr-sign', { opacity: 0.55, duration: 4 * F }, 112 * F);
+  WA.word(tl, '#cr-w1', 88 * F, 26, { rot: -6, rot0: 12, seed: 2, amp: 7 });
+  WA.shake(tl, '#cr-cam', 88 * F, 14 * F, 12, { decay: true, seed: 5, rot: 0.4 });
+
+  // grins to terror
+  WA.take(tl, '#cr-osim', 'scared', 92 * F, 0.1);
+  tl.set(['#cr-b1s', '#cr-b2s'], { opacity: 1 }, 92 * F);
+  tl.set(['#cr-b1', '#cr-b2'], { opacity: 0 }, 92 * F);
+  ['#cr-b1s', '#cr-osim', '#cr-b2s'].forEach(function (id, i) { WA.hop(tl, id, (92 + i) * F, 30, 8); });
+  WA.shake(tl, '#cr-boat', 94 * F, 16 * F, 4, { seed: 12, rot: 0.6 });
+  ['#cr-m0', '#cr-m1', '#cr-m2'].forEach(function (id, i) {
+    WA.popIn(tl, id, (93 + i * 2) * F, 8, { rot0: -20, rot: (i - 1) * 8 });
+  });
+
+  // fade to black
+  tl.fromTo('#cr-black', { opacity: 0 }, { opacity: 1, duration: 14 * F, ease: 'power1.in', immediateRender: false }, 104 * F);
+
+  window.__timelines['joke-crossing'] = tl;
+})();
+</script>
+</body>
+</html>

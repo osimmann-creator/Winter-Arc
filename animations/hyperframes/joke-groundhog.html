@@ -1,0 +1,118 @@
+<!doctype html>
+<!--
+  Groundhog Day (joke-groundhog): a row of top hats waits around a hole in the snow. Nothing happens. Then a
+  little wooden sign pokes out of the hole: BACK IN 6 WEEKS. Phil has spoken.
+  Beats (30 fps): waiting 0-62 (lean in 18, yawn 40), sign pokes out 64-74, shock 76, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/buddy.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #gh-cam { position: absolute; inset: 0; transform-origin: 540px 1800px; }
+  #gh-holeclip { position: absolute; left: 340px; top: 1300px; width: 400px; height: 520px; overflow: hidden; }
+  #gh-sign { position: absolute; left: 60px; top: 250px; width: 280px; height: 380px; }
+  #gh-snow { position: absolute; inset: 0; }
+  .gh-dots { position: absolute; width: 0; height: 0; opacity: 0; }
+  .gh-dots svg { position: absolute; left: -80px; top: -40px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-groundhog" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="gh-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#DCEBF6">
+  <div id="gh-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="gh-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B9D8EE"/><stop offset="1" stop-color="#F2F7FB"/></linearGradient></defs>
+    <rect width="1080" height="1500" fill="url(#gh-sky)"/>
+    <circle cx="820" cy="360" r="80" fill="#FFF6D6" stroke="#341720" stroke-width="7" opacity=".9"/>
+    <path d="M700 380 Q760 300 860 330 Q960 300 1010 380 Q1060 400 1040 440 L700 440 Q660 420 700 380 Z" fill="#E9F0F6" stroke="#341720" stroke-width="7"/>
+    <!-- bare trees -->
+    <g stroke="#5E4030" stroke-width="16" stroke-linecap="round" fill="none">
+      <path d="M120 1500 L120 900 M120 1100 L40 980 M120 1040 L210 920 M120 1220 L200 1150 M210 920 L240 860 M40 980 L20 930"/>
+      <path d="M960 1500 L960 980 M960 1160 L1040 1060 M960 1100 L880 1000 M880 1000 L860 950 M1040 1060 L1070 1010"/>
+    </g>
+    <!-- the banner -->
+    <g stroke="#341720" stroke-width="8"><path d="M190 1000 L190 1300 M890 1000 L890 1300" stroke-width="14"/>
+      <rect x="230" y="1010" width="620" height="120" rx="14" fill="#2B3F7A"/></g>
+    <text x="540" y="1092" text-anchor="middle" font-family="Luckiest Guy" font-size="62" fill="#FFD064">GROUNDHOG DAY</text>
+    <path d="M-20 1480 Q270 1420 540 1470 Q810 1420 1100 1480 L1100 2360 L-20 2360 Z" fill="#F7FBFF" stroke="#341720" stroke-width="8"/>
+    <path d="M80 2000 Q260 1970 440 2006 M620 2160 Q800 2130 980 2166" stroke="#DCEBF6" stroke-width="14" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div id="gh-b0"></div><div id="gh-b1"></div><div id="gh-b2"></div><div id="gh-b3"></div>
+  <div id="gh-s0"></div><div id="gh-s1"></div><div id="gh-s2"></div><div id="gh-s3"></div>
+  <!-- the hole -->
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <path d="M300 1830 Q300 1740 540 1736 Q780 1740 780 1830 Q780 1900 540 1904 Q300 1900 300 1830 Z" fill="#FFFFFF" stroke="#341720" stroke-width="9"/>
+    <ellipse cx="540" cy="1814" rx="170" ry="52" fill="#3A2A22" stroke="#341720" stroke-width="8"/>
+    <ellipse cx="540" cy="1822" rx="140" ry="36" fill="#22160F"/>
+  </svg>
+  <div id="gh-holeclip"><div id="gh-sign"><svg width="280" height="380" viewBox="0 0 280 380">
+    <rect x="124" y="150" width="32" height="240" fill="#8E5229" stroke="#341720" stroke-width="8"/>
+    <rect x="10" y="10" width="260" height="160" rx="12" fill="#C99A5E" stroke="#341720" stroke-width="9" transform="rotate(-4 140 90)"/>
+    <path d="M24 60 L256 52 M28 120 L258 112" stroke="#A8743D" stroke-width="5" transform="rotate(-4 140 90)"/>
+    <g transform="rotate(-4 140 90)" font-family="Luckiest Guy" text-anchor="middle" fill="#341720">
+      <text x="140" y="78" font-size="50">BACK IN</text><text x="140" y="146" font-size="56">6 WEEKS</text></g>
+  </svg></div></div>
+  <svg class="abs" style="left:0;top:0;pointer-events:none" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <path d="M370 1836 Q540 1880 710 1836" fill="none" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round"/>
+  </svg>
+  <div id="gh-snow"></div>
+  <div class="gh-dots" id="gh-dots"><svg width="160" height="80" viewBox="-80 -40 160 80"><g fill="#341720"><circle id="gh-d0" cx="-48" cy="0" r="18"/><circle id="gh-d1" cx="0" cy="0" r="18"/><circle id="gh-d2" cx="48" cy="0" r="18"/></g></svg></div>
+  <div class="word" id="gh-what" style="left:540px;top:1250px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#FFD064">WHAT?!</text></svg></div></div>
+  </div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"GROUNDHOG|DAY","pts":"6","unit":"WEEKS","sub":"PHIL HAS SPOKEN","color":"#8E5229","dark":"#5E331A","light":"#F2D9C2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  var crew = [
+    { x: 170, top: '#2B2236', skin: '#F0B98F', band: '#C9442E' },
+    { x: 400, top: '#3A2E4A', skin: '#C98B5E', band: '#FFD064' },
+    { x: 680, top: '#23315E', skin: '#8D5A3B', band: '#2FA36B' },
+    { x: 910, top: '#4A2E2E', skin: '#F2C6A0', band: '#7254DC' },
+  ];
+  crew.forEach(function (c, i) {
+    var look = { hat: 'top', hatBand: c.band, coat: 'coat', top: c.top, pants: '#1B1726', skin: c.skin, shirt: '#FFFFFF', tie: c.band, arms: i === 1 ? 'hold' : 'down', face: 'neutral' };
+    WA.buddyIn('gh-b' + i, look, c.x, 1700, 0.52);
+    WA.buddyIn('gh-s' + i, Object.assign({}, look, { face: 'scared', arms: 'up' }), c.x, 1700, 0.52);
+    gsap.set('#gh-s' + i, { opacity: 0 });
+    // waiting: lean in toward the hole, sway
+    tl.to('#gh-b' + i, { rotation: (c.x < 540 ? 4 : -4), duration: 10 * F, ease: 'sine.inOut' }, (18 + i * 2) * F);
+    tl.to('#gh-b' + i, { rotation: 0, duration: 10 * F, ease: 'sine.inOut' }, (46 + i * 2) * F);
+  });
+  WA.snow(tl, '#gh-snow', { n: 30, seed: 5, speed: 140, drift: -20, size: [8, 14] });
+  // nothing happens . . .
+  gsap.set("#gh-dots", { left: 540, top: 1640 });
+  tl.set('#gh-dots', { opacity: 1 }, 20 * F);
+  ['#gh-d0', '#gh-d1', '#gh-d2'].forEach(function (d, i) {
+    gsap.set(d, { opacity: 0 });
+    tl.set(d, { opacity: 1 }, (20 + i * 10) * F);
+  });
+  tl.set('#gh-dots', { opacity: 0 }, 60 * F);
+  WA.squash(tl, '#gh-b2', 40 * F, 0.06, 14);
+  // the sign pokes out
+  gsap.set('#gh-sign', { y: 420 });
+  tl.to('#gh-sign', { y: 0, duration: 10 * F, ease: 'back.out(1.8)' }, 64 * F);
+  gsap.set('#gh-sign', { transformOrigin: '140px 380px' });
+  tl.to('#gh-sign', { rotation: 4, duration: 6 * F, yoyo: true, repeat: 5, ease: 'sine.inOut' }, 74 * F);
+  // shock
+  crew.forEach(function (c, i) {
+    tl.set('#gh-b' + i, { opacity: 0 }, (76 + i) * F);
+    tl.set('#gh-s' + i, { opacity: 1 }, (76 + i) * F);
+    WA.hop(tl, '#gh-s' + i, (76 + i) * F, 50, 10);
+  });
+  WA.word(tl, '#gh-what', 77 * F, 30, { rot: -6, rot0: 12, seed: 4, amp: 7 });
+  tl.fromTo('#gh-cam', { scale: 1 }, { scale: 1.1, duration: 5.5, ease: 'sine.inOut' }, 0);
+
+  window.__timelines['joke-groundhog'] = tl;
+})();
+</script>
+</body>
+</html>

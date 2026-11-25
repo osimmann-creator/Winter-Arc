@@ -1,0 +1,130 @@
+<!doctype html>
+<!--
+  Valentine's Day (joke-valentine): a guy on the couch is scrolling his phone when a heart-tipped arrow thunks into
+  the cushion next to him. Hearts pop, and he jumps up and runs out the door. It's a Sunday: a date is worth 4.
+  Beats (30 fps): scrolling 0-28, arrow flies 22-30, THUNK 30, startle 34, hearts 36-60, jumps up 62,
+  runs 64-86, door opens 74, SLAM 92, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #va-cam { position: absolute; inset: 0; transform-origin: 500px 1600px; }
+  #va-arrow { position: absolute; left: 0; top: 0; width: 520px; height: 80px; opacity: 0; transform-origin: 20px 40px; }
+  #va-door { position: absolute; left: 812px; top: 1170px; width: 216px; height: 640px; transform-origin: 216px 0; }
+  .va-heart { position: absolute; width: 0; height: 0; opacity: 0; }
+  .va-heart svg { position: absolute; left: -40px; top: -38px; overflow: visible; }
+  #va-hearts { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-valentine" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="va-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#F7D6E0">
+  <div id="va-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><pattern id="va-wall" width="120" height="120" patternUnits="userSpaceOnUse"><rect width="120" height="120" fill="#F7D6E0"/>
+      <path d="M60 80 Q36 64 40 52 Q46 40 60 52 Q74 40 80 52 Q84 64 60 80 Z" fill="#F2BCCD"/></pattern>
+      <linearGradient id="va-dusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B4A9E"/><stop offset="1" stop-color="#F2A07E"/></linearGradient></defs>
+    <rect width="1080" height="1810" fill="url(#va-wall)"/>
+    <rect width="1080" height="200" fill="#E9B9C9"/><path d="M0 200 L1080 200" stroke="#341720" stroke-width="8"/>
+    <!-- window -->
+    <rect x="100" y="760" width="380" height="420" rx="12" fill="url(#va-dusk)" stroke="#341720" stroke-width="10"/>
+    <path d="M290 760 L290 1180 M100 970 L480 970" stroke="#341720" stroke-width="10"/>
+    <circle cx="200" cy="860" r="30" fill="#FFF3C4"/>
+    <!-- picture frame -->
+    <rect x="560" y="800" width="200" height="160" rx="8" fill="#FFFFFF" stroke="#341720" stroke-width="9"/>
+    <path d="M660 920 Q620 890 626 866 Q636 846 660 866 Q684 846 694 866 Q700 890 660 920 Z" fill="#EE5982" stroke="#341720" stroke-width="5"/>
+    <!-- the door frame (the door itself is a separate piece) -->
+    <rect x="800" y="1160" width="240" height="650" fill="#3A2E4A" stroke="#341720" stroke-width="10"/>
+    <!-- floor and rug -->
+    <rect x="0" y="1810" width="1080" height="560" fill="#C98B5E"/><path d="M0 1810 L1080 1810" stroke="#341720" stroke-width="9"/>
+    <g stroke="#B07548" stroke-width="6"><path d="M0 1900 L1080 1900 M0 2010 L1080 2010 M0 2140 L1080 2140 M0 2290 L1080 2290"/></g>
+    <ellipse cx="440" cy="2060" rx="420" ry="110" fill="#EE5982" stroke="#341720" stroke-width="9"/>
+    <ellipse cx="440" cy="2060" rx="330" ry="70" fill="none" stroke="#FFB3C8" stroke-width="12"/>
+    <!-- the couch: back -->
+    <g stroke="#341720" stroke-width="10" stroke-linejoin="round">
+      <path d="M60 1650 L60 1340 Q60 1270 140 1270 L700 1270 Q780 1270 780 1340 L780 1650 Z" fill="#7FB2FF"/>
+      <path d="M110 1580 L110 1360 Q110 1320 160 1320 L400 1320 Q420 1320 420 1360 L420 1580 Z M440 1580 L440 1360 Q440 1320 480 1320 L680 1320 Q730 1320 730 1360 L730 1580 Z" fill="#9CC4FF"/>
+    </g>
+    <!-- lamp -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round"><rect x="20" y="1300" width="16" height="510" fill="#5B6478"/><path d="M-30 1300 L90 1300 L60 1180 L0 1180 Z" fill="#FFD776"/></g>
+  </svg>
+  <div id="va-sit"></div>
+  <!-- the couch: seat and arms (in front of him) -->
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <g stroke="#341720" stroke-width="10" stroke-linejoin="round">
+      <path d="M40 1620 L800 1620 L800 1800 L40 1800 Z" fill="#5C8FE6"/>
+      <path d="M60 1600 Q60 1560 100 1560 L740 1560 Q780 1560 780 1600 L780 1660 L60 1660 Z" fill="#9CC4FF"/>
+      <path d="M420 1566 L420 1656" fill="none"/>
+      <path d="M0 1480 Q0 1430 50 1430 L110 1430 Q150 1430 150 1480 L150 1800 L0 1800 Z M690 1480 Q690 1430 740 1430 L800 1430 Q840 1430 840 1480 L840 1800 L690 1800 Z" fill="#7FB2FF"/>
+      <rect x="60" y="1800" width="40" height="40" fill="#7A4524"/><rect x="740" y="1800" width="40" height="40" fill="#7A4524"/>
+    </g>
+  </svg>
+  <div id="va-arrow"><svg width="520" height="80" viewBox="0 0 520 80" style="overflow:visible"><g transform="translate(520 0) scale(-1 1)">
+    <path d="M30 40 L470 40" stroke="#341720" stroke-width="16" stroke-linecap="round"/><path d="M30 40 L470 40" stroke="#C99A5E" stroke-width="8" stroke-linecap="round"/>
+    <path d="M10 14 L60 40 L10 66 L34 40 Z M50 14 L100 40 L50 66 L74 40 Z" fill="#FFB3C8" stroke="#341720" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M500 64 Q450 34 458 14 Q470 -4 492 16 Q514 -4 526 14 Q534 34 500 64 Z" fill="#EE5982" stroke="#341720" stroke-width="7" stroke-linejoin="round" transform="rotate(90 492 34)"/>
+  </g></svg></div>
+  <div id="va-door"><svg width="216" height="640" viewBox="0 0 216 640"><rect x="4" y="4" width="208" height="632" fill="#E9A06A" stroke="#341720" stroke-width="9"/>
+    <rect x="34" y="40" width="148" height="240" rx="8" fill="#D98A54" stroke="#341720" stroke-width="6"/><rect x="34" y="330" width="148" height="260" rx="8" fill="#D98A54" stroke="#341720" stroke-width="6"/>
+    <circle cx="30" cy="330" r="14" fill="#FFD064" stroke="#341720" stroke-width="5"/>
+    <path d="M108 150 Q84 128 90 112 Q98 98 108 112 Q118 98 126 112 Q132 128 108 150 Z" fill="#EE5982" stroke="#341720" stroke-width="5"/></svg></div>
+  <div id="va-run"></div>
+  <div id="va-hearts"></div>
+  <div class="word" id="va-thunk" style="left:760px;top:1300px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="130" style="fill:#FF9FC0">THUNK!</text></svg></div></div>
+  <div class="word" id="va-slam" style="left:900px;top:1060px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="130" style="fill:#FFD064">SLAM!</text></svg></div></div>
+  </div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"HAPPY|VALENTINE&#39;S DAY","pts":"4","unit":"PTS","sub":"IT&#39;S SUNDAY. A DATE IS 4.","color":"#EE5982","dark":"#A83560","light":"#FFD6E2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  WA.actor('va-sit', ['couch', 'startle'], { x: 300, y: 1850, s: 0.62 });
+  WA.actor('va-run', ['love-a', 'love-b'], { x: 300, y: 1880, s: 0.62, flip: true });
+  WA.pose(tl, '#va-sit', 'couch', 0);
+  gsap.set('#va-run', { opacity: 0 });
+  // scrolling...
+  WA.shake(tl, '#va-sit .jit', 4 * F, 20 * F, 1.2, { seed: 2, step: 4 });
+  // the arrow
+  tl.fromTo('#va-arrow', { x: 1200, y: 1290, rotation: -10, opacity: 1 }, { x: 545, y: 1420, rotation: -16, opacity: 1, duration: 8 * F, ease: 'none', immediateRender: false }, 22 * F);
+  tl.fromTo('#va-arrow', { rotation: -24 }, { rotation: -16, duration: 18 * F, ease: 'elastic.out(1.4, 0.2)', immediateRender: false }, 30 * F);
+  WA.word(tl, '#va-thunk', 30 * F, 24, { rot: 8, rot0: -14, seed: 3, amp: 6 });
+  WA.take(tl, '#va-sit', 'startle', 34 * F, 0.1);
+  WA.hop(tl, '#va-sit', 34 * F, 30, 8);
+  // hearts pop all around him
+  var spots = [[200, 1180], [420, 1100], [600, 1240], [140, 1380], [520, 1420], [330, 960], [700, 1060]];
+  var hearts = WA.spawn('#va-hearts', spots.length, function () {
+    return '<div class="va-heart"><svg width="80" height="76" viewBox="-40 -38 80 76"><path d="M0 32 Q-40 4 -32 -18 Q-22 -40 0 -18 Q22 -40 32 -18 Q40 4 0 32 Z" fill="#EE5982" stroke="#341720" stroke-width="6" stroke-linejoin="round"/><path d="M-20 -14 Q-16 -24 -8 -22" stroke="#FFFFFF" stroke-width="5" fill="none" stroke-linecap="round"/></svg></div>';
+  });
+  hearts.forEach(function (h, i) {
+    var el = h.firstChild;
+    gsap.set(el, { left: spots[i][0], top: spots[i][1] });
+    tl.fromTo(el, { scale: 0, opacity: 1, y: 0, rotation: -20 }, { scale: 1 + (i % 3) * 0.25, opacity: 1, y: -30, rotation: (i % 2 ? 12 : -12), duration: 9 * F, ease: 'back.out(2.6)', immediateRender: false }, (36 + i * 3) * F);
+    tl.to(el, { y: -160, opacity: 0, duration: 16 * F, ease: 'power1.in' }, (58 + i * 2) * F);
+  });
+  // he jumps up and runs out the door
+  tl.set('#va-sit', { opacity: 0 }, 62 * F);
+  tl.set('#va-run', { opacity: 1 }, 62 * F);
+  tl.fromTo('#va-run', { y: -60 }, { y: -160, duration: 4 * F, ease: 'power2.out', immediateRender: false }, 62 * F);
+  tl.to('#va-run', { y: 0, duration: 4 * F, ease: 'power2.in' }, 66 * F);
+  WA.cycle(tl, '#va-run', ['love-a', 'love-b'], 62 * F, 92 * F, 4, 10);
+  tl.to('#va-run', { x: 640, duration: 20 * F, ease: 'power1.in' }, 66 * F);
+  tl.to('#va-door', { scaleX: 0.12, duration: 6 * F, ease: 'power2.out' }, 74 * F);
+  tl.to('#va-run', { scale: 0.85, opacity: 0, duration: 4 * F }, 84 * F);
+  tl.to('#va-door', { scaleX: 1, duration: 4 * F, ease: 'power3.in' }, 88 * F);
+  WA.shake(tl, '#va-cam', 92 * F, 10 * F, 10, { decay: true, seed: 6 });
+  WA.word(tl, '#va-slam', 92 * F, 24, { rot: -6, rot0: 12, seed: 7, amp: 6 });
+  tl.fromTo('#va-cam', { scale: 1 }, { scale: 1.06, duration: 5.5, ease: 'sine.inOut' }, 0);
+
+  window.__timelines['joke-valentine'] = tl;
+})();
+</script>
+</body>
+</html>

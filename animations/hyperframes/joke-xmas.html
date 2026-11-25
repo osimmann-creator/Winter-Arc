@@ -1,0 +1,122 @@
+<!doctype html>
+<!--
+  Naughty or Nice (joke-xmas): the reveal's intro. A scroll tied with a red ribbon drops onto the screen, the
+  ribbon snaps, and the scroll unrolls to THE VOTES ARE IN. The app then stamps each face NICE or NAUGHTY itself
+  (the video is made before anyone votes). Beats (30 fps): drop 6-20, wobble 20-36, SNAP 40, unroll 46-74,
+  sparkle 76, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/props.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #xm-scroll { position: absolute; left: 540px; top: 900px; width: 0; height: 0; }
+  #xm-roll { position: absolute; left: -400px; top: -70px; width: 800px; height: 140px; }
+  #xm-sheet { position: absolute; left: -350px; top: 0; width: 700px; height: 900px; transform-origin: 50% 0; }
+  #xm-bottom { position: absolute; left: -400px; top: -70px; width: 800px; height: 140px; }
+  #xm-bow { position: absolute; left: -130px; top: -150px; width: 260px; height: 300px; }
+  .xm-bit { position: absolute; left: 0; top: 0; width: 120px; height: 70px; opacity: 0; }
+  #xm-snow, #xm-fx { position: absolute; inset: 0; }
+  .xm-light { position: absolute; width: 26px; height: 34px; border-radius: 50%; border: 5px solid #341720; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-xmas" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="xm-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#1F4D3A">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><radialGradient id="xm-bg" cx=".5" cy=".45" r=".75"><stop offset="0" stop-color="#2E7A55"/><stop offset="1" stop-color="#143524"/></radialGradient>
+      <pattern id="xm-dots" width="120" height="120" patternUnits="userSpaceOnUse"><circle cx="20" cy="30" r="5" fill="#FFFFFF" opacity=".12"/><circle cx="80" cy="90" r="4" fill="#FFFFFF" opacity=".1"/></pattern></defs>
+    <rect width="1080" height="2348" fill="url(#xm-bg)"/><rect width="1080" height="2348" fill="url(#xm-dots)"/>
+    <!-- the light string across the top -->
+    <path d="M-20 300 Q270 420 540 330 Q810 420 1100 300" fill="none" stroke="#341720" stroke-width="7"/>
+    <!-- a tree at each side, and presents -->
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <path d="M100 2000 L-60 2000 L60 1780 L-20 1780 L90 1560 L30 1560 L130 1360 L230 1560 L170 1560 L280 1780 L200 1780 L320 2000 Z" fill="#2F8A5E"/>
+      <rect x="110" y="2000" width="40" height="70" fill="#7A4524"/>
+      <path d="M980 2010 L820 2010 L930 1800 L860 1800 L960 1600 L910 1600 L1000 1420 L1090 1600 L1040 1600 L1140 1800 L1070 1800 L1180 2010 Z" fill="#2F8A5E"/>
+      <rect x="380" y="1960" width="170" height="130" fill="#D9363E"/><rect x="560" y="1990" width="140" height="100" fill="#FFD064"/><rect x="700" y="1940" width="120" height="150" fill="#5C7CF0"/>
+      <path d="M465 1960 L465 2090 M380 2020 L550 2020 M630 1990 L630 2090 M560 2036 L700 2036 M760 1940 L760 2090 M700 2010 L820 2010" stroke-width="14" stroke="#FFFFFF"/>
+    </g>
+    <path d="M130 1360 L140 1330 L150 1360 L180 1360 L156 1378 L166 1408 L140 1390 L114 1408 L124 1378 L100 1360 Z" fill="#FFD064" stroke="#341720" stroke-width="6" stroke-linejoin="round" transform="translate(-10 -40)"/>
+    <rect x="0" y="2090" width="1080" height="260" fill="#F4FAFF"/><path d="M0 2090 Q270 2060 540 2092 Q810 2060 1080 2090" fill="none" stroke="#341720" stroke-width="8"/>
+  </svg>
+  <div id="xm-lights"></div>
+  <div id="xm-snow"></div>
+  <div id="xm-scroll">
+    <div id="xm-sheet"><svg width="700" height="900" viewBox="0 0 700 900">
+      <rect x="6" y="0" width="688" height="894" fill="#FFF3D6" stroke="#341720" stroke-width="10"/>
+      <path d="M40 40 L660 40 M40 854 L660 854" stroke="#E8C98E" stroke-width="8"/>
+      <text x="350" y="190" text-anchor="middle" font-family="Luckiest Guy" font-size="104" fill="#D9363E" stroke="#341720" stroke-width="8" paint-order="stroke">THE VOTES</text>
+      <text x="350" y="320" text-anchor="middle" font-family="Luckiest Guy" font-size="130" fill="#2F8A5E" stroke="#341720" stroke-width="8" paint-order="stroke">ARE IN</text>
+      <g stroke="#341720" stroke-width="6">
+        <ellipse cx="122" cy="420" rx="40" ry="13" fill="none" stroke="#FFD064" stroke-width="10"/><circle cx="122" cy="456" r="30" fill="#FFE2A8"/>
+        <circle cx="122" cy="566" r="30" fill="#E86A70"/><path d="M98 546 L92 516 L112 538 Z M146 546 L152 516 L132 538 Z" fill="#C9242E" stroke-linejoin="round"/>
+      </g>
+      <g font-family="Luckiest Guy" font-size="58" fill="#341720"><text x="172" y="478">NICE</text><text x="172" y="588">NAUGHTY</text></g>
+      <path d="M440 440 L630 440 M440 550 L630 550 M120 660 L630 660 M120 740 L520 740" stroke="#C9B28A" stroke-width="10" stroke-linecap="round" stroke-dasharray="2 22"/>
+      <circle cx="560" cy="760" r="62" fill="#C9242E" stroke="#341720" stroke-width="8"/>
+      <path d="M560 718 L572 746 L602 748 L578 768 L586 798 L560 782 L534 798 L542 768 L518 748 L548 746 Z" fill="#E86A70"/>
+    </svg></div>
+    <div id="xm-bottom"><svg width="800" height="140" viewBox="0 0 800 140"><rect x="40" y="20" width="720" height="100" rx="50" fill="#F2DDAE" stroke="#341720" stroke-width="10"/>
+      <ellipse cx="60" cy="70" rx="30" ry="52" fill="#E8C98E" stroke="#341720" stroke-width="9"/><ellipse cx="740" cy="70" rx="30" ry="52" fill="#E8C98E" stroke="#341720" stroke-width="9"/>
+      <path d="M120 44 L680 44" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity=".6"/></svg></div>
+    <div id="xm-roll"><svg width="800" height="140" viewBox="0 0 800 140"><rect x="40" y="20" width="720" height="100" rx="50" fill="#F2DDAE" stroke="#341720" stroke-width="10"/>
+      <ellipse cx="60" cy="70" rx="30" ry="52" fill="#E8C98E" stroke="#341720" stroke-width="9"/><ellipse cx="740" cy="70" rx="30" ry="52" fill="#E8C98E" stroke="#341720" stroke-width="9"/>
+      <path d="M120 44 L680 44" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity=".6"/>
+      <rect id="xm-band" x="370" y="14" width="60" height="112" fill="#D9363E" stroke="#341720" stroke-width="8"/></svg></div>
+    <div id="xm-bow"><svg width="260" height="300" viewBox="0 0 260 300">
+      <path d="M130 140 Q40 60 20 110 Q10 170 130 150 Z" fill="#D9363E" stroke="#341720" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M130 140 Q220 60 240 110 Q250 170 130 150 Z" fill="#D9363E" stroke="#341720" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M120 150 L80 280 L110 266 L124 290 L134 160 Z M140 150 L180 280 L150 266 L136 290 L126 160 Z" fill="#B8242C" stroke="#341720" stroke-width="8" stroke-linejoin="round"/>
+      <circle cx="130" cy="146" r="24" fill="#B8242C" stroke="#341720" stroke-width="8"/></svg></div>
+  </div>
+  <div id="xm-fx"></div>
+  <div class="word" id="xm-snap" style="left:540px;top:700px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="150" style="fill:#FFD064">SNAP!</text></svg></div></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"NAUGHTY|OR NICE","pts":"25","unit":"DEC","sub":"THE VOTES ARE IN","color":"#D9363E","dark":"#8C1720","light":"#FFD6D9"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  // twinkling lights on the string
+  var cols = ['#FF5A5A', '#FFD064', '#7CF2B0', '#7FB2FF', '#FF9FD0'], lights = document.getElementById('xm-lights');
+  for (var i = 0; i < 11; i++) {
+    var x = -20 + i * 110, t = x / 1080, y = (1 - t) * (1 - t) * 300 + 2 * (1 - t) * t * (t < 0.5 ? 420 : 420) + t * t * 300;
+    y = 300 + Math.sin(Math.PI * ((x + 20) / 560)) * (x < 540 ? 70 : 70) * (x < 540 ? 1 : 1);
+    var l = document.createElement('div'); l.className = 'xm-light'; l.style.left = (x + 20) + 'px'; l.style.top = (y + 10) + 'px'; l.style.background = cols[i % 5]; lights.appendChild(l);
+    tl.fromTo(l, { opacity: 1 }, { opacity: 0.3, duration: 8 * F, yoyo: true, repeat: 19, ease: 'steps(1)' }, (i % 3) * 3 * F);
+  }
+  WA.snow(tl, '#xm-snow', { n: 50, seed: 12, speed: 200, drift: -30, size: [8, 16] });
+  // the scroll drops in, ribbon and all
+  gsap.set('#xm-sheet', { scaleY: 0 });
+  tl.fromTo('#xm-scroll', { y: -1300, rotation: -8 }, { y: 0, rotation: 0, duration: 14 * F, ease: 'power2.in' }, 6 * F);
+  WA.squash(tl, '#xm-scroll', 20 * F, 0.14, 12);
+  tl.to('#xm-scroll', { rotation: 3, duration: 4 * F, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 22 * F);
+  WA.shake(tl, '#xm-bow', 30 * F, 10 * F, 4, { grow: 1, seed: 3, rot: 4 });
+  // SNAP: the bow flies apart
+  tl.set(['#xm-bow', '#xm-band'], { opacity: 0 }, 40 * F);
+  WA.word(tl, '#xm-snap', 40 * F, 24, { rot: -6, rot0: 12, seed: 2, amp: 6 });
+  var fx = document.getElementById('xm-fx');
+  [[-1, -16, -18], [1, 16, -18], [-1, -10, -8], [1, 10, -8]].forEach(function (b, i) {
+    var d = document.createElement('div'); d.className = 'xm-bit'; fx.appendChild(d);
+    d.innerHTML = '<svg width="120" height="70" viewBox="0 0 120 70"><path d="M10 35 Q60 -10 110 35 Q60 70 10 35 Z" fill="#D9363E" stroke="#341720" stroke-width="8"/></svg>';
+    WA.toss(tl, d, 40 * F, { x0: 480, y0: 860, vx: b[1], vy: b[2], g: 1.3, frames: 34, spin: b[0] * 18 });
+  });
+  // it unrolls
+  tl.to('#xm-sheet', { scaleY: 1, duration: 28 * F, ease: 'power2.out' }, 46 * F);
+  tl.to('#xm-bottom', { y: 894, duration: 28 * F, ease: 'power2.out' }, 46 * F);
+  tl.to('#xm-scroll', { y: -260, duration: 28 * F, ease: 'power2.out' }, 46 * F);
+  tl.to('#xm-scroll', { y: 40, scale: 0.78, duration: 10 * F, ease: 'power2.inOut' }, 108 * F);
+  WA.confetti(tl, '#xm-fx', 76 * F, 540, 1500, { seed: 4, n: 30, angle: -1.57, spread: 0.9, speed: 34, g: 1.1, frames: 46, colors: ['#D9363E', '#FFD064', '#2F8A5E', '#FFFFFF'] });
+
+  window.__timelines['joke-xmas'] = tl;
+})();
+</script>
+</body>
+</html>

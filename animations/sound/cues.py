@@ -557,3 +557,132 @@ CUES['joke-thanksgiving'] = [  # Thanksgiving: board drops 2-13, strain 4-58 (NN
     C(96, 'sparkle', -12), C(105, 'whoosh_out', -12),
     *joke_card(120),
 ]
+CUES['joke-crossing'] = [  # The Crossing: the slow drift 0-86, thunder 84, FLASH 88 + 99, terror 92, fade 104-118, card 120
+    C(0, 'wind', -14, d=4.0, fi=0.5, fo=0.8), C(0, 'waves', -19, d=3.9, fi=0.4, fo=0.8), C(6, 'pad', -24, d=3.2, fi=1.4, fo=0.6),
+    C(28, 'owl', -24, r=0.9), C(44, 'heartbeat', -15, d=1.6, fi=0.4, fo=0.3),
+    C(82, 'rumble', -9, d=1.6, fo=0.6), C(88, 'boom', -4), C(88, 'slap', -12, r=0.7), C(89, 'sub', -8), word(88, -13),
+    C(92, 'gasp', -7), C(93, 'scream', -15, d=0.9, fo=0.4), C(93, 'pop_in', -14), C(95, 'pop_in', -14, r=1.1), C(97, 'pop_in', -14, r=1.2),
+    C(99, 'boom_short', -9), C(104, 'power_down', -13), C(106, 'braam', -8),
+    *joke_card(120),
+]
+CUES['joke-mycar'] = [  # My Car, My Rules: rolls in 0-40, MY CAR. MY RULES. 18, drifts 40-78, BONK 78, airbags 80-81, dazed 86, stars 94, roof snow 100, card 120
+    C(0, 'wind_soft', -22, d=3.8, fi=0.3, fo=1.0), C(0, 'rumble', -21, d=2.6, fi=0.3, fo=0.6, r=1.4), C(4, 'whoosh', -12),
+    C(18, 'pop_in', -10), C(19, 'card_slap', -15), C(30, 'heartbeat', -16, d=1.4, fo=0.3),
+    C(64, 'skid', -10, d=0.9, fo=0.3), C(78, 'crash', -9, d=1.1, fo=0.5), C(78, 'thud', -6), C(78, 'boing', -11), word(78, -11), C(79, 'powder', -8),
+    C(80, 'pop', -4), C(80, 'whoosh_fast', -12), C(81, 'pop', -5, r=1.1),
+    C(90, 'twinkle', -13), C(94, 'chirp', -15), C(100, 'chirp', -16, r=1.2), C(100, 'drop_sack', -14), C(106, 'chirp', -17, r=1.1),
+    *joke_card(120),
+]
+CUES['joke-finalcall'] = [  # Final Call: FINAL CALL! 2, doors 6-62, run 6-46 (steps every 4), ZOOM 16, DIVE 46, SHUNK 62, STAMP 82, card 120
+    C(0, 'city', -24, d=2.6, fi=0.2, fo=0.8), C(1, 'notify', -10), C(2, 'pop_in', -11), C(3, 'bell_desk', -14),
+    C(6, 'door_slide', -12, d=1.8, fo=0.4), C(8, 'whoosh_fast', -11), word(16, -12),
+    *steps(list(range(8, 46, 4)), g=-14), *[C(f, 'click', -20, r=1.4) for f in range(10, 46, 8)],
+    C(44, 'whoosh_heavy', -9), C(46, 'jump', -11), C(50, 'swish', -10), C(56, 'whoosh_out', -12),
+    C(62, 'door_slam', -4), C(62, 'clank', -9), word(62, -11),
+    C(74, 'whoosh', -10), C(82, 'stamp', -3), C(82, 'boom_short', -9), C(83, 'sub', -10), C(86, 'fanfare', -9), cheer(86, -12, d=2.2),
+    *joke_card(120),
+]
+CUES['joke-worthit'] = [  # #worthit: chewing 2-36, MMM 8, hearts 6-20, plane 26-100 (overhead ~60), looks up 40, shrug 68, CHOMP 88, card 120
+    C(0, 'bed_warm', -23, d=4.0, fi=0.3, fo=1.0), C(3, 'chirp', -21), C(19, 'chirp', -22, r=1.15),
+    word(8, -12), C(6, 'twinkle', -16), C(13, 'twinkle', -17, r=1.1), C(20, 'twinkle', -17, r=1.2),
+    *[C(f, 'pop_pluck', -19, r=0.8) for f in (2, 9, 16, 23, 30)],
+    C(28, 'wind', -19, d=2.6, fi=0.8, fo=0.9), C(42, 'whoosh_big', -7, r=0.55), C(40, 'pop_pluck', -13),
+    C(68, 'squeak', -13), C(70, 'boing', -17, r=1.3),
+    C(88, 'paper_crumple', -8, d=0.45, fo=0.15), C(88, 'pop', -10), word(88, -11),
+    *[C(f, 'pop_pluck', -19, r=0.8) for f in (92, 99, 106, 113)], C(96, 'sting_soft', -13),
+    *joke_card(120),
+]
+CUES['joke-basement'] = [  # Operation Basement: lights out 6, CREAK 12-26, rises 24, stuck 36-66 (HNNG 42), POP 68, lands 82, tiptoe 84+ (every 6), cat blinks 60, looks away 104, card 120
+    C(0, 'night', -18, d=4.0, fi=0.3, fo=1.0), C(6, 'switch', -10), C(12, 'squeak', -10, r=0.55, d=0.9, fo=0.3), word(12, -16),
+    C(26, 'cloth', -14), C(30, 'pop_pluck', -14), C(36, 'cloth_tear', -16, d=0.5),
+    *[C(f, 'squeak', -16, r=1.3 + 0.1 * (i % 3)) for i, f in enumerate(range(38, 66, 7))], word(42, -12), C(44, 'heartbeat', -15, d=0.8),
+    C(62, 'whoosh', -12), C(68, 'pop', -2), C(68, 'cork', -6), word(68, -12), C(69, 'powder', -12), C(70, 'spin', -12),
+    C(82, 'land', -10), C(60, 'owl', -22, r=1.5),
+    *[C(f, 'tick', -16, r=1.6) for f in range(84, 120, 6)], C(104, 'switch', -20, r=1.6),
+    *joke_card(120),
+]
+CUES['joke-nomap'] = [  # No Map: lap 1 0-30, lap 2 32-62, lap 3 64-90 (steps every 5), LAP pops 8/40/72, snowman frowns 72, point 92, ? 96/99, card 120
+    C(0, 'wind_soft', -18, d=4.0, fi=0.3, fo=1.0),
+    *steps(list(range(2, 90, 5)), kind='snow', g=-14),
+    C(8, 'pop_in', -11), C(9, 'tom_hi', -15), C(40, 'pop_in', -11, r=1.1), C(41, 'tom_mid', -14), C(72, 'pop_in', -10, r=1.2), C(73, 'tom_hi', -13, r=0.9),
+    C(72, 'scratch', -18, d=0.5), C(92, 'whoosh_fast', -13), C(93, 'swish', -14),
+    C(96, 'boing', -12), C(99, 'boing', -12, r=1.15), C(104, 'owl', -24, r=1.3),
+    *joke_card(120),
+]
+CUES['joke-grandtheft'] = [  # Grand Theft #1: run in 4-30 (every 4), YOINK 30, door 36, driver lands 46, VROOOM 48-66, HEY!! 84, card 120
+    C(0, 'city', -19, d=4.0, fi=0.2, fo=1.0), *steps(list(range(6, 31, 4)), g=-12),
+    C(30, 'whoosh_fast', -8), C(30, 'cloth_tear', -12, d=0.4), word(30, -11), C(31, 'scream', -13, d=0.8, fo=0.3), C(36, 'car_door', -6),
+    C(46, 'thud', -6), C(46, 'person_fall', -11), C(46, 'rumble', -9, d=1.2, r=1.6, fo=0.4),
+    C(48, 'skid', -8, d=0.8, fo=0.3), C(50, 'whoosh_big', -7), word(48, -11), C(60, 'car_horn', -15, d=0.4),
+    C(84, 'slap', -13), word(84, -10), C(86, 'gasp', -14, r=0.85),
+    *joke_card(120),
+]
+CUES['joke-wanted'] = [  # Wanted: caps fall 4/28/52, land 14/38/62 (CAP! words), stars 15/39/63, sirens 66-118, hands up 72, card 120
+    C(0, 'night', -20, d=4.0, fi=0.3, fo=1.0),
+    *[x for f, r in ((14, 1.0), (38, 1.1), (62, 1.2)) for x in (C(f - 8, 'whoosh_fast', -15, r=r), C(f, 'thud', -9, r=r), C(f, 'pop_in', -12, r=r), C(f + 1, 'gem', -9, r=r))],
+    word(14, -13), word(38, -12), word(62, -11),
+    *[C(f, 'alarm', -12, d=0.32) for f in range(66, 118, 8)], C(66, 'whistle', -12), C(72, 'gasp', -9), C(73, 'boing', -16),
+    *joke_card(120),
+]
+CUES['joke-busted'] = [  # Busted: siren in 6, car slides in 12-32 (SKRRT 26), hands up 36, phone lands ~66, BUSTED 51, card 120
+    C(0, 'city', -21, d=3.6, fi=0.2, fo=1.0), *[C(f, 'tick', -21, r=1.8) for f in (2, 6, 10)],
+    *[C(f, 'alarm', -13, d=0.32, r=1.15) for f in range(6, 112, 8)], C(12, 'whoosh_big', -9),
+    C(24, 'skid', -6, d=1.0, fo=0.3), word(26, -12), C(32, 'car_door', -10),
+    C(36, 'gasp', -8), C(36, 'jump', -13), C(66, 'clank', -16, r=1.6),
+    C(44, 'whoosh', -9), C(51, 'stamp', -2), C(51, 'slam', -6), C(52, 'sub', -9), C(54, 'sting_reveal', -12), ooh(56, -12),
+    *joke_card(120),
+]
+CUES['joke-wasted'] = [  # Wasted: strut 0-40 (every 6), slip 40 (WHOA), THUD 54, stars 58+, gray 60-78, WASTED 72, card 120
+    C(0, 'wind_soft', -20, d=4.0, fi=0.3, fo=1.0), C(4, 'whistle', -15), *steps(list(range(3, 40, 6)), g=-13),
+    C(40, 'squeak', -7, r=0.8), C(41, 'gasp', -11), word(40, -12), C(43, 'whoosh', -10),
+    C(54, 'thud', -3), C(54, 'land', -8), C(55, 'sub', -9), C(55, 'crash', -18, d=0.6, fo=0.3), word(54, -11),
+    C(60, 'chirp', -17), C(68, 'chirp', -18, r=1.2), C(60, 'power_down', -10), C(72, 'braam', -8),
+    *joke_card(120),
+]
+CUES['joke-parole'] = [  # Out on Parole: behind bars 0-26, BZZZT 26, bars slide 30-44, walks out 46+ (every 7), FREE! 56, BEEP 70/96 (+ blink every 12), card 120
+    C(0, 'wind_soft', -24, d=1.6, fo=0.6), C(4, 'tick', -20, r=0.7), C(16, 'tick', -21, r=0.7),
+    C(26, 'zap', -8), C(26, 'alarm', -14, d=0.45), word(26, -12), C(30, 'chain', -9, d=1.0, fo=0.3), C(32, 'door_slide', -9, d=0.9), C(44, 'clang', -8),
+    C(46, 'bed_warm', -20, d=2.6, fi=0.4, fo=1.0), C(46, 'sparkle', -12), *steps(list(range(48, 118, 7)), g=-14),
+    word(56, -11), C(56, 'chirp', -15), C(66, 'chirp', -16, r=1.15), C(84, 'chirp', -16, r=0.9),
+    C(70, 'notify', -10, r=1.6), C(96, 'notify', -10, r=1.6), *[C(f, 'tick', -22, r=2.2) for f in range(48, 118, 12)],
+    *joke_card(120),
+]
+CUES['joke-partners'] = [  # Partners in Crime: doors 2, alarm light spins (WEE-OOO 4), slow-mo strut 8-118 (steps every 12), SLO-MO 14, coins 40-96 (every 8), card 120
+    *[C(f, 'alarm', -15, d=0.28, r=(1.0 if (f // 9) % 2 == 0 else 0.84)) for f in range(0, 118, 9)], word(4, -14),
+    C(2, 'door_slide', -12, r=0.8), C(8, 'whoosh_heavy', -8, r=0.5), C(8, 'braam', -10), C(10, 'pad', -20, d=3.4, fi=0.6, fo=1.0),
+    *[C(f, 'land_dirt', -13, r=0.55) for f in range(12, 118, 12)], C(14, 'pop_in', -16),
+    *[C(40 + i * 8 + 40, 'coin_drop', -15, r=0.7) for i in range(8) if 40 + i * 8 + 40 < 118],
+    *joke_card(120),
+]
+CUES['joke-xmas'] = [  # Naughty or Nice intro: drop 6-20, wobble 22-36, SNAP 40, unroll 46-74, confetti 76, scroll moves aside 108, card 120
+    C(0, 'bed_warm', -22, d=4.0, fi=0.3, fo=1.0), *[C(f, 'bell_shop', -20, r=1.3 + 0.1 * (i % 3)) for i, f in enumerate((2, 14, 30))],
+    C(8, 'whoosh', -9), C(20, 'book_close', -5), C(20, 'thud', -12), *[C(f, 'squeak', -19, r=1.4) for f in (24, 30)],
+    C(40, 'slap', -7), C(40, 'cloth_tear', -9, d=0.4), word(40, -11), C(42, 'pop', -12),
+    C(46, 'page', -5), C(48, 'swipe', -10), C(62, 'page', -9, r=1.1), C(70, 'twinkle', -12),
+    C(76, 'fanfare', -8), C(76, 'party_pop', -9), C(77, 'sparkle', -11), cheer(78, -12, d=2.0), C(108, 'whoosh_out', -12),
+    *joke_card(120),
+]
+CUES['joke-nye'] = [  # New Year's Eve: 3 at 8, 2 at 28, 1 at 48, drop 60-72, THUD 72, confetti 74, fireworks 80/88/96/104, card 120
+    C(0, 'bar', -20, d=2.6, fi=0.3, fo=0.6), C(6, 'drumroll', -15, d=1.8, fi=0.2, fo=0.2),
+    C(8, 'tom_hi', -6), word(8, -14), C(28, 'tom_mid', -6), word(28, -14), C(48, 'tom_mid', -4, r=0.8), word(48, -13),
+    C(58, 'whoosh_heavy', -6, r=0.7), C(62, 'whoosh_big', -8),
+    C(72, 'boom', -2), C(72, 'thud', -3), C(72, 'crash', -10, d=1.0, fo=0.4), C(73, 'sub', -6), C(74, 'rumble', -10, d=0.9, fo=0.4), word(72, -11),
+    C(74, 'party_pop', -6), C(75, 'party_pop', -9, r=1.1), cheer(76, -7, d=2.5), applause(80, -12, d=2.2),
+    *[C(f, 'explosion', -15, r=r) for f, r in ((80, 1.2), (88, 1.3), (96, 1.1), (104, 1.4))], C(82, 'sparkle', -14), C(98, 'sparkle', -15),
+    *joke_card(120),
+]
+CUES['joke-groundhog'] = [  # Groundhog Day: waiting 0-62 (. . . at 20/30/40, lean in 18), sign pokes out 64-74, WHAT?! 76, card 120
+    C(0, 'wind_soft', -16, d=4.0, fi=0.4, fo=1.0), C(8, 'owl', -26, r=1.6),
+    C(20, 'pop_pluck', -15), C(30, 'pop_pluck', -15, r=1.1), C(40, 'pop_pluck', -15, r=1.2), C(52, 'tick', -20), C(58, 'tick', -20),
+    C(64, 'land_dirt', -10), C(64, 'pop', -9), C(68, 'boing', -12), C(74, 'squeak', -18, r=1.4),
+    C(76, 'gasp', -6), ooh(76, -8), word(77, -11), C(77, 'sting_reveal', -12),
+    *joke_card(120),
+]
+CUES['joke-valentine'] = [  # Valentine's Day: scrolling 0-28, arrow 22-30 (THUNK 30), startle 34, hearts 36-54, jumps up 62, runs 64-86, door opens 74, SLAM 92, card 120
+    C(0, 'pad', -21, d=1.0, fi=0.2, fo=0.4), *[C(f, 'click', -19, r=1.2) for f in (4, 11, 18, 25)],
+    C(22, 'whoosh_fast', -7), C(30, 'thud', -6), C(30, 'boing', -9), word(30, -11), C(34, 'gasp', -7),
+    *[C(36 + i * 3, 'pop_in', -14, r=1 + 0.05 * i) for i in range(7)], C(38, 'kiss', -11), C(40, 'twinkle', -13), C(42, 'bed_warm', -21, d=2.2, fi=0.3, fo=0.8),
+    C(62, 'jump', -10), *steps(list(range(64, 88, 4)), g=-12), C(74, 'door_slide', -12, d=0.5),
+    C(92, 'door_slam', -4), word(92, -11), C(96, 'sparkle', -14),
+    *joke_card(120),
+]

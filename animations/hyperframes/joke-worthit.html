@@ -1,0 +1,151 @@
+<!doctype html>
+<!--
+  #worthit (joke-worthit): Osim sits outside a burger stand (our own: Flex Burger) with a giant burger, eyes
+  closed, completely happy. A plane flies across the sky behind him. He looks up, shrugs, takes another bite.
+  Beats (30 fps): MMM 8, plane in 26-100, looks up 40, shrug 68, CHOMP 88, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/buddy.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #wi-plane { position: absolute; left: 0; top: 0; width: 520px; height: 220px; }
+  #wi-trail { position: absolute; left: 0; top: 0; width: 1400px; height: 40px; transform-origin: 0 50%; }
+  #wi-crumbs { position: absolute; inset: 0; }
+  .wi-heart { position: absolute; width: 0; height: 0; opacity: 0; }
+  .wi-heart svg { position: absolute; left: -30px; top: -28px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-worthit" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="wi-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#C7E7FB">
+  <div id="wi-cam" style="position:absolute;inset:0;transform-origin:420px 1500px">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="wi-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FCBF2"/><stop offset="1" stop-color="#DDF1FF"/></linearGradient>
+      <pattern id="wi-check" width="80" height="80" patternUnits="userSpaceOnUse"><rect width="80" height="80" fill="#FFFFFF"/><rect width="40" height="40" fill="#F08A7E"/><rect x="40" y="40" width="40" height="40" fill="#F08A7E"/><rect x="40" width="40" height="40" fill="#F7C2BA"/><rect y="40" width="40" height="40" fill="#F7C2BA"/></pattern></defs>
+    <rect width="1080" height="1500" fill="url(#wi-sky)"/>
+    <circle cx="160" cy="300" r="90" fill="#FFE27A" stroke="#341720" stroke-width="8"/>
+    <g fill="#FFFFFF" stroke="#341720" stroke-width="7">
+      <path id="wi-c1" d="M560 300 Q580 240 650 250 Q690 200 760 230 Q830 220 840 290 Q880 310 860 340 L580 340 Q540 330 560 300 Z"/>
+      <path id="wi-c2" d="M120 760 Q140 710 200 716 Q236 676 290 700 Q350 690 356 746 Q390 760 372 790 L140 790 Q104 784 120 760 Z"/>
+    </g>
+    <!-- palm -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <path d="M180 1480 Q160 1200 230 980 L262 986 Q200 1200 222 1480 Z" fill="#B07A44"/>
+      <path d="M246 984 Q150 900 40 940 Q130 940 220 1000 Z M246 984 Q200 860 260 790 Q250 880 262 980 Z M246 984 Q340 880 440 910 Q350 920 270 1000 Z M246 984 Q320 960 370 1060 Q300 1010 250 1004 Z M246 984 Q170 980 120 1080 Q190 1020 240 1004 Z" fill="#45B87A"/>
+    </g>
+    <!-- Flex Burger -->
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <rect x="470" y="1040" width="600" height="470" fill="#FFFBF2"/>
+      <rect x="560" y="1170" width="420" height="220" fill="#3A2E4A"/>
+      <rect x="560" y="1390" width="420" height="40" fill="#E9DFC9"/>
+      <path d="M450 1040 L1090 1040 L1060 1150 L480 1150 Z" fill="#E05A47"/>
+      <path d="M530 1040 L515 1150 M610 1040 L600 1150 M690 1040 L685 1150 M770 1040 L770 1150 M850 1040 L855 1150 M930 1040 L940 1150 M1010 1040 L1025 1150" stroke="#FFFFFF" stroke-width="30"/>
+      <path d="M450 1040 L1090 1040 L1060 1150 L480 1150 Z" fill="none"/>
+      <path d="M480 1150 Q510 1186 540 1150 Q570 1186 600 1150 Q630 1186 660 1150 Q690 1186 720 1150 Q750 1186 780 1150 Q810 1186 840 1150 Q870 1186 900 1150 Q930 1186 960 1150 Q990 1186 1020 1150 Q1045 1180 1060 1150" fill="#E05A47"/>
+      <!-- the roof sign: a giant burger -->
+      <path d="M610 1040 L610 980 M930 1040 L930 980" stroke-width="14"/>
+      <rect x="520" y="880" width="500" height="110" rx="24" fill="#7254DC"/>
+      <path d="M560 860 Q560 760 660 756 Q760 760 760 860 Z" fill="#E7A24B"/>
+      <rect x="548" y="860" width="224" height="26" rx="12" fill="#7A3B22"/>
+    </g>
+    <text x="790" y="958" text-anchor="middle" font-family="Luckiest Guy" font-size="64" fill="#FFD064" stroke="#341720" stroke-width="10" paint-order="stroke" stroke-linejoin="round">FLEX BURGER</text>
+    <text x="770" y="1300" text-anchor="middle" font-family="Luckiest Guy" font-size="46" fill="#FFD064">ORDER HERE</text>
+    <path d="M0 1500 L1080 1500" stroke="#341720" stroke-width="8"/>
+    <!-- the patio -->
+    <rect x="0" y="1500" width="1080" height="860" fill="#F2D3A2"/>
+    <g stroke="#E2B97F" stroke-width="6"><path d="M0 1620 L1080 1620 M0 1780 L1080 1780 M0 1980 L1080 1980 M0 2220 L1080 2220 M200 1500 L120 2360 M480 1500 L460 2360 M760 1500 L800 2360 M1000 1500 L1080 2360"/></g>
+  </svg>
+  <!-- the plane and its trail -->
+  <div id="wi-trail"><svg width="1400" height="40" viewBox="0 0 1400 40"><rect x="0" y="6" width="1400" height="28" rx="14" fill="#FFFFFF" opacity=".85"/></svg></div>
+  <div id="wi-plane"><svg width="520" height="220" viewBox="0 0 520 220" style="overflow:visible">
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <path d="M260 110 L330 20 L380 20 L340 110 Z" fill="#7254DC"/>
+      <path d="M30 110 Q40 70 110 66 L470 66 Q500 80 500 110 Q500 140 470 150 L110 150 Q40 148 30 110 Z" fill="#FFFFFF"/>
+      <path d="M40 104 Q60 80 100 80 L100 104 Z" fill="#2B3F7A"/>
+      <path d="M250 120 L330 210 L380 210 L330 120 Z" fill="#E9EEF5"/>
+      <path d="M440 70 L490 0 L520 0 L500 80 Z" fill="#7254DC"/>
+    </g>
+    <path d="M140 96 L380 96" stroke="#2B3F7A" stroke-width="16" stroke-dasharray="18 22" stroke-linecap="round"/>
+    <path d="M60 132 L480 132" stroke="#7254DC" stroke-width="10"/>
+  </svg></div>
+
+  <div id="wi-osim"></div>
+  <!-- the table, the fries and the drink -->
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <path d="M30 1790 L810 1790 L850 2150 Q800 2190 750 2150 Q700 2190 650 2150 Q600 2190 550 2150 Q500 2190 450 2150 Q400 2190 350 2150 Q300 2190 250 2150 Q200 2190 150 2150 Q100 2190 50 2150 Q20 2180 -10 2150 Z" fill="url(#wi-check)"/>
+      <ellipse cx="420" cy="1788" rx="390" ry="70" fill="url(#wi-check)"/>
+      <ellipse cx="420" cy="1780" rx="330" ry="46" fill="none" stroke="#FFFFFF" stroke-width="10" opacity=".5"/>
+      <!-- fries -->
+      <path d="M640 1760 L630 1650 L740 1650 L730 1760 Z" fill="#E05A47"/>
+      <path d="M648 1660 L640 1590 M668 1660 L668 1576 M690 1660 L694 1586 M712 1660 L722 1596 M728 1660 L740 1610" stroke="#F2C230" stroke-width="16" stroke-linecap="round"/>
+      <path d="M640 1700 L730 1700" stroke="#FFFFFF" stroke-width="10"/>
+      <!-- drink -->
+      <path d="M130 1770 L112 1620 L218 1620 L200 1770 Z" fill="#FFFFFF"/>
+      <path d="M118 1660 L212 1660" stroke="#7254DC" stroke-width="20"/>
+      <rect x="104" y="1600" width="122" height="26" rx="10" fill="#E9EEF5"/>
+      <path d="M176 1604 L200 1530" stroke="#E05A47" stroke-width="12" stroke-linecap="round"/>
+    </g>
+  </svg>
+  <div id="wi-crumbs"></div>
+  <div class="word" id="wi-mmm" style="left:760px;top:1220px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="130" style="fill:#FFD064">MMM!</text></svg></div></div>
+  <div class="word" id="wi-chomp" style="left:760px;top:1250px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#FFD064">CHOMP!</text></svg></div></div>
+  <div class="wi-heart" id="wi-h0" style="left:220px;top:1260px"><svg width="60" height="56" viewBox="-30 -28 60 56"><path d="M0 22 Q-30 0 -24 -14 Q-16 -30 0 -14 Q16 -30 24 -14 Q30 0 0 22 Z" fill="#EE5982" stroke="#341720" stroke-width="5" stroke-linejoin="round"/></svg></div>
+  <div class="wi-heart" id="wi-h1" style="left:640px;top:1200px"><svg width="60" height="56" viewBox="-30 -28 60 56"><path d="M0 22 Q-30 0 -24 -14 Q-16 -30 0 -14 Q16 -30 24 -14 Q30 0 0 22 Z" fill="#EE5982" stroke="#341720" stroke-width="5" stroke-linejoin="round"/></svg></div>
+  <div class="wi-heart" id="wi-h2" style="left:300px;top:1180px"><svg width="60" height="56" viewBox="-30 -28 60 56"><path d="M0 22 Q-30 0 -24 -14 Q-16 -30 0 -14 Q16 -30 24 -14 Q30 0 0 22 Z" fill="#EE5982" stroke="#341720" stroke-width="5" stroke-linejoin="round"/></svg></div>
+  </div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"#WORTHIT","pts":"1","unit":"BURGER","sub":"MISSED THE FLIGHT. NO REGRETS.","color":"#E07B39","dark":"#9C4A1C","light":"#FFE2C2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  WA.actor('wi-osim', ['bite', 'look-up', 'sit-shrug'], { x: 420, y: 1990, s: 0.74, tag: 'OSIM', color: '#7254DC', tagY: 110 });
+  WA.pose(tl, '#wi-osim', 'bite', 0);
+  WA.bob(tl, '#wi-osim .tag', 0.2, 3.6, 8, 1.1);
+  tl.fromTo('#wi-cam', { scale: 1 }, { scale: 1.06, duration: 5.5, ease: 'sine.inOut' }, 0);
+  tl.fromTo('#wi-c1', { x: 0 }, { x: -60, duration: 5.5, ease: 'none' }, 0);
+  tl.fromTo('#wi-c2', { x: 0 }, { x: 50, duration: 5.5, ease: 'none' }, 0);
+
+  // chewing, eyes closed
+  var chew = function (from, n) {
+    for (var k = 0; k < n; k++) WA.squash(tl, '#wi-osim', (from + k * 7) * F, 0.035, 7);
+  };
+  chew(2, 5);
+  WA.word(tl, '#wi-mmm', 8 * F, 28, { rot: 6, rot0: -14, seed: 2, amp: 4 });
+  ['#wi-h0', '#wi-h1', '#wi-h2'].forEach(function (id, i) {
+    tl.fromTo(id, { opacity: 0, scale: 0.3, y: 0 }, { opacity: 1, scale: 1, y: -40, duration: 10 * F, ease: 'back.out(2)', immediateRender: false }, (6 + i * 7) * F);
+    tl.to(id, { opacity: 0, y: -120, duration: 12 * F, ease: 'power1.in' }, (22 + i * 7) * F);
+  });
+
+  // the plane goes over, right to left
+  tl.fromTo('#wi-plane', { x: 1180, y: 520, rotation: -4 }, { x: -620, y: 430, rotation: -4, duration: 74 * F, ease: 'none' }, 26 * F);
+  tl.fromTo('#wi-trail', { x: 1660, y: 610, scaleX: 0 }, { x: -140, y: 520, scaleX: 1, duration: 74 * F, ease: 'none' }, 26 * F);
+  tl.to('#wi-trail', { opacity: 0, duration: 20 * F }, 100 * F);
+
+  // he looks up, shrugs, takes another bite
+  WA.take(tl, '#wi-osim', 'look-up', 40 * F, 0.05);
+  WA.take(tl, '#wi-osim', 'sit-shrug', 68 * F, 0.08);
+  WA.hop(tl, '#wi-osim .jit', 68 * F, 16, 8);
+  WA.take(tl, '#wi-osim', 'bite', 86 * F, 0.08);
+  WA.word(tl, '#wi-chomp', 88 * F, 26, { rot: -6, rot0: 14, seed: 4, amp: 6 });
+  chew(92, 4);
+  var r = WA.rng(5);
+  var crumbs = WA.spawn('#wi-crumbs', 10, function () { return '<i style="display:block;width:16px;height:12px;border-radius:5px;background:#E7A24B;border:3px solid #341720"></i>'; });
+  crumbs.forEach(function (c, i) {
+    gsap.set(c, { opacity: 0 });
+    WA.toss(tl, c, (88 + (i % 3)) * F, { x0: 420 + (r() - 0.5) * 120, y0: 1450, vx: (r() - 0.5) * 22, vy: -10 - r() * 8, g: 1.5, frames: 22, spin: 20 });
+  });
+
+  window.__timelines['joke-worthit'] = tl;
+})();
+</script>
+</body>
+</html>

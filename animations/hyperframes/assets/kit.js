@@ -4,7 +4,8 @@
    being rewound and replayed):
    - a fromTo that starts after 0 gets immediateRender:false unless its from-state should hold before it starts
      (something waiting offstage); otherwise it shows its from-state from frame 0;
-   - every property in a fromTo's from-vars is also in its to-vars (a from-only property is lost after a rewind).
+   - every property in a fromTo's from-vars is also in its to-vars (a from-only property is lost after a rewind);
+   - starting states go in CSS or gsap.set(), not tl.set(..., 0): a set at 0 doesn't render while the playhead is at 0.
    An actor is laid out as  .actor > .squash > .jit > img.pose (one per pose, stacked):
    move .actor (slides, hops), squash .squash, shake .jit, swap poses with WA.pose(). */
 (function () {
@@ -40,7 +41,11 @@
   function pose(tl, actor, name, at) {
     actor = $(actor);
     var imgs = actor.querySelectorAll('img.pose, .pose');
-    for (var i = 0; i < imgs.length; i++) tl.set(imgs[i], { opacity: imgs[i].dataset.pose === name ? 1 : 0 }, at);
+    for (var i = 0; i < imgs.length; i++) {
+      var v = { opacity: imgs[i].dataset.pose === name ? 1 : 0 };
+      if (at <= 0) gsap.set(imgs[i], v);   // a set at 0 doesn't render while the playhead sits at 0
+      tl.set(imgs[i], v, at);
+    }
   }
 
   /** A take: quick squash, the new pose on the stretch, then settle. */
@@ -84,7 +89,7 @@
   function word(tl, el, at, frames, opt) {
     el = $(el); opt = opt || {};
     frames = frames || 26;
-    tl.set(el, { opacity: 0 }, 0);
+    gsap.set(el, { opacity: 0 });
     popIn(tl, el, at, 9, { rot0: opt.rot0 == null ? -18 : opt.rot0, rot: opt.rot || 0, from: 0.2 });
     if (opt.shake !== false) shake(tl, el.querySelector('.jit') || el.firstElementChild || el, at, (frames - 8) * F, opt.amp || 4, { seed: opt.seed || 3 });
     tl.to(el, { scale: 1.3, opacity: 0, duration: 6 * F, ease: 'power1.in' }, at + (frames - 6) * F);
@@ -133,7 +138,7 @@
     });
     bits.forEach(function (b, i) {
       var a = (opt.angle == null ? -Math.PI / 2 : opt.angle) + (r() * 2 - 1) * (opt.spread || 1.1), sp = (opt.speed || 26) * (0.55 + r() * 0.7);
-      tl.set(b, { position: 'absolute', left: 0, top: 0, opacity: 0 }, 0);
+      gsap.set(b, { position: 'absolute', left: 0, top: 0, opacity: 0 });
       toss(tl, b, at + r() * 3 * F, { x0: x, y0: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: opt.g || 1.4, frames: opt.frames || 40, spin: (r() * 2 - 1) * 24, r0: r() * 360 });
     });
   }
@@ -145,6 +150,62 @@
     tl.to($(el), { y: '-=' + (amp || 8), duration: period / 2, ease: 'sine.inOut', yoyo: true, repeat: reps }, at);
   }
 
-  window.WA = { F: F, rng: rng, shake: shake, pose: pose, take: take, squash: squash, hop: hop, popIn: popIn, popOut: popOut,
-    word: word, toss: toss, spawn: spawn, confetti: confetti, bob: bob, $: $ };
+  /** Build a Flexander actor in an empty div: stacked pose images (assets/cast/flex-<pose>[-<member>].svg), feet at
+      opt.x, opt.y (canvas px), opt.s = scale of the 1280x1440 pose canvas, opt.flip mirrors him (not his tag),
+      opt.tag / opt.color = a name tag over his head (opt.tagY moves it, in px from the actor's top). */
+  function actor(id, poses, opt) {
+    var el = $(id), s = opt.s, m = opt.member ? '-' + opt.member : '', o = (640 * s) + 'px ' + (1340 * s) + 'px';
+    el.className = 'actor' + (opt.flip ? ' flipx' : '');
+    el.style.left = (opt.x - 640 * s) + 'px'; el.style.top = (opt.y - 1340 * s) + 'px';
+    el.style.width = 1280 * s + 'px'; el.style.height = 1440 * s + 'px';
+    el.innerHTML = '<div class="flip" style="transform-origin:' + o + '"><div class="squash" style="transform-origin:' + o + '"><div class="jit">' +
+      poses.map(function (p) { return '<img class="pose" data-pose="' + p + '" src="assets/cast/flex-' + p + m + '.svg" />'; }).join('') +
+      '</div></div></div>' +
+      (opt.tag ? '<div class="tag" style="--c:' + opt.color + ';left:' + 640 * s + 'px;top:' + (opt.tagY == null ? 330 * s - 150 : opt.tagY) + 'px">' + opt.tag + '</div>' : '');
+    return el;
+  }
+  /** Fill an empty div with a Buddy (assets/buddy.js), feet at x, y, scale s of its 640x1280 canvas. */
+  function buddyIn(id, look, x, y, s, flip) {
+    var el = $(id);
+    el.style.position = 'absolute';
+    el.style.left = (x - 320 * s) + 'px'; el.style.top = (y - 1240 * s) + 'px';
+    el.style.width = 640 * s + 'px'; el.style.height = 1280 * s + 'px';
+    el.style.transformOrigin = (320 * s) + 'px ' + (1240 * s) + 'px';
+    el.innerHTML = '<div class="bflip" style="position:absolute;inset:0;transform-origin:' + (320 * s) + 'px ' + (1240 * s) + 'px' + (flip ? ';transform:scaleX(-1)' : '') + '">' +
+      WA.buddy(look).replace('width="640" height="1280"', 'width="' + 640 * s + '" height="' + 1280 * s + '"') + '</div>';
+    return el;
+  }
+  /** Alternate poses (a walk cycle) every `every` frames from `from` to `to` seconds, with a little bob on the steps. */
+  function cycle(tl, actorEl, names, from, to, every, amp) {
+    actorEl = $(actorEl);
+    var jit = actorEl.querySelector('.jit'), i = 0;
+    for (var t = from; t < to - 1e-6; t += every * F, i++) {
+      pose(tl, actorEl, names[i % names.length], t);
+      if (amp) tl.to(jit, { y: -amp, duration: every / 2 * F, ease: 'sine.out', yoyo: true, repeat: 1 }, t);
+    }
+  }
+
+  /** Falling snow (or rain, petals...) over the whole clip: n flakes in `container`, each wrapping from bottom to top.
+      opt: n, seed, w, h (area), speed px/s, drift px/s, size [min,max], dur (s, the clip length), color, html(i, size) */
+  function snow(tl, container, opt) {
+    opt = opt || {};
+    var r = rng(opt.seed || 9), n = opt.n || 70, W = opt.w || 1080, H = opt.h || 2348, dur = opt.dur || 5.5;
+    var flakes = spawn(container, n, function (i) {
+      var sz = (opt.size || [8, 18])[0] + r() * ((opt.size || [8, 18])[1] - (opt.size || [8, 18])[0]);
+      return opt.html ? opt.html(i, sz) : '<i style="display:block;width:' + sz + 'px;height:' + sz + 'px;border-radius:50%;background:' + (opt.color || '#fff') + ';opacity:' + (0.55 + r() * 0.45) + '"></i>';
+    });
+    flakes.forEach(function (fl) {
+      var v = (opt.speed || 420) * (0.7 + r() * 0.6), dx = (opt.drift == null ? -60 : opt.drift) * (0.6 + r() * 0.8);
+      var x0 = r() * (W + 200) - 100, y0 = r() * H, t1 = (H + 30 - y0) / v, full = (H + 60) / v;
+      gsap.set(fl, { position: 'absolute', left: 0, top: 0 });
+      tl.fromTo(fl, { x: x0, y: y0 }, { x: x0 + dx * t1, y: H + 30, duration: t1, ease: 'none' }, 0);
+      if (t1 < dur) {
+        var x1 = r() * (W + 200) - 100;
+        tl.fromTo(fl, { x: x1, y: -30 }, { x: x1 + dx * full, y: H + 30, duration: full, ease: 'none', repeat: Math.ceil((dur - t1) / full), immediateRender: false }, t1);
+      }
+    });
+  }
+
+  window.WA = Object.assign(window.WA || {}, { snow: snow, F: F, rng: rng, shake: shake, pose: pose, take: take, squash: squash, hop: hop, popIn: popIn, popOut: popOut,
+    word: word, toss: toss, spawn: spawn, confetti: confetti, bob: bob, $: $, actor: actor, buddyIn: buddyIn, cycle: cycle });
 })();

@@ -1,0 +1,130 @@
+<!doctype html>
+<!--
+  No Map (joke-nomap): Dylan and Connor on a snowy mountain path with a snowman in the middle. They walk past it,
+  then past it again from the same side, then a third time. They stop and point in opposite directions; ? ? pops.
+  Beats (30 fps): lap 1 0-30, lap 2 32-62, lap 3 64-90 (stop), point 92, ? 96/99, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #nm-lap { position: absolute; left: 540px; top: 820px; width: 0; height: 0; opacity: 0; }
+  #nm-lap svg { position: absolute; left: -170px; top: -80px; overflow: visible; }
+  .nm-lapn { opacity: 0; }
+  .nm-q { position: absolute; width: 0; height: 0; opacity: 0; }
+  .nm-q svg { position: absolute; left: -50px; top: -80px; overflow: visible; }
+  #nm-snow { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-nomap" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="nm-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#C7E7FB">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="nm-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9DD3F5"/><stop offset="1" stop-color="#E4F4FF"/></linearGradient></defs>
+    <rect width="1080" height="1500" fill="url(#nm-sky)"/>
+    <!-- mountains -->
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <path d="M-60 1260 L220 760 L420 1060 L600 820 L860 1180 L1000 980 L1140 1200 L1140 1500 L-60 1500 Z" fill="#8AA6C8"/>
+      <path d="M220 760 L300 900 L250 880 L210 930 L160 870 Z M600 820 L680 930 L630 915 L590 960 L540 905 Z M1000 980 L1050 1060 L1010 1050 L980 1080 L950 1050 Z" fill="#FFFFFF"/>
+      <path d="M-60 1400 Q200 1250 420 1360 Q640 1240 880 1350 Q1000 1300 1140 1340 L1140 1520 L-60 1520 Z" fill="#E9F4FB"/>
+    </g>
+    <!-- pines -->
+    <g stroke="#341720" stroke-width="7" stroke-linejoin="round">
+      <path d="M60 1430 L120 1290 L180 1430 Z M80 1360 L120 1260 L160 1360 Z" fill="#4F7F6E"/><rect x="110" y="1430" width="20" height="40" fill="#7A4524"/>
+      <path d="M900 1420 L960 1270 L1020 1420 Z M920 1350 L960 1240 L1000 1350 Z" fill="#4F7F6E"/><rect x="950" y="1420" width="20" height="40" fill="#7A4524"/>
+    </g>
+    <path d="M90 1300 L120 1260 L150 1300 Z M930 1286 L960 1240 L990 1286 Z" fill="#FFFFFF" stroke="#341720" stroke-width="5" stroke-linejoin="round"/>
+    <!-- the snowfield and the path -->
+    <rect x="0" y="1500" width="1080" height="860" fill="#F4FAFF"/>
+    <path d="M-20 1500 L1100 1500" stroke="#341720" stroke-width="8"/>
+    <path d="M-20 1600 Q540 1560 1100 1600 L1100 1790 Q540 1750 -20 1790 Z" fill="#DCEBF6" stroke="#B5CDE0" stroke-width="8"/>
+    <path d="M40 1690 L90 1684 M200 1676 L250 1672 M380 1668 L430 1666 M640 1666 L690 1668 M820 1672 L870 1676 M980 1684 L1030 1690" stroke="#B5CDE0" stroke-width="10" stroke-linecap="round"/>
+    <path d="M100 2000 Q300 1970 500 2004 M560 2180 Q760 2150 960 2186" stroke="#D3E5F2" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <!-- the signpost: SUMMIT both ways -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="826" y="1830" width="22" height="300" fill="#7A4524"/>
+      <path d="M840 1850 L1010 1850 L1050 1885 L1010 1920 L840 1920 Z" fill="#C99A5E"/>
+      <path d="M834 1940 L664 1940 L624 1975 L664 2010 L834 2010 Z" fill="#C99A5E"/>
+    </g>
+    <text x="935" y="1900" text-anchor="middle" font-family="Luckiest Guy" font-size="40" fill="#341720">SUMMIT</text>
+    <text x="740" y="1990" text-anchor="middle" font-family="Luckiest Guy" font-size="40" fill="#341720">SUMMIT</text>
+    <!-- the snowman -->
+    <g id="nm-snowman" stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <ellipse cx="540" cy="1530" rx="120" ry="100" fill="#FFFFFF"/>
+      <ellipse cx="540" cy="1380" rx="90" ry="80" fill="#FFFFFF"/>
+      <circle cx="540" cy="1250" r="66" fill="#FFFFFF"/>
+      <path d="M452 1370 L360 1310 M628 1370 L720 1310 M376 1320 L350 1290 M704 1320 L730 1290" fill="none" stroke="#7A4524" stroke-width="12" stroke-linecap="round"/>
+      <path d="M470 1300 Q540 1330 610 1300 L616 1326 Q540 1360 464 1326 Z" fill="#E05A47"/>
+      <rect x="490" y="1150" width="100" height="70" rx="6" fill="#2B2236"/><rect x="470" y="1210" width="140" height="18" rx="9" fill="#2B2236"/>
+      <path d="M540 1254 L600 1266 L540 1272 Z" fill="#F2853A"/>
+    </g>
+    <circle cx="518" cy="1236" r="12" fill="#FFFFFF" stroke="#341720" stroke-width="5"/><circle cx="562" cy="1236" r="12" fill="#FFFFFF" stroke="#341720" stroke-width="5"/>
+    <g id="nm-pupils"><circle cx="518" cy="1237" r="6" fill="#341720"/><circle cx="562" cy="1237" r="6" fill="#341720"/></g>
+    <path id="nm-brows" d="M504 1218 L530 1222 M550 1222 L576 1218" stroke="#341720" stroke-width="6" stroke-linecap="round" opacity="0"/>
+    <path d="M520 1290 Q540 1296 560 1290" stroke="#341720" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <g fill="#341720"><circle cx="540" cy="1370" r="9"/><circle cx="540" cy="1410" r="9"/><circle cx="540" cy="1450" r="9"/></g>
+  </svg>
+  <div id="nm-connor"></div>
+  <div id="nm-dylan"></div>
+  <div id="nm-snow"></div>
+  <div id="nm-lap"><svg width="340" height="160" viewBox="-170 -80 340 160">
+    <rect x="-150" y="-62" width="300" height="124" rx="30" fill="#341720" transform="translate(8 10)"/>
+    <rect x="-150" y="-62" width="300" height="124" rx="30" fill="#FFFFFF" stroke="#341720" stroke-width="9"/>
+    <text x="-40" y="26" text-anchor="middle" font-family="Luckiest Guy" font-size="74" fill="#341720">LAP</text>
+    <text class="nm-lapn" id="nm-l1" x="76" y="30" text-anchor="middle" font-family="Luckiest Guy" font-size="90" fill="#1FA3A0">1</text>
+    <text class="nm-lapn" id="nm-l2" x="76" y="30" text-anchor="middle" font-family="Luckiest Guy" font-size="90" fill="#2F66E6">2</text>
+    <text class="nm-lapn" id="nm-l3" x="76" y="30" text-anchor="middle" font-family="Luckiest Guy" font-size="90" fill="#E05A47">3</text>
+  </svg></div>
+  <div class="nm-q" id="nm-q0" style="left:300px;top:960px"><svg width="100" height="140" viewBox="-50 -80 100 140"><text class="wt" font-size="150" style="fill:#1FA3A0">?</text></svg></div>
+  <div class="nm-q" id="nm-q1" style="left:800px;top:940px"><svg width="100" height="140" viewBox="-50 -80 100 140"><text class="wt" font-size="150" style="fill:#2F66E6">?</text></svg></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"NO MAP","pts":"3","unit":"LAPS","sub":"NO SIGNAL. NO IDEA.","color":"#1FA3A0","dark":"#136E6C","light":"#C9F2F0"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  // both walk the same way; Connor a step behind Dylan
+  WA.actor('nm-dylan', ['walk-a', 'walk-b', 'point-l'], { x: 0, y: 1760, s: 0.58, member: 'dylan', tag: 'DYLAN', color: '#1FA3A0' });
+  WA.actor('nm-connor', ['walk-a', 'walk-b', 'point-r'], { x: 0, y: 1712, s: 0.55, member: 'connor', tag: 'CONNOR', color: '#2F66E6' });
+  WA.snow(tl, '#nm-snow', { n: 40, seed: 6, speed: 220, drift: -40, size: [8, 14] });
+  gsap.set(['#nm-dylan', '#nm-connor'], { x: -300 });
+
+  var laps = [[0, 30], [32, 62]];
+  laps.forEach(function (l, i) {
+    tl.fromTo('#nm-dylan', { x: -260 }, { x: 1380, duration: (l[1] - l[0]) * F, ease: 'none', immediateRender: i === 0 }, l[0] * F);
+    tl.fromTo('#nm-connor', { x: -420 }, { x: 1220, duration: (l[1] - l[0]) * F, ease: 'none', immediateRender: i === 0 }, l[0] * F);
+    tl.fromTo('#nm-pupils', { x: -7 }, { x: 7, duration: (l[1] - l[0]) * F, ease: 'none', immediateRender: i === 0 }, l[0] * F);
+  });
+  // lap 3: in again, and stop either side of the snowman
+  tl.fromTo('#nm-dylan', { x: -260 }, { x: 300, duration: 22 * F, ease: 'power1.out', immediateRender: false }, 64 * F);
+  tl.fromTo('#nm-connor', { x: -420 }, { x: 800, duration: 26 * F, ease: 'power1.out', immediateRender: false }, 64 * F);
+  tl.fromTo('#nm-pupils', { x: -7 }, { x: 0, duration: 24 * F, ease: 'none', immediateRender: false }, 64 * F);
+  WA.cycle(tl, '#nm-dylan', ['walk-a', 'walk-b'], 0, 88 * F, 5, 8);
+  WA.cycle(tl, '#nm-connor', ['walk-b', 'walk-a'], 0, 90 * F, 5, 8);
+  // LAP 1 / 2 / 3
+  tl.fromTo('#nm-lap', { scale: 0, rotation: -12, opacity: 1 }, { scale: 1, rotation: -3, opacity: 1, duration: 9 * F, ease: 'back.out(2.4)', immediateRender: false }, 8 * F);
+  [8, 40, 72].forEach(function (f, i) {
+    tl.set('#nm-l' + (i + 1), { opacity: 1 }, f * F);
+    if (i) { tl.set('#nm-l' + i, { opacity: 0 }, f * F); WA.squash(tl, '#nm-lap', f * F, 0.18, 10); }
+  });
+  tl.to('#nm-lap', { scale: 0, opacity: 0, duration: 6 * F, ease: 'back.in(2)' }, 110 * F);
+  tl.to('#nm-brows', { opacity: 1, duration: 4 * F }, 72 * F);
+  // stop, point opposite ways, ? ?
+  WA.take(tl, '#nm-dylan', 'point-l', 92 * F, 0.08);
+  WA.take(tl, '#nm-connor', 'point-r', 92 * F, 0.08);
+  WA.popIn(tl, '#nm-q0', 96 * F, 9, { rot0: -30, rot: -10 });
+  WA.popIn(tl, '#nm-q1', 99 * F, 9, { rot0: 30, rot: 10 });
+  WA.bob(tl, '#nm-q0', 106 * F, 1.2, 12, 0.6);
+  WA.bob(tl, '#nm-q1', 108 * F, 1.2, 12, 0.6);
+
+  window.__timelines['joke-nomap'] = tl;
+})();
+</script>
+</body>
+</html>

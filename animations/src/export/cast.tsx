@@ -7,9 +7,9 @@
    Run: ./scripts/export-cast.sh   →  hyperframes/assets/cast/flex-<pose>[-<member>].svg + flex.json */
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { writeFileSync, mkdirSync } from 'fs';
-import { C, Hero, Pose, pose, rig } from '../hero/Hero';
-import { POSES, Look } from './cast-poses';
+import { writeFileSync, mkdirSync, readFileSync } from 'fs';
+import { C, Hero, Pose, pose, rig, plant } from '../hero/Hero';
+import { POSES, PROPS, Look } from './cast-poses';
 
 const OUT = process.argv[2] || 'hyperframes/assets/cast';
 mkdirSync(OUT, { recursive: true });
@@ -39,6 +39,13 @@ const markup = (el: React.ReactElement) =>
     </svg>,
   );
 
+/* An SVG shown as an <img> can't see the page's fonts, so a pose with words in it (the GYM suitcase, the PTS bags)
+   carries Luckiest Guy inside it. */
+const FONT = readFileSync('hyperframes/assets/fonts/luckiest-guy.woff2').toString('base64');
+const withFont = (svg: string) => svg.includes('Luckiest Guy')
+  ? svg.replace(/(<svg[^>]*>)/, `$1<defs><style>@font-face{font-family:'Luckiest Guy';src:url(data:font/woff2;base64,${FONT}) format('woff2')}</style></defs>`)
+  : svg;
+
 const recolor = (svg: string, [main, hi, sh]: [string, string, string]) =>
   svg.split(C.violet).join(main).split(C.violetHi).join(hi).split(C.violetSh).join(sh);
 
@@ -46,9 +53,9 @@ const manifest: Record<string, unknown> = { viewBox: VB, poses: {} };
 const pt = (q: [number, number]) => [Math.round(q[0] - VB.x), Math.round(q[1] - VB.y)];
 
 for (const look of POSES as Look[]) {
-  const p: Pose = pose(look.p);
+  const p: Pose = look.plant ? plant(pose(look.p)) : pose(look.p);
   const r = rig(p);
-  const svg = markup(
+  const svg = withFont(markup(
     <g>
       {look.back}
       <Hero
@@ -67,17 +74,24 @@ for (const look of POSES as Look[]) {
       />
       {look.over}
     </g>,
-  );
+  ));
   (manifest.poses as Record<string, unknown>)[look.id] = {
     handL: pt(r.handL() as [number, number]),
     handR: pt(r.handR() as [number, number]),
     headTop: pt(r.headTop() as [number, number]),
     eyes: pt(r.eyes() as [number, number]),
     mouth: pt(r.mouth() as [number, number]),
+    ankleL: pt(r.W(r.lL.ankle, 0, 0) as [number, number]),
+    ankleR: pt(r.W(r.lR.ankle, 0, 0) as [number, number]),
     members: look.members ?? [],
   };
   writeFileSync(`${OUT}/flex-${look.id}.svg`, svg);
   for (const m of look.members ?? []) writeFileSync(`${OUT}/flex-${look.id}-${m}.svg`, recolor(svg, MEMBERS[m]));
+}
+for (const prop of PROPS) {
+  writeFileSync(`${OUT}/prop-${prop.id}.svg`, withFont(renderToStaticMarkup(
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-300 -300 600 600" width={600} height={600}>{prop.el as React.ReactElement}</svg>,
+  )));
 }
 writeFileSync(`${OUT}/flex.json`, JSON.stringify(manifest, null, 1) + '\n');
 console.log(`${(POSES as Look[]).length} poses → ${OUT}`);

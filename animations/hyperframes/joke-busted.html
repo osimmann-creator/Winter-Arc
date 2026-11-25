@@ -1,0 +1,110 @@
+<!doctype html>
+<!--
+  Busted (joke-busted): a guy is logging a post on his phone when a squad car (the PTS POLICE) slides in with its
+  lights flashing. He throws his hands up and BUSTED slams onto the screen. Anyone, so no names.
+  Beats (30 fps): squad car slides in 12-34 (skid 28), hands up 36, BUSTED 44, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/buddy.js"></script>
+<script src="assets/props.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #bu-cam { position: absolute; inset: 0; transform-origin: 540px 1600px; }
+  #bu-car { left: 420px; top: 1420px; }
+  #bu-red, #bu-blue { position: absolute; inset: 0; opacity: 0; mix-blend-mode: multiply; }
+  #bu-red { background: radial-gradient(circle at 70% 60%, rgba(255,43,59,.9) 0%, rgba(255,43,59,.35) 50%, rgba(255,43,59,.1) 85%); }
+  #bu-blue { background: radial-gradient(circle at 70% 60%, rgba(43,91,255,.9) 0%, rgba(43,91,255,.35) 50%, rgba(43,91,255,.1) 85%); }
+  #bu-stamp { position: absolute; left: 540px; top: 960px; width: 0; height: 0; opacity: 0; }
+  #bu-stamp svg { position: absolute; left: -420px; top: -150px; overflow: visible; }
+  .bu-smoke { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: #DCDDE6; border: 6px solid #341720; opacity: 0; }
+  #bu-fx { position: absolute; inset: 0; }
+  #bu-phone { position: absolute; left: 0; top: 0; width: 70px; height: 120px; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-busted" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="bu-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#24264A">
+  <div id="bu-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="bu-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A1B3A"/><stop offset="1" stop-color="#3D3A6E"/></linearGradient></defs>
+    <rect width="1080" height="1600" fill="url(#bu-sky)"/>
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="-20" y="760" width="560" height="840" fill="#4C4A7A"/><rect x="540" y="880" width="560" height="720" fill="#5B4A6E"/>
+      <rect x="40" y="1240" width="440" height="300" fill="#FFE9A0"/><rect x="600" y="1260" width="420" height="280" fill="#2B2540"/>
+      <rect x="20" y="1170" width="480" height="70" fill="#E05A47"/><rect x="580" y="1190" width="460" height="70" fill="#45B87A"/>
+    </g>
+    <text x="260" y="1222" text-anchor="middle" font-family="Luckiest Guy" font-size="50" fill="#FFFFFF">24/7 GYM</text>
+    <text x="810" y="1242" text-anchor="middle" font-family="Luckiest Guy" font-size="50" fill="#FFFFFF">DONUTS</text>
+    <g fill="#FFF6D6" stroke="#341720" stroke-width="6"><rect x="60" y="840" width="90" height="110"/><rect x="220" y="840" width="90" height="110"/><rect x="380" y="840" width="90" height="110"/>
+      <rect x="620" y="960" width="90" height="110"/><rect x="780" y="960" width="90" height="110"/><rect x="940" y="960" width="90" height="110"/></g>
+    <path d="M120 1300 L120 1540 M240 1300 L240 1540 M360 1300 L360 1540" stroke="#E2C66E" stroke-width="10"/>
+    <rect x="0" y="1600" width="1080" height="120" fill="#9AA0AE"/><path d="M0 1600 L1080 1600 M0 1720 L1080 1720" stroke="#341720" stroke-width="8"/>
+    <rect x="0" y="1720" width="1080" height="640" fill="#4A4E60"/>
+    <path d="M60 1980 L240 1980 M420 1980 L600 1980 M780 1980 L960 1980" stroke="#C9C37E" stroke-width="16" stroke-linecap="round"/>
+  </svg>
+  <div id="bu-guy"></div>
+  <div id="bu-fx"></div>
+  <div id="bu-car"></div>
+  <div id="bu-phone"><svg width="70" height="120" viewBox="0 0 70 120"><rect x="4" y="4" width="62" height="112" rx="14" fill="#2B2340" stroke="#341720" stroke-width="7"/><rect x="12" y="14" width="46" height="88" rx="8" fill="#BCD3FF"/></svg></div>
+  <div class="word" id="bu-skrt" style="left:820px;top:1330px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#FFFFFF">SKRRT!</text></svg></div></div>
+  </div>
+  <div id="bu-red"></div><div id="bu-blue"></div>
+  <div id="bu-stamp"><svg width="840" height="300" viewBox="-420 -150 840 300">
+    <rect x="-400" y="-130" width="800" height="260" rx="34" fill="#341720" transform="translate(12 16)"/>
+    <rect x="-400" y="-130" width="800" height="260" rx="34" fill="#FFFFFF" stroke="#341720" stroke-width="12"/>
+    <rect x="-372" y="-102" width="744" height="204" rx="22" fill="none" stroke="#C9242E" stroke-width="12"/>
+    <text x="0" y="62" text-anchor="middle" font-family="Luckiest Guy" font-size="190" fill="#C9242E" stroke="#341720" stroke-width="10" paint-order="stroke" letter-spacing="8">BUSTED</text>
+  </svg></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"BUSTED","pts":"0","unit":"PTS","sub":"POST VOIDED","color":"#C9242E","dark":"#8C1720","light":"#FFD3D6"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  WA.actor('bu-guy', ['phone', 'handsup'], { x: 270, y: 1800, s: 0.62 });
+  WA.pose(tl, '#bu-guy', 'phone', 0);
+  WA.car.build('bu-car', { police: true, id: 'bu-car', mirror: true, scale: 0.86 });
+  document.getElementById('bu-car-cabin').innerHTML = '<div id="bu-cop"></div>';
+  WA.buddyIn('bu-cop', { face: 'mad', hat: 'cop', coat: 'uniform', top: '#2B3F7A', pants: '#23315E', arms: 'wheel', skin: '#C98B5E' }, 560, 470, 0.4);
+
+  // the squad car slides in from the right and skids to a stop
+  tl.fromTo('#bu-car', { x: 900 }, { x: 0, duration: 20 * F, ease: 'power3.out' }, 12 * F);
+  tl.fromTo('#bu-car', { rotation: 0 }, { rotation: 3, duration: 6 * F, ease: 'power1.out', yoyo: true, repeat: 1, immediateRender: false }, 26 * F);
+  tl.fromTo(['#bu-car-w0', '#bu-car-w1'], { rotation: 0 }, { rotation: -720, duration: 20 * F, ease: 'power3.out' }, 12 * F);
+  WA.word(tl, '#bu-skrt', 26 * F, 24, { rot: 6, rot0: -10, seed: 5, amp: 6 });
+  var fx = document.getElementById('bu-fx');
+  for (var j = 0; j < 7; j++) {
+    var d = document.createElement('div'); d.className = 'bu-smoke'; d.style.left = (950 + (j % 3) * 40) + 'px'; d.style.top = '1800px'; fx.appendChild(d);
+    tl.fromTo(d, { scale: 0.3, opacity: 1, x: 0, y: 0 }, { scale: 1.5 + (j % 2) * 0.5, opacity: 0, x: 40 + j * 22, y: -60 - (j % 3) * 40, duration: 22 * F, ease: 'power2.out', immediateRender: false }, (20 + j * 2) * F);
+  }
+  // lights
+  for (var k = 0; k < 26; k++) {
+    var t = (12 + k * 4) * F, on = k % 2;
+    tl.set('#bu-car-red', { opacity: on ? 0 : 1 }, t);
+    tl.set('#bu-car-blue', { opacity: on ? 1 : 0 }, t);
+    if (k > 5) { tl.set('#bu-red', { opacity: on ? 0 : 0.7 }, t); tl.set('#bu-blue', { opacity: on ? 0.7 : 0 }, t); }
+  }
+  tl.set(['#bu-red', '#bu-blue'], { opacity: 0 }, 116 * F);
+  // hands up, the phone goes flying
+  WA.take(tl, '#bu-guy', 'handsup', 36 * F, 0.12);
+  WA.hop(tl, '#bu-guy', 36 * F, 50, 10);
+  WA.toss(tl, '#bu-phone', 36 * F, { x0: 300, y0: 1350, vx: -7, vy: -22, g: 1.6, frames: 30, spin: -24, fade: false });
+  // BUSTED
+  tl.fromTo('#bu-stamp', { scale: 2.8, rotation: 10, opacity: 0 }, { scale: 0.92, rotation: -6, opacity: 1, duration: 7 * F, ease: 'power3.in', immediateRender: false }, 44 * F);
+  tl.to('#bu-stamp', { scale: 1, duration: 8 * F, ease: 'back.out(3)' }, 51 * F);
+  WA.shake(tl, '#bu-cam', 51 * F, 14 * F, 16, { decay: true, seed: 8, rot: 0.6 });
+  tl.to('#bu-stamp', { opacity: 0, scale: 0.9, duration: 6 * F, ease: 'power1.in' }, 112 * F);
+  tl.fromTo('#bu-cam', { scale: 1 }, { scale: 1.08, duration: 5.5, ease: 'sine.inOut' }, 0);
+
+  window.__timelines['joke-busted'] = tl;
+})();
+</script>
+</body>
+</html>
