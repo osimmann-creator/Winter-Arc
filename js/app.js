@@ -8,7 +8,7 @@ const App = (() => {
   const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const S = { tab: 'home', board: 'week', messages: [], comments: {}, feedReactions: {}, activeInjuries: [], me: null, group: null, members: [], posts: [], events: [], calc: null, draft: null, ringFrom: null, busy: false,
-    acct: null, prefs: null, lastUser: '' };
+    acct: null, prefs: null, lastUser: '', profileTrail: [] };
   const pendingCommentHearts = new Set();
   const pendingFeedReactions = new Set();
   const COLORS = ['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F'];
@@ -18,6 +18,7 @@ const App = (() => {
   const scrollToTop = (behavior = 'instant') => $('#app').scrollTo({ top: 0, behavior });
   const ic = (n, cls) => Art.ui(n, cls);
   const member = id => S.members.find(m => m.id === id);
+  const openProfileMember = () => member(S.profileTrail.at(-1)?.id);
   const isComm = () => !!(S.me && member(S.me.id) && member(S.me.id).role === 'commissioner');
   const displayName = m => m ? Logic.displayName(m, S.calc) : 'Someone';
   const nameOf = id => (S.me && id === S.me.id ? 'You' : displayName(member(id)));
@@ -45,6 +46,14 @@ const App = (() => {
     const m = member(id) || {};
     return bigAv(m.name, m.color || '#1E8FFF', m.photo, size);
   }
+  function profileButton(id, content, cls = '') {
+    const m = member(id), own = id === S.me?.id;
+    if (!m || id === openProfileMember()?.id || (own && S.tab === 'me' && !S.profileTrail.length)) {
+      return `<span class="${cls}">${content}</span>`;
+    }
+    const label = own ? 'View your profile' : `View ${displayName(m)}’s profile`;
+    return `<button type="button" class="profile-trigger ${cls}" data-act="member-profile" data-id="${esc(id)}" aria-label="${esc(label)}">${content}</button>`;
+  }
   const coin = (pts, cls = '') => `<span class="coin ${cls}">+${fmtPts(pts)}</span>`;
   const postPoints = post => post.voided || S.calc.cappedPosts.has(post.id) ? 0 : CATS[post.cat].pts;
   const catChip = cat => `<span class="cchip" style="--c:${CATS[cat].color}">${Art.icon64(cat)}${esc(catName(cat))}</span>`;
@@ -64,6 +73,8 @@ const App = (() => {
     S.xmas = xmas;
     S.members = members;
     if (S.me && !S.members.some(m => m.id === S.me.id)) S.me = null;
+    if (!S.me) S.profileTrail.length = 0;
+    else while (S.profileTrail.length && !openProfileMember()) S.profileTrail.pop();
     S.posts = posts;
     S.events = events;
     S.messages = social.messages;
@@ -122,10 +133,11 @@ const App = (() => {
     renderView(); navState();
   }
   function renderView() {
-    const v = view();
+    const v = view(), profile = openProfileMember();
     if (S.auth?.signedIn && S.auth.mustChangePassword) v.innerHTML = vSetPassword();
     else if (!inApp()) v.innerHTML = vSignedOut();
-    else v.innerHTML = S.tab === 'feed' ? vFeed() : S.tab === 'board' ? vBoard() : S.tab === 'me' ? vMe() : S.tab === 'account' ? vAccount() : vHome();
+    else if (profile) v.innerHTML = vProfile(profile);
+    else v.innerHTML = S.tab === 'feed' ? vFeed() : S.tab === 'board' ? vBoard() : S.tab === 'me' ? vProfile(member(S.me.id)) : S.tab === 'account' ? vAccount() : vHome();
     syncKeyboard();
   }
   function navState() {
@@ -133,8 +145,23 @@ const App = (() => {
   }
   function go(tab) {
     if (!inApp()) return;
-    if (S.tab === tab) { scrollToTop('smooth'); return; }
+    if (S.tab === tab && !S.profileTrail.length) { scrollToTop('smooth'); return; }
+    S.profileTrail.length = 0;
     S.tab = tab; renderView(); scrollToTop(); navState();
+  }
+  function openMemberProfile(id) {
+    if (!inApp() || !member(id) || id === openProfileMember()?.id) return;
+    if (id === S.me.id) { go('me'); return; }
+    S.profileTrail.push({ id, scrollTop: $('#app').scrollTop });
+    renderView(); scrollToTop();
+    $('#profileName').focus({ preventScroll: true });
+  }
+  function backFromProfile() {
+    const previous = S.profileTrail.pop();
+    if (!previous) return;
+    renderView();
+    $('#app').scrollTo({ top: previous.scrollTop, behavior: 'instant' });
+    view().focus({ preventScroll: true });
   }
 
   /* ------------------------------------------------------------ home */
@@ -182,7 +209,7 @@ const App = (() => {
     const n = cfg().strikesOut;
     return `<span class="strikes" role="img" aria-label="${R.strikes} of ${n} strikes">${Array.from({ length: n }, (_, i) => `<i class="${i < R.strikes ? 'on' : ''}">${i < R.strikes ? ic('x') : ''}</i>`).join('')}</span>`;
   }
-  const miniRow = p => `<li>${avatar(p.memberId, 34)}<span class="mtxt"><b>${esc(nameOf(p.memberId))}</b> ${esc(catName(p.cat).toLowerCase() === 'beers' ? 'had beers with the fellas' : 'logged ' + catName(p.cat))}<small>${ago(p.at)}</small></span><span class="mic" style="--c:${CATS[p.cat].color}">${Art.icon64(p.cat)}</span>${coin(postPoints(p), 'sm')}</li>`;
+  const miniRow = p => `<li>${profileButton(p.memberId, avatar(p.memberId, 34))}<span class="mtxt"><b>${esc(nameOf(p.memberId))}</b> ${esc(catName(p.cat).toLowerCase() === 'beers' ? 'had beers with the fellas' : 'logged ' + catName(p.cat))}<small>${ago(p.at)}</small></span><span class="mic" style="--c:${CATS[p.cat].color}">${Art.icon64(p.cat)}</span>${coin(postPoints(p), 'sm')}</li>`;
   function vHome() {
     const C = S.calc, se = C.season, R = C.by[S.me.id], min = R.goal;
     const pts = S.ringFrom != null ? S.ringFrom : R.thisWeek, left = Math.max(0, min - R.thisWeek);
@@ -214,7 +241,10 @@ const App = (() => {
   <button class="btn btn-log" data-act="log">${ic('plus')}<span>Log an activity</span></button>
   <div class="card standing">
     <h2>Still standing <small>${C.alive.length} of ${S.members.length}</small></h2>
-    <div class="avs">${S.members.map(m => { const out = C.by[m.id].eliminated; return `<span class="sv${out ? ' out' : ''}">${avatar(m.id, 46)}${out ? `<i class="xmark">${ic('x')}</i>` : ''}<small>${esc(m.id === S.me.id ? 'You' : displayName(m))}</small></span>`; }).join('')}</div>
+    <div class="avs">${S.members.map(m => {
+      const out = C.by[m.id].eliminated;
+      return profileButton(m.id, `${avatar(m.id, 46)}${out ? `<i class="xmark">${ic('x')}</i>` : ''}<small>${esc(nameOf(m.id))}</small>`, out ? 'sv out' : 'sv');
+    }).join('')}</div>
     <p class="note">Two strikes and you’re out. Survivors win the Winter Arc.</p>
   </div>
   <div class="card recent">
@@ -287,7 +317,7 @@ const App = (() => {
     const comments = S.comments[kind + ':' + id] || [];
     return `<div class="feed-comments">
       ${comments.length ? `<ul>${comments.map(c => `<li>
-        ${avatar(c.memberId, 25)}
+        ${profileButton(c.memberId, avatar(c.memberId, 25))}
         <div class="comment-copy"><b>${esc(displayName(member(c.memberId)))}</b> <small>${ago(c.at)}</small><p>${esc(c.body)}</p></div>
         <button class="comment-heart" type="button" data-act="comment-heart" data-id="${esc(c.id)}"
           aria-label="Heart comment" aria-pressed="${!!c.hearted}"${pendingCommentHearts.has(c.id) ? ' disabled' : ''}>${ic('heart')}<span aria-live="polite">${c.heartCount ?? 0}</span></button>
@@ -304,7 +334,7 @@ const App = (() => {
     const details = [p.cat === 'gym' && p.minutes ? p.minutes + ' min' : '', p.miles ? p.miles + ' mi' : '', p.paceSeconds ? fmtPace(p.paceSeconds) + ' /mi' : ''].filter(Boolean).join(' · ');
     const wit = (p.witnesses || []).map(id => esc(nameOf(id))).join(', ');
     return `<article class="post card${p.voided ? ' voided' : ''}" data-id="${p.id}" style="--c:${C0.color}">
-  <header>${avatar(p.memberId, 44)}<div class="who"><b>${esc(nameOf(p.memberId))}</b><span>${catChip(p.cat)}<em>${ago(p.at)}</em></span></div>${coin(postPoints(p))}</header>
+  <header>${profileButton(p.memberId, `${avatar(p.memberId, 44)}<span class="who"><b>${esc(nameOf(p.memberId))}</b><span>${catChip(p.cat)}<em>${ago(p.at)}</em></span></span>`, 'post-author')}${coin(postPoints(p))}</header>
   ${p.photo ? `<button class="photo" data-act="photo" data-id="${p.id}" aria-label="Open the proof photo"><img src="${esc(Art.photo(p.photo))}" alt="Proof for ${esc(C0.label)}" loading="lazy"></button>` : ''}
   ${p.voided ? `<p class="stamp">${p.fraud ? 'Voided · fraud · 0-point week' : 'Voided · 0 points'}</p>` : ''}
   ${S.calc.cappedPosts.has(p.id) ? '<p class="note">Weekly limit reached for this activity.</p>' : ''}
@@ -324,7 +354,7 @@ const App = (() => {
     const injury = message.kind === 'injury';
     return `<article class="card post feed-message${injury ? ' injury-report' : ''}">
       ${injury ? `<p class="eyebrow">Team news</p><h2>${esc(message.title)}</h2><small>${ago(message.at)}</small>`
-        : `<header>${avatar(message.memberId, 40)}<div class="who"><b>${esc(nameOf(message.memberId))}</b><span>${ago(message.at)}</span></div></header>`}
+        : `<header>${profileButton(message.memberId, `${avatar(message.memberId, 40)}<span class="who"><b>${esc(nameOf(message.memberId))}</b><span>${ago(message.at)}</span></span>`, 'post-author')}</header>`}
       <p class="feed-message-body">${esc(message.body)}</p>
       <footer>${reactionsHTML('message', message.id)}</footer>
       ${commentsHTML('message', message.id)}
@@ -349,13 +379,15 @@ const App = (() => {
         </form></details>` : ''}
     </div>`;
   }
+  const newestFirst = (a, b) => new Date(b.at) - new Date(a.at);
+  const renderPost = p => p.isEvent ? jokeCard(p) : p.kind ? messageCard(p) : postCard(p);
   function vFeed() {
     const evs = S.events.filter(inFeed).map(e => ({ ...e, isEvent: true }));
-    const list = [...S.posts, ...evs, ...S.messages].sort((a, b) => new Date(b.at) - new Date(a.at));
+    const list = [...S.posts, ...evs, ...S.messages].sort(newestFirst);
     return `<section class="screen feed"><div class="screen-h"><h1>Feed</h1></div>
   ${xmasBallotHTML()}
   ${feedComposer()}
-  ${list.length ? list.map(p => p.isEvent ? jokeCard(p) : p.kind ? messageCard(p) : postCard(p)).join('') : `<div class="card empty"><img src="${Art.mascot('point')}" alt="" width="104" height="160"><h2>Nothing here yet</h2><p class="note">Log something and it shows up here for the fellas.</p></div>`}
+  ${list.length ? list.map(renderPost).join('') : `<div class="card empty"><img src="${Art.mascot('point')}" alt="" width="104" height="160"><h2>Nothing here yet</h2><p class="note">Log something and it shows up here for the fellas.</p></div>`}
   <p class="cap-hint">Think a post is fake? Tap ${CAP} to call cap. ${CAP_DISPUTE} caps marks it disputed.</p>
 </section>`;
   }
@@ -364,14 +396,14 @@ const App = (() => {
   function boardRow(m, i, week, max) {
     const R = S.calc.by[m.id], v = week ? R.thisWeek : R.total, min = R.goal, w = week ? Math.min(1, v / min) : max ? v / max : 0;
     return `<li class="row${R.eliminated ? ' out' : ''}${m.id === S.me.id ? ' me' : ''}${i < 3 ? ' top' + (i + 1) : ''}" data-id="${m.id}">
-  <span class="rk">${i + 1}</span>${avatar(m.id, 44)}
-  <div class="who"><b>${esc(displayName(m))}${m.id === S.me.id ? ' <small>(you)</small>' : ''}</b><span class="bar${week && v >= min ? ' full' : ''}"><i style="--w:${(w * 100).toFixed(1)}%"></i></span></div>
+  <span class="rk">${i + 1}</span>
+  ${profileButton(m.id, `${avatar(m.id, 44)}<span class="who"><b>${esc(displayName(m))}${m.id === S.me.id ? ' <small>(you)</small>' : ''}</b><span class="bar${week && v >= min ? ' full' : ''}"><i style="--w:${(w * 100).toFixed(1)}%"></i></span></span>`, 'board-person')}
   <div class="side"><b class="pts">${fmtPts(v)}</b>${R.eliminated ? '<span class="outtag">OUT</span>' : strikesHTML(R)}</div>
 </li>`;
   }
   function podium(top) {
     const order = [top[1], top[0], top[2]], h = [76, 104, 58], n = ['2', '1', '3'];
-    return `<div class="podium" aria-label="Top three all-time">${order.map((m, i) => `<div class="pod p${n[i]}">${i === 1 ? '<span class="crown">' + Art.icon64('trophy') + '</span>' : ''}${avatar(m.id, i === 1 ? 64 : 50)}<b>${esc(displayName(m))}</b><span class="ppts">${fmtPts(S.calc.by[m.id].total)} pts</span><div class="blk" style="--h:${h[i]}px">${n[i]}</div></div>`).join('')}</div>`;
+    return `<div class="podium" aria-label="Top three all-time">${order.map((m, i) => `<div class="pod p${n[i]}">${i === 1 ? '<span class="crown">' + Art.icon64('trophy') + '</span>' : ''}${profileButton(m.id, `${avatar(m.id, i === 1 ? 64 : 50)}<b>${esc(displayName(m))}</b>`, 'pod-person')}<span class="ppts">${fmtPts(S.calc.by[m.id].total)} pts</span><div class="blk" style="--h:${h[i]}px">${n[i]}</div></div>`).join('')}</div>`;
   }
   function vBoard() {
     const C = S.calc, min = cfg().weeklyMin, week = S.board === 'week', list = week ? C.weekRank : C.allRank;
@@ -432,29 +464,47 @@ const App = (() => {
   <p>Miss your weekly goal and you take a strike. Any week covered by an injury report is exempt from strikes. ${cfg().strikesOut} strikes = elimination. Anyone who survives the entire Winter Arc wins. If nobody survives, the most all-time points wins.</p>
 </div>`;
   }
-  function vMe() {
-    const C = S.calc, R = C.by[S.me.id], m = member(S.me.id), se = C.season;
+  function vProfile(m) {
+    const { season: se, by } = S.calc, R = by[m.id], own = m.id === S.me.id;
+    const posts = [...S.posts.filter(p => p.memberId === m.id), ...S.messages.filter(p => p.kind === 'text' && p.memberId === m.id)]
+      .sort(newestFirst);
     const runs = R.counted.filter(post => post.cat === 'run' && Logic.weekIdx(post.at, se.start, se.timezone) === se.idx);
     const miles = runs.reduce((sum, post) => sum + post.miles, 0);
     const timed = runs.filter(post => post.paceSeconds > 0);
     const timedMiles = timed.reduce((sum, post) => sum + post.miles, 0);
     const pace = timedMiles && Math.round(timed.reduce((sum, post) => sum + post.paceSeconds * post.miles, 0) / timedMiles);
-    return `<section class="screen me">
-  <div class="card profile">${avatar(m.id, 70)}<div><h1>${esc(displayName(m))}</h1><p>${m.role === 'commissioner' ? '<span class="chip comm">Commissioner</span>' : ''}<span class="chip ${R.eliminated ? 'out' : 'safe'}">${R.eliminated ? 'Eliminated' : 'Still in'}</span></p>${S.group ? `<p class="crewline">${ic('users')}${esc(S.group.name)} · ${S.members.length} people</p>` : ''}</div><button class="gear" data-act="account" aria-label="Account and settings">${ic('gear')}</button></div>
+    return `<section class="screen me" aria-labelledby="profileName">
+  ${own ? '' : backBtn('profile-back', '')}
+  <div class="card profile${own ? ' own' : ''}">
+    ${avatar(m.id, 70)}
+    <div class="profile-info">
+      <h1 id="profileName" tabindex="-1">${esc(displayName(m))}</h1>
+      <p>${m.role === 'commissioner' ? '<span class="chip comm">Commissioner</span>' : ''}<span class="chip ${R.eliminated ? 'out' : 'safe'}">${R.eliminated ? 'Eliminated' : 'Still in'}</span></p>
+      ${S.group ? `<p class="crewline">${ic('users')}${esc(S.group.name)} · ${S.members.length} people</p>` : ''}
+      <button class="link profile-posts-link" type="button" data-act="profile-posts">View posts</button>
+    </div>
+    ${own ? `<button class="gear" data-act="account" aria-label="Account and settings">${ic('gear')}</button>` : ''}
+  </div>
   <div class="grid4">
+    <div class="tile"><b>${fmtPts(R.thisWeek)}</b><small>points this week</small></div>
     <div class="tile"><b>${fmtPts(R.total)}</b><small>all-time points</small></div>
+    <div class="tile"><b>${R.strikes}</b><small>${R.strikes === 1 ? 'strike' : 'strikes'}</small></div>
     <div class="tile"><b>${R.safeWeeks}</b><small>weeks safe</small></div>
     <div class="tile"><b>${fmtPts(R.bestWeek)}</b><small>best week</small></div>
     <div class="tile">${R.fav ? `<span class="mic big" style="--c:${CATS[R.fav].color}">${Art.icon64(R.fav)}</span>` : '<b>–</b>'}<small>${R.fav ? 'favorite: ' + esc(catName(R.fav)) : 'no favorite yet'}</small></div>
   </div>
   <div class="card"><h2>Running this week</h2><p class="kv"><b>${Number(miles.toFixed(2))} mi</b>${pace ? `<span>${fmtPace(pace)} /mi average${timed.length < runs.length ? ` · ${timed.length} of ${runs.length} runs` : ''}</span>` : '<span>Average pace available when logged</span>'}</p></div>
-  <div class="card"><h2>Your weeks</h2>${historyChart(R, se)}</div>
+  <div class="card"><h2>${own ? 'Your weeks' : 'Weekly points'}</h2>${historyChart(R, se)}</div>
   <div class="card"><h2>Badges <small>${R.badges.length} of ${BADGES.length}</small></h2><div class="badges">${BADGES.map(b => { const has = R.badges.includes(b.id); return `<button class="badge${has ? '' : ' locked'}" data-act="badge" data-id="${b.id}" aria-label="${esc(b.name)}. ${esc(b.desc)}${has ? '' : ' Locked.'}">${Art.icon64(b.icon)}<span>${esc(b.name)}</span></button>`; }).join('')}</div></div>
-  <details class="card rules"><summary><h2>Official rules</h2>${ic('chevron', 'chev')}</summary>${rulesHTML()}</details>
+  ${own ? `<details class="card rules"><summary><h2>Official rules</h2>${ic('chevron', 'chev')}</summary>${rulesHTML()}</details>
   <div class="card settings"><h2>Settings</h2>
     <button class="btn" data-act="account">${ic('gear')}Account &amp; settings</button>
     ${isDemo() ? `<button class="btn" data-act="switch">${ic('users')}Switch person (preview)</button><button class="btn" data-act="reset">${ic('refresh')}Reset sample data</button>` : ''}
-  </div>
+  </div>` : ''}
+  <section class="profile-feed" aria-labelledby="profilePosts">
+    <div class="screen-h"><h2 id="profilePosts" tabindex="-1">${own ? 'Your posts' : 'Posts'}</h2></div>
+    ${posts.length ? posts.map(renderPost).join('') : `<div class="card empty"><p class="note">${own ? 'Your activities and text updates will appear here.' : 'No posts yet.'}</p></div>`}
+  </section>
 </section>`;
   }
 
@@ -586,6 +636,7 @@ const App = (() => {
 
   async function afterAuth() {
     S.acct = null; S.tab = 'home';
+    S.profileTrail.length = 0;
     await load();
     if (inApp()) toast(`Welcome back, ${displayName(S.me)}.`, 'wave');
     render(); scrollToTop();
@@ -840,7 +891,7 @@ const App = (() => {
       await load();
       if (original) { render(); toast('Activity updated.'); }
       else {
-        S.tab = 'home'; S.ringFrom = oldPts; render(); scrollToTop();
+        S.tab = 'home'; S.profileTrail.length = 0; S.ringFrom = oldPts; render(); scrollToTop();
         try { if (navigator.vibrate) navigator.vibrate([16, 50, 16]); } catch (e) { /* not supported */ }
         await Celebrate.play(Celebrate.pick(post.cat, S.me && S.me.username));
         await afterLog(oldPts, oldBadges, post.cat);
@@ -1268,8 +1319,8 @@ const App = (() => {
     return pr;
   }
   const confirmBox = (title, body, ok, danger) => modal(`<h2>${esc(title)}</h2><p>${esc(body)}</p><div class="mact"><button class="btn" data-close>Cancel</button><button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-ok>${esc(ok)}</button></div>`);
-  function showBadge(id, fresh) {
-    const b = BADGES.find(x => x.id === id), has = S.calc.by[S.me.id].badges.includes(id);
+  function showBadge(id, fresh, memberId = S.me.id) {
+    const b = BADGES.find(x => x.id === id), has = S.calc.by[memberId].badges.includes(id);
     return modal(`<div class="bpop${has ? '' : ' locked'}"><div class="burst" aria-hidden="true"></div>${Art.icon64(b.icon, 'big')}<p class="eyebrow">${fresh ? 'Badge unlocked' : has ? 'Badge earned' : 'Locked badge'}</p><h2>${esc(b.name)}</h2><p>${esc(b.desc)}</p><button class="btn btn-primary" data-ok>${fresh ? 'Let’s go' : 'OK'}</button></div>`, 'badge-modal');
   }
   function toast(msg, pose = 'thumbs') {
@@ -1323,6 +1374,13 @@ const App = (() => {
   /* ------------------------------------------------------------ actions */
   const ACT = {
     tab: el => go(el.dataset.tab),
+    'member-profile': el => openMemberProfile(el.dataset.id),
+    'profile-back': () => backFromProfile(),
+    'profile-posts'() {
+      const heading = $('#profilePosts');
+      heading.focus({ preventScroll: true });
+      heading.scrollIntoView({ block: 'start' });
+    },
     log: () => openLog(),
     'hoat-replay': () => hoatSlam(),
     async 'resolve-injury'(el) {
@@ -1391,14 +1449,14 @@ const App = (() => {
       await Celebrate.play(INSIDE_JOKES.xmas.video);
       await xmasReveal(e);
     },
-    badge: el => showBadge(el.dataset.id, false),
+    badge: el => showBadge(el.dataset.id, false, openProfileMember()?.id),
     async switch() {
       const pick = await demoChooser('Switch person', 'Preview only: jump into anyone’s account.'); if (!pick) return;
       await Store.demoSignInAs(pick); await afterAuth();
     },
     async reset() {
       if (!(await confirmBox('Reset the sample data?', 'Your test posts, inside jokes and passwords go back to the start.', 'Reset'))) return;
-      await Store.resetDemo(); await load(); S.tab = 'home'; render(); scrollToTop(); toast('Sample data reset.');
+      await Store.resetDemo(); await load(); S.tab = 'home'; S.profileTrail.length = 0; render(); scrollToTop(); toast('Sample data reset.');
     },
     ...AUTH_ACT,
     'close-sheet': () => closeSheet(),

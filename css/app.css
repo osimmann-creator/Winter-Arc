@@ -265,7 +265,10 @@ body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px));
 
 /* ---------------------------------------------------------------- feed */
 .post { padding: 14px; }
-.post header { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+.post header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.post-author, .board-person { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; min-width: 0; text-align: left; }
+.profile-trigger { border-radius: 12px; }
+.profile-trigger:where(.post-author, .board-person, .pod-person):hover b { text-decoration: underline; }
 .post .who { display: grid; gap: 2px; min-width: 0; }
 .post .who b { font-weight: 800; font-size: 17px; line-height: 1.1; }
 .post .who span { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -328,7 +331,7 @@ body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px));
 
 /* ---------------------------------------------------------------- board */
 .board { list-style: none; margin: 0; padding: 6px 14px; }
-.board .row { display: grid; grid-template-columns: 30px 44px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 2px dashed var(--line); }
+.board .row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 2px dashed var(--line); }
 .board .row:first-child { border-top: 0; }
 .board .row.me { background: #FEF6D3; border-radius: 14px; margin: 0 -8px; padding: 10px 8px; border-top-color: transparent; }
 .board .row.out { opacity: .5; }
@@ -348,6 +351,7 @@ body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px));
 .outtag { font-family: var(--font-d); font-size: 12px; color: #fff; background: var(--bad); border: 2px solid var(--ink); border-radius: 6px; padding: 2px 6px 0; }
 .podium { display: grid; grid-template-columns: repeat(3, 1fr); align-items: end; gap: 8px; padding: 6px 4px 0; margin-bottom: -16px; position: relative; z-index: 1; }
 .pod { display: grid; justify-items: center; gap: 2px; text-align: center; }
+.pod-person { display: grid; justify-items: center; gap: 2px; }
 .pod b { font-weight: 800; font-size: 15px; }
 .pod .ppts { font-weight: 800; font-size: 12.5px; color: var(--ink2); }
 .pod .crown { margin-bottom: -4px; }
@@ -360,6 +364,10 @@ body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px));
 /* ---------------------------------------------------------------- me */
 .profile { display: flex; align-items: center; gap: 14px; }
 .profile h1 { font-size: 30px; padding-top: 4px; }
+.profile-info { min-width: 0; overflow-wrap: anywhere; }
+.profile-posts-link { display: flex; margin-top: 6px; }
+.profile-feed { display: grid; gap: 16px; }
+.profile-feed .screen-h h2 { font-size: 28px; color: #fff; text-shadow: var(--outline-sm); }
 .grid4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .tile { background: #fff; border: 3px solid var(--ink); border-radius: 18px; box-shadow: 0 4px 0 var(--ink); padding: 12px 8px 10px; display: grid; justify-items: center; align-content: center; gap: 2px; text-align: center; }
 .tile b { font-family: var(--font-d); font-weight: 400; font-size: 30px; line-height: 1; padding-top: 4px; }
@@ -730,7 +738,7 @@ body:has(.avatar-crop[open]) { overflow: hidden; }
 .comm-card { background: linear-gradient(180deg, #FFF8E6 0%, #fff 160px); }
 .comm-card h3 { font-size: 19px; margin-top: 6px; }
 .danger-card { display: grid; gap: 10px; }
-.profile { padding-right: 64px; }
+.profile.own { padding-right: 64px; }
 .gear { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 3px solid var(--ink); background: #fff; box-shadow: 0 3px 0 var(--ink); }
 .gear:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
 .crewline { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; font-size: 13px; color: var(--ink2); margin-top: 4px; }
