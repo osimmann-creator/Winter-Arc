@@ -13,7 +13,7 @@ const App = (() => {
   const pendingFeedReactions = new Set();
   const COLORS = ['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F'];
   const isDemo = () => Store.mode === 'demo';
-  const cfg = () => Store.config();
+  const cfg = () => ({ ...Store.config(), injuryPeriods: S.injuryPeriods });
   const view = () => $('#view');
   const scrollToTop = (behavior = 'instant') => $('#app').scrollTo({ top: 0, behavior });
   const ic = (n, cls) => Art.ui(n, cls);
@@ -46,7 +46,7 @@ const App = (() => {
     return bigAv(m.name, m.color || '#1E8FFF', m.photo, size);
   }
   const coin = (pts, cls = '') => `<span class="coin ${cls}">+${fmtPts(pts)}</span>`;
-  const postPoints = post => S.calc.cappedPosts.has(post.id) ? 0 : CATS[post.cat].pts;
+  const postPoints = post => post.voided || S.calc.cappedPosts.has(post.id) ? 0 : CATS[post.cat].pts;
   const catChip = cat => `<span class="cchip" style="--c:${CATS[cat].color}">${Art.icon64(cat)}${esc(catName(cat))}</span>`;
 
   async function load() {
@@ -69,6 +69,7 @@ const App = (() => {
     S.messages = social.messages;
     S.feedReactions = social.feedReactions || {};
     S.activeInjuries = social.activeInjuries;
+    S.injuryPeriods = social.injuryPeriods || [];
     S.comments = {};
     for (const comment of social.comments) (S.comments[comment.kind + ':' + comment.target] ||= []).push(comment);
     S.calc = Logic.compute(S.members, S.posts, cfg(), new Date());
@@ -145,6 +146,7 @@ const App = (() => {
       return ['cheer', w.length ? `It’s over! ${w.join(', ')} ${w.length > 1 ? 'are' : 'is'} the stuff of legend.` : 'The Winter Arc is over. Legends were made.'];
     }
     if (R.eliminated) return ['shrug', 'You’re out, champ. All-time points still decide it if nobody survives, so keep stacking.'];
+    if (left > 0 && R.injuryWeeks.has(se.idx)) return ['thumbs', 'This week is exempt from strikes while you recover.'];
     if (left <= 0) return ['flex', R.thisWeek >= min * 2 ? 'Double the minimum? Zeus is taking notes.' : 'Safe this week! Anything more is bonus glory.'];
     if (behind) return ['shrug', `${fmtPts(left)} ${ptsWord(left)} to go and the clock is ticking. Move, champ!`];
     if (R.strikes >= 1) return ['wave', `One strike already. ${fmtPts(left)} more ${ptsWord(left)} and this week is safe.`];
@@ -185,7 +187,8 @@ const App = (() => {
     const C = S.calc, se = C.season, R = C.by[S.me.id], min = R.goal;
     const pts = S.ringFrom != null ? S.ringFrom : R.thisWeek, left = Math.max(0, min - R.thisWeek);
     const chip = se.status === 'pre' ? ['pre', 'Starts ' + fmtDay(se.start)] : se.status === 'over' ? ['over', 'Season over']
-      : R.eliminated ? ['out', 'Eliminated'] : R.thisWeek >= min ? ['safe', isHoat() ? 'Hoat guaranteed' : 'Safe this week'] : ['todo', `${fmtPts(left)} to go`];
+      : R.eliminated ? ['out', 'Eliminated'] : R.thisWeek >= min ? ['safe', isHoat() ? 'Hoat guaranteed' : 'Safe this week']
+      : R.injuryWeeks.has(se.idx) ? ['safe', 'Injury exemption'] : ['todo', `${fmtPts(left)} to go`];
     const [pose, line] = mascotState(R, se, left);
     const recent = S.posts.filter(p => !p.voided && Logic.weekIdx(new Date(p.at), se.start) === se.idx).sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 4);
     return `<section class="screen home" aria-labelledby="hT">
@@ -303,7 +306,7 @@ const App = (() => {
     return `<article class="post card${p.voided ? ' voided' : ''}" data-id="${p.id}" style="--c:${C0.color}">
   <header>${avatar(p.memberId, 44)}<div class="who"><b>${esc(nameOf(p.memberId))}</b><span>${catChip(p.cat)}<em>${ago(p.at)}</em></span></div>${coin(postPoints(p))}</header>
   ${p.photo ? `<button class="photo" data-act="photo" data-id="${p.id}" aria-label="Open the proof photo"><img src="${esc(Art.photo(p.photo))}" alt="Proof for ${esc(C0.label)}" loading="lazy"></button>` : ''}
-  ${p.voided ? '<p class="stamp">Voided · fraud · 0-point week</p>' : ''}
+  ${p.voided ? `<p class="stamp">${p.fraud ? 'Voided · fraud · 0-point week' : 'Voided · 0 points'}</p>` : ''}
   ${S.calc.cappedPosts.has(p.id) ? '<p class="note">Weekly limit reached for this activity.</p>' : ''}
   ${p.caption ? `<p class="cap">${esc(p.caption)}</p>` : ''}
   ${details || wit ? `<p class="meta">${details ? `<span>${ic('clock')}${details}</span>` : ''}${wit ? `<span>${ic('users')}Witnessed by ${wit}</span>` : ''}</p>` : ''}
@@ -312,7 +315,7 @@ const App = (() => {
     ${reactionsHTML('activity', p.id, p.reactions)}
     ${mine && !p.voided && !p.fraud ? `<button class="link" data-act="edit" data-id="${p.id}">Edit</button>` : ''}
     ${mine && thisWeek ? `<button class="link danger" data-act="del" data-id="${p.id}">Delete</button>` : ''}
-    ${!mine && !p.voided && isComm() ? `<button class="link danger" data-act="void" data-id="${p.id}">Void</button>` : ''}
+    ${!p.voided && (mine || isComm()) ? `<button class="link danger" data-act="void" data-id="${p.id}">Void</button>` : ''}
   </footer>
   ${commentsHTML('activity', p.id)}
 </article>`;
@@ -396,14 +399,15 @@ const App = (() => {
     let g = '';
     for (let w = 0; w < n; w++) {
       const v = R.weekPts[w], x = pad + w * bw + 1.5, cur = se.status === 'live' && w === se.idx, done = w <= se.lastComplete;
-      const cls = cur ? 'cur' : !done ? 'fut' : v >= R.weekGoals[w] ? 'ok' : 'miss';
+      const exempt = R.injuryWeeks.has(w);
+      const cls = exempt ? 'exempt' : cur ? 'cur' : !done ? 'fut' : v >= R.weekGoals[w] ? 'ok' : 'miss';
       const hh = cls === 'fut' ? 3 : Math.max(3, H - 20 - y(v));
-      g += `<rect class="${cls}" x="${x.toFixed(1)}" y="${(H - 20 - hh).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${hh.toFixed(1)}" rx="3"><title>Week ${w + 1}: ${fmtPts(v)} pts of ${R.weekGoals[w]} required</title></rect>`;
+      g += `<rect class="${cls}" x="${x.toFixed(1)}" y="${(H - 20 - hh).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${hh.toFixed(1)}" rx="3"><title>Week ${w + 1}: ${fmtPts(v)} pts${exempt ? ' · injury exemption' : ' of ' + R.weekGoals[w] + ' required'}</title></rect>`;
       if (w % 4 === 0 || w === n - 1) g += `<text x="${(x + (bw - 3) / 2).toFixed(1)}" y="${H - 5}" text-anchor="middle">W${w + 1}</text>`;
     }
     const ly = y(min);
     return `<svg class="hist" viewBox="0 0 ${W} ${H}" role="img" aria-label="Points per week, the dashed line is the standard ${min}-point goal">${g}<line class="minline" x1="${pad}" x2="${W}" y1="${ly.toFixed(1)}" y2="${ly.toFixed(1)}"/><text class="minlab" x="2" y="${(ly + 4).toFixed(1)}">${min}</text></svg>
-  <p class="legend"><span class="k ok"></span>safe <span class="k miss"></span>strike <span class="k cur"></span>this week</p>`;
+  <p class="legend"><span class="k ok"></span>safe <span class="k miss"></span>strike <span class="k cur"></span>this week${R.injuryWeeks.size ? ' <span class="k exempt"></span>injury exemption' : ''}</p>`;
   }
   function rulesHTML() {
     const min = cfg().weeklyMin;
@@ -425,7 +429,7 @@ const App = (() => {
     <li><b>No fake points.</b> Fraudulent claims result in an automatic 0-point week.</li>
   </ol>
   <h3>Strikes</h3>
-  <p>Miss your weekly goal and you take a strike. ${cfg().strikesOut} strikes = elimination. Anyone who survives the entire Winter Arc wins. If nobody survives, the most all-time points wins.</p>
+  <p>Miss your weekly goal and you take a strike. Any week covered by an injury report is exempt from strikes. ${cfg().strikesOut} strikes = elimination. Anyone who survives the entire Winter Arc wins. If nobody survives, the most all-time points wins.</p>
 </div>`;
   }
   function vMe() {
@@ -1371,9 +1375,11 @@ const App = (() => {
     async void(el) {
       const p = S.posts.find(x => x.id === el.dataset.id); if (!p) return;
       const who = (member(p.memberId) || {}).name || 'They';
-      if (!(await confirmBox('Void this post as fraud?', `Rule 9: ${who} gets a 0-point week for the week of this post.`, 'Void it', true))) return;
+      const own = p.memberId === S.me.id;
+      const note = own ? 'This removes the points from this activity.' : `Rule 9: ${esc(who)} gets a 0-point week for the week of this post.`;
+      if (!(await confirmBox(own ? 'Void your post?' : 'Void this post as fraud?', note, 'Void it', true))) return;
       try { await Store.voidPost(p.id); } catch (e) { toast(e.message, 'shrug'); return; }
-      await load(); renderView(); toast(`Voided. ${who} gets a 0-point week.`, 'shrug');
+      await load(); renderView(); toast(own ? 'Activity voided.' : `Voided. ${who} gets a 0-point week.`, 'shrug');
     },
     play: el => Celebrate.play(el.dataset.id),
     'xmas-vote': el => castXmasVote(el.dataset.id, el.dataset.c),
@@ -1467,10 +1473,6 @@ const App = (() => {
 
   async function start() {
     $$('[data-icon]').forEach(b => b.insertAdjacentHTML('afterbegin', ic(b.dataset.icon)));
-    const app = $('#app'), header = $('.topbar');
-    const syncHeaderFade = () => header.classList.toggle('scrolled', app.scrollTop > 0);
-    app.addEventListener('scroll', syncHeaderFade, { passive: true });
-    syncHeaderFade();
     window.visualViewport?.addEventListener('resize', syncKeyboard);
     window.visualViewport?.addEventListener('scroll', syncKeyboard);
     window.addEventListener('scroll', syncKeyboard, { passive: true });

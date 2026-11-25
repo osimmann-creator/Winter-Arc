@@ -84,10 +84,6 @@ body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px));
   display: flex; align-items: center; justify-content: space-between;
   padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 8px; background: var(--sky1);
 }
-.topbar.scrolled::after {
-  content: ''; position: absolute; inset: 100% 0 auto; height: 18px; pointer-events: none;
-  background: linear-gradient(180deg, var(--sky1), transparent);
-}
 .brand { display: flex; align-items: center; gap: 8px; }
 .brand img { width: 42px; height: 42px; border-radius: 50%; border: 3px solid var(--ink); background: #F5F1FE; object-fit: contain; object-position: center; box-shadow: 0 3px 0 var(--ink); }
 .brand span { font-family: var(--font-d); font-size: 26px; color: #fff; text-shadow: var(--outline-sm); letter-spacing: .5px; padding-top: 4px; }
@@ -373,6 +369,7 @@ body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px));
 .hist rect.ok { fill: var(--good); }
 .hist rect.miss { fill: var(--bad); }
 .hist rect.cur { fill: var(--gold); }
+.hist rect.exempt, .legend .k.exempt { fill: var(--sky1); background: var(--sky1); }
 .hist rect.fut { fill: var(--line); stroke: none; }
 .hist text { font-size: 9px; font-weight: 800; fill: var(--ink2); font-family: var(--font-b); }
 .hist .minline { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 4; }

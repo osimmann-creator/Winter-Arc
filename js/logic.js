@@ -109,6 +109,15 @@ const Logic = (() => {
     const today = ordinal(now, S.timezone);
     const weekDates = Array.from({ length: S.weeks }, (_, w) => dayKey(addDays(S.start, w * 7, S.timezone), S.timezone));
     for (const m of members) by[m.id] = { id: m.id, weekPts: Array(S.weeks).fill(0), weekGym: Array(S.weeks).fill(0), fraudWeeks: new Set(), posts: [], counted: [], cat: {}, total: 0, strikes: 0, strikeWeeks: [], eliminated: false, elimWeek: null, safeWeeks: 0, streak: 0, bestStreak: 0, witnessed: 0 };
+    for (const m of members) by[m.id].injuryWeeks = new Set();
+    for (const report of cfg.injuryPeriods || []) {
+      const R = by[report.memberId], start = Date.parse(report.startedAt);
+      const end = Math.min(report.resolvedAt ? Date.parse(report.resolvedAt) : Infinity, +now + 1);
+      if (!R || !Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
+      const first = Math.max(0, weekIdx(start, S.start, S.timezone));
+      const last = Math.min(S.weeks - 1, weekIdx(end - 1, S.start, S.timezone));
+      for (let week = first; week <= last; week++) R.injuryWeeks.add(week);
+    }
     for (const p of posts) {
       const R = by[p.memberId]; if (!R) continue;
       const w = (monday(ordinal(p.at, S.timezone)) - firstWeek) / 7;
@@ -132,7 +141,7 @@ const Logic = (() => {
       const from = Math.max(0, m.joinedWeek || 0);
       for (let w = from; w <= S.lastComplete; w++) {
         if (R.weekPts[w] >= R.weekGoals[w]) R.safeWeeks++;
-        else if (!R.eliminated) { R.strikes++; R.strikeWeeks.push(w); if (R.strikes >= cfg.strikesOut) { R.eliminated = true; R.elimWeek = w; } }
+        else if (!R.eliminated && !R.injuryWeeks.has(w)) { R.strikes++; R.strikeWeeks.push(w); if (R.strikes >= cfg.strikesOut) { R.eliminated = true; R.elimWeek = w; } }
       }
       R.thisWeek = S.status === 'pre' ? 0 : R.weekPts[S.idx];
       R.bestWeek = Math.max(0, ...R.weekPts);
@@ -437,7 +446,7 @@ const Logic = (() => {
         if (J.wanted && !post.voided && thisWeek(post) && (post.reactions?.[CAP]?.length || 0) >= CAP_DISPUTE) {
           add('wanted', post.id, { who: post.memberId, post: post.id, n: post.reactions[CAP].length });
         }
-        if (J.busted && post.voided && Date.parse(post.at) >= lastWeekStart && Date.parse(post.at) <= +now) {
+        if (J.busted && post.fraud && Date.parse(post.at) >= lastWeekStart && Date.parse(post.at) <= +now) {
           add('busted', post.id, { who: post.memberId, post: post.id });
         }
       }

@@ -1,5 +1,5 @@
 import { CATS, CONFIG, HOAT, INSIDE_JOKES, Jokes, Logic } from './shared.mjs';
-import { addFeedComment, addTextPost, createInjuryReport, listSocial, resolveInjuryReport, setCommentHeart, setFeedReaction } from './social.mjs';
+import { addFeedComment, addTextPost, createInjuryReport, injuryPeriods, injuryReportQuery, listSocial, resolveInjuryReport, setCommentHeart, setFeedReaction } from './social.mjs';
 
 const COLORS = new Set(['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F']);
 const REACTIONS = new Set(['🔥', '💪', '👏', '😂', '🧢']);
@@ -486,15 +486,18 @@ async function toggleReaction(env, session, input, ctx) {
 }
 
 async function voidPost(env, session, id, ctx) {
-  requireCommissioner(session);
   requireId(id, 'a post');
   const result = await statement(env, `
-    UPDATE posts SET voided = 1, fraud = 1
+    UPDATE posts SET voided = 1, fraud = CASE WHEN member_id = ? THEN 0 ELSE 1 END
     WHERE id = ? AND voided = 0
-      AND EXISTS (SELECT 1 FROM members WHERE id = ? AND role = 'commissioner')
-  `, id, session.member_id).run();
+      AND EXISTS (SELECT 1 FROM members WHERE id = ? AND (id = posts.member_id OR role = 'commissioner'))
+  `, session.member_id, id, session.member_id).run();
   if (result.meta.changes) await runInBackground(ctx, runEvents(env));
-  else if ((await getMe(env, session))?.role !== 'commissioner') requireCommissioner({});
+  else {
+    const allowed = await statement(env, `SELECT 1 FROM posts JOIN members AS actor ON actor.id = ?
+      WHERE posts.id = ? AND (actor.id = posts.member_id OR actor.role = 'commissioner')`, session.member_id, id).first();
+    if (!allowed) fail('You can only void your own posts.', 403);
+  }
   return null;
 }
 
@@ -571,16 +574,17 @@ async function markSeen(env, session, id) {
 }
 
 async function findEvents(env, now) {
-  const [groupRows, memberRows, ...postRows] = await env.DB.batch([
+  const [groupRows, memberRows, injuryRows, ...postRows] = await env.DB.batch([
     statement(env, 'SELECT * FROM group_settings WHERE id = 1'),
     statement(env, 'SELECT * FROM members'),
+    injuryReportQuery(env, now),
     ...postQueries(env),
   ]);
   if (!groupRows.results.length) return { events: [] };
   const group = groupShape(groupRows.results[0]);
   const members = memberRows.results.map(memberShape);
   const posts = assembledPosts(postRows);
-  const cfg = { ...CONFIG, ...group };
+  const cfg = { ...CONFIG, ...group, injuryPeriods: injuryPeriods(injuryRows.results) };
   const calc = Logic.compute(members, posts, cfg, now);
   const guarantee = HOAT.feed !== false ? { username: HOAT.username, min: group.weeklyMin } : null;
   return { events: Logic.jokes(members, calc, INSIDE_JOKES, now, group.timezone, guarantee), timezone: group.timezone };
@@ -603,14 +607,13 @@ async function saveRoast(env, now = new Date()) {
   const [groupRows, memberRows, injuryRows, roastRows, ...postRows] = await env.DB.batch([
     statement(env, 'SELECT * FROM group_settings WHERE id = 1'),
     statement(env, 'SELECT * FROM members'),
-    statement(env, `SELECT member_id FROM injury_reports
-      WHERE member_id IS NOT NULL AND started_at <= ? AND resolved_at IS NULL`, now.toISOString()),
+    injuryReportQuery(env, now),
     statement(env, 'SELECT day, data FROM roasts WHERE day < ? ORDER BY day', day),
     ...postQueries(env),
   ]);
-  const cfg = { ...CONFIG, ...groupShape(groupRows.results[0]) };
+  const cfg = { ...CONFIG, ...groupShape(groupRows.results[0]), injuryPeriods: injuryPeriods(injuryRows.results) };
   const history = roastRows.results.map(row => ({ ...JSON.parse(row.data), day: row.day }));
-  const excluded = new Set(injuryRows.results.map(row => row.member_id));
+  const excluded = new Set(injuryRows.results.filter(row => !row.resolved_at).map(row => row.member_id));
   const roast = Jokes.today(memberRows.results.map(memberShape), assembledPosts(postRows), cfg, now, history, excluded);
   if (!roast || roast.day !== day) return null;
   const { joke, key, who, text, bold, n, rerun } = roast;

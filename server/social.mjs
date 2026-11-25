@@ -57,6 +57,15 @@ async function publishInjuryReports(env, timezone, now = new Date()) {
   for (let i = 0; i < pending.length; i += 50) await env.DB.batch(pending.slice(i, i + 50));
 }
 
+export function injuryReportQuery(env, now) {
+  return env.DB.prepare(`SELECT id, member_id, name, started_at, resolved_at FROM injury_reports
+    WHERE member_id IS NOT NULL AND started_at <= ? ORDER BY name, id`).bind(now.toISOString());
+}
+
+export const injuryPeriods = rows => rows.map(row => ({
+  memberId: row.member_id, startedAt: row.started_at, resolvedAt: row.resolved_at,
+}));
+
 export async function listSocial(env, now = new Date(), viewerId = null) {
   const group = await env.DB.prepare('SELECT timezone FROM group_settings WHERE id = 1').first();
   if (!group) return { messages: [], comments: [], activeInjuries: [], feedReactions: {} };
@@ -64,8 +73,7 @@ export async function listSocial(env, now = new Date(), viewerId = null) {
   const [messages, comments, injuries, reactions] = await env.DB.batch([
     env.DB.prepare('SELECT * FROM feed_messages ORDER BY at DESC, id DESC'),
     env.DB.prepare(`SELECT c.*, ${commentHeartColumns} FROM feed_comments AS c ORDER BY c.at, c.id`).bind(viewerId),
-    env.DB.prepare(`SELECT id, member_id, name FROM injury_reports
-      WHERE member_id IS NOT NULL AND started_at <= ? AND resolved_at IS NULL ORDER BY name, id`).bind(now.toISOString()),
+    injuryReportQuery(env, now),
     env.DB.prepare('SELECT message_id, event_id, member_id, emoji FROM feed_reactions ORDER BY member_id'),
   ]);
   const feedReactions = {};
@@ -77,7 +85,8 @@ export async function listSocial(env, now = new Date(), viewerId = null) {
   return {
     messages: messages.results.map(messageShape),
     feedReactions,
-    activeInjuries: injuries.results.map(row => ({ id: row.id, memberId: row.member_id, name: row.name })),
+    activeInjuries: injuries.results.filter(row => !row.resolved_at).map(row => ({ id: row.id, memberId: row.member_id, name: row.name })),
+    injuryPeriods: injuryPeriods(injuries.results),
     comments: comments.results.map(row => ({
       id: row.id, memberId: row.member_id, at: row.at, body: row.body,
       kind: row.activity_id ? 'activity' : row.message_id ? 'message' : 'event',

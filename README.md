@@ -73,7 +73,7 @@ Inside-joke videos can pop up once per member when the trigger fires. Members ca
 | **No Map** | Dylan and Connor are both still in and both 72+ hours without a log. Once per dry spell. | Yes |
 | **Grand Theft #1** | A post dated Friday or Saturday takes first place from whoever was alone in first. No names in the video. | Yes, naming who took it from whom |
 | **Wanted** | A post from this week gets its 3rd 🧢. Once per post. | Yes, naming whose post |
-| **Busted** | A post is voided. Once per post. | Yes |
+| **Busted** | The commissioner voids another member’s activity as fraud. Once per post. | Yes |
 | **Wasted** | Someone takes his last strike. Once per member. | Yes |
 | **Out on Parole** | An eliminated member logs again for the first time. Once per member. | Yes |
 | **Partners in Crime** | Two members log the same activity on the same day and tag each other as witnesses. Once per pair per week. | Yes, naming both |
@@ -86,7 +86,7 @@ The GTA clips (Grand Theft #1 through Partners in Crime) and the holidays can be
 
 **Naughty or Nice (Christmas):** all day on Dec 24 (group timezone) a ballot is pinned to the top of the feed, with a nudge on Home. Everyone votes 😇 Nice or 😈 Naughty on every other member, eliminated guys included, and can change his votes until 11:59 PM. Until then the ballot only shows how many people have voted and who hasn't. From 12:00 AM on Dec 25 the server saves the results as the `xmas` event, so each phone plays the `joke-xmas` intro once and then stamps every face NICE (gold, a gift) or NAUGHTY (red, coal) with its count, nice list first and the naughtiest last. A results card with both lists stays in the feed; tap it to replay the reveal. The rules are `XMAS` in `js/config.js`: majority decides, ties go naughty, anyone who doesn't vote goes naughty, and the server never sends who voted what. Votes are kept in the `xmas_votes` table (migration 0011).
 
-**Busted and self-voiding:** only the commissioner can void a post, and a void is a fraud ruling, so that week is worth 0 points (rule 9). If members ever get to void their own posts, decide first whether that should carry the same penalty. Deleting a post already removes it without one.
+**Voiding activities.** Members can void their own activity posts to remove that activity’s points. A commissioner voiding another member’s post marks it as fraud and sets that week’s score to zero.
 
 **La4:** while Dylan has exactly 4 points in a week, the app calls him La4 everywhere: the board, the feed, the roasts. It's display only (`ALIASES` in `js/config.js`).
 
@@ -125,6 +125,7 @@ Rules the app enforces when you log:
 - Beers needs the in-person confirmation. Beers and Reading are each capped at one per member per game week.
 - One activity per post.
 - The commissioner can void a post as fraud, which gives that person a 0-point week.
+- A week that overlaps a recorded injury is exempt from strikes.
 - Survivors at the end win. If nobody survives, the most all-time points wins.
 
 ## Celebration videos
