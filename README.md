@@ -75,12 +75,12 @@ The settings live in `INSIDE_JOKES` and `HOAT` in `js/config.js` and match peopl
 
 **Roast of the day:** the banner at the top of Home. There are 100 roasts in `js/jokes.js` and one airs a day, the same one for everyone. There's nothing to tap.
 
-- The Worker picks it the first time anyone opens the app that day (or on its scheduled run), from the points as they stood at midnight in the group's timezone. It saves it as an event: type `roast`, key `roast:YYYY-MM-DD`. Every phone shows that saved roast. Until it arrives, a phone shows its own pick, which comes out the same.
+- The Worker picks it the first time anyone opens the app that day (or on its scheduled run), from the points as they stood at midnight in the group's timezone. It saves it in the `roasts` table, one row per day, and the app gets it with the events as type `roast`, key `roast:YYYY-MM-DD`. Every phone shows that saved roast. Until it arrives, a phone shows its own pick, which comes out the same.
 - Each roast fits a situation (0 points on a Thursday, short on Sunday, a strike on Monday, a holiday...) and names whoever it fits. Roasts written for one person (Jake's mom, Ayaad's ironing, Gaurav's liquor runs, the Hoat Guarantee) go first when they fit. Special days win their day: the first roast, Thanksgiving, Black Friday, Christmas, New Year's Eve and Day, Groundhog Day, Valentine's Day and the last day.
 - Each roast airs once, numbered #1 to #100. The season has 119 days, so once nothing unused fits, the one that aired longest ago comes back, about someone new if possible, with a "Rerun" pill.
-- Members on an open injury report are left out. Weekly goals are per person (Jake's 8-point weeks count as 8), and La4 shows up as La4.
+- Members on an open injury report are left out. Weekly goals are per person (`weeklyGoalOverrides`), and La4 shows up as La4.
 - To edit, change `LIST` at the top of `js/jokes.js`. `WHEN` says when each situation is true. Changed words count as a new roast.
-- Publishing this needs D1 migration `drizzle/0007_roast_of_the_day.sql`, which allows the `roast` event type.
+- Publishing this needs D1 migration `drizzle/0010_roasts.sql`, which only adds the `roasts` table. `0007_roast_of_the_day` does nothing now: it used to rebuild the events table, which would wipe comment hearts and event reactions if it ran after 0008 and 0009.
 
 ## Changing the rules
 

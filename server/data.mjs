@@ -511,11 +511,10 @@ function validatedEvent(input, now = new Date()) {
 function eventInsert(env, event, timezone) {
   const cooldownStart = Logic.jokeCooldownStart(event.at, timezone).toISOString();
   // Check history inside the insert so simultaneous triggers share one cooldown.
-  // The Hoat stamp and the daily roast have no cooldown: their keys already make them one per week / day.
   return statement(env, `
     INSERT INTO events (id, type, key, at, data)
     SELECT ?, ?, ?, ?, ?
-    WHERE ? IN ('hoat', 'roast') OR NOT EXISTS (
+    WHERE ? = 'hoat' OR NOT EXISTS (
       SELECT 1 FROM events WHERE type = ? AND at >= ?
     )
     ON CONFLICT (key) DO NOTHING
@@ -523,16 +522,23 @@ function eventInsert(env, event, timezone) {
 }
 
 async function listEvents(env, session) {
-  const { results } = await statement(env, `
-    SELECT events.*, event_seen.user_id IS NOT NULL AS seen
-    FROM events LEFT JOIN event_seen ON event_seen.event_id = events.id AND event_seen.user_id = ?
-    ORDER BY events.at, events.id
-  `, session.id).all();
-  return results.map(eventShape);
+  const [events, roasts] = await env.DB.batch([
+    statement(env, `
+      SELECT events.*, event_seen.user_id IS NOT NULL AS seen
+      FROM events LEFT JOIN event_seen ON event_seen.event_id = events.id AND event_seen.user_id = ?
+      ORDER BY events.at, events.id
+    `, session.id),
+    statement(env, 'SELECT * FROM roasts ORDER BY day'),
+  ]);
+  return [...events.results.map(eventShape), ...roasts.results.map(roastEvent)];
 }
 
 async function recordEvent(env, input) {
   const claimed = validatedEvent(input);
+  if (claimed.type === 'roast') {   // the server picks the roast itself and ignores the phone's data; only today's
+    const roast = await saveRoast(env);
+    return roast && roast.key === claimed.key ? roast : null;
+  }
   const existing = await statement(env, 'SELECT * FROM events WHERE key = ?', claimed.key).first();
   if (existing) return eventShape(existing);
 
@@ -559,12 +565,9 @@ async function markSeen(env, session, id) {
 }
 
 async function findEvents(env, now) {
-  const [groupRows, memberRows, injuryRows, roastRows, ...postRows] = await env.DB.batch([
+  const [groupRows, memberRows, ...postRows] = await env.DB.batch([
     statement(env, 'SELECT * FROM group_settings WHERE id = 1'),
     statement(env, 'SELECT * FROM members'),
-    statement(env, `SELECT member_id FROM injury_reports
-      WHERE member_id IS NOT NULL AND started_at <= ? AND resolved_at IS NULL`, now.toISOString()),
-    statement(env, "SELECT key, data FROM events WHERE type = 'roast' ORDER BY key"),
     ...postQueries(env),
   ]);
   if (!groupRows.results.length) return { events: [] };
@@ -574,32 +577,48 @@ async function findEvents(env, now) {
   const cfg = { ...CONFIG, ...group };
   const calc = Logic.compute(members, posts, cfg, now);
   const guarantee = HOAT.feed !== false ? { username: HOAT.username, min: group.weeklyMin } : null;
-  const events = Logic.jokes(members, calc, INSIDE_JOKES, now, group.timezone, guarantee);
-  let roast = null;
-  try { roast = roastOfTheDay(members, posts, cfg, now, injuryRows.results, roastRows.results); }
-  catch { console.warn('Winter Arc couldn’t pick the roast of the day.'); }   // never let it block the inside jokes
-  if (roast) events.push(roast);
-  return { events, timezone: group.timezone };
+  return { events: Logic.jokes(members, calc, INSIDE_JOKES, now, group.timezone, guarantee), timezone: group.timezone };
 }
 
-/* Roast of the Day (js/jokes.js): picked once per day in the group's time zone, from the points as
-   they stood at midnight, and saved so everyone sees the same one. Saved roasts are the history
-   that keeps them from repeating. Members on an open injury report are left out. */
-function roastOfTheDay(members, posts, cfg, now, injuries, saved) {
-  const day = Logic.dayKey(now, cfg.timezone);
-  if (saved.some(row => row.key === `roast:${day}`)) return null;
-  const history = [];
-  for (const row of saved) {
-    try { history.push({ ...JSON.parse(row.data), day: row.key.slice('roast:'.length) }); } catch { /* skip a bad row */ }
-  }
-  const excluded = new Set(injuries.map(row => row.member_id));
-  const roast = Jokes.today(members, posts, cfg, now, history, excluded);
+/* Roast of the Day (js/jokes.js): one per day in the group's timezone, picked from the points as they
+   stood at midnight and saved in the roasts table, so everyone sees the same one. The saved roasts are
+   the history that keeps them from repeating. Members on an open injury report are left out. The app
+   sees each one as an event of type 'roast' with the key roast:YYYY-MM-DD. */
+function roastEvent(row) {
+  return { id: `roast:${row.day}`, type: 'roast', key: `roast:${row.day}`, at: row.at, data: JSON.parse(row.data), seen: true };
+}
+
+async function saveRoast(env, now = new Date()) {
+  const group = await statement(env, 'SELECT timezone FROM group_settings WHERE id = 1').first();
+  if (!group) return null;
+  const day = Logic.dayKey(now, group.timezone);
+  const done = await statement(env, 'SELECT * FROM roasts WHERE day = ?', day).first();
+  if (done) return roastEvent(done);
+  const [groupRows, memberRows, injuryRows, roastRows, ...postRows] = await env.DB.batch([
+    statement(env, 'SELECT * FROM group_settings WHERE id = 1'),
+    statement(env, 'SELECT * FROM members'),
+    statement(env, `SELECT member_id FROM injury_reports
+      WHERE member_id IS NOT NULL AND started_at <= ? AND resolved_at IS NULL`, now.toISOString()),
+    statement(env, 'SELECT day, data FROM roasts WHERE day < ? ORDER BY day', day),
+    ...postQueries(env),
+  ]);
+  const cfg = { ...CONFIG, ...groupShape(groupRows.results[0]) };
+  const history = roastRows.results.map(row => ({ ...JSON.parse(row.data), day: row.day }));
+  const excluded = new Set(injuryRows.results.map(row => row.member_id));
+  const roast = Jokes.today(memberRows.results.map(memberShape), assembledPosts(postRows), cfg, now, history, excluded);
   if (!roast || roast.day !== day) return null;
   const { joke, key, who, text, bold, n, rerun } = roast;
-  return { type: 'roast', key: `roast:${day}`, at: now.toISOString(), data: { joke, key, who, text, bold, n, ...(rerun ? { rerun } : {}) } };
+  const data = JSON.stringify({ joke, key, who, text, bold, n, ...(rerun ? { rerun } : {}) });
+  const [, saved] = await env.DB.batch([
+    statement(env, 'INSERT INTO roasts (day, at, data) VALUES (?, ?, ?) ON CONFLICT (day) DO NOTHING', day, now.toISOString(), data),
+    statement(env, 'SELECT * FROM roasts WHERE day = ?', day),
+  ]);
+  return saved.results.length ? roastEvent(saved.results[0]) : null;
 }
 
 export async function runEvents(env, now = new Date()) {
+  // The roast stands alone: if it can't be picked, the inside jokes still run.
+  try { await saveRoast(env, now); } catch { console.warn('Winter Arc couldn’t pick the roast of the day.'); }
   const { events, timezone } = await findEvents(env, now);
   if (events.length) await env.DB.batch(events.map(input => eventInsert(env, validatedEvent(input, now), timezone)));
 }

@@ -15,10 +15,11 @@
      Christmas, New Year's Eve and Day, Groundhog Day, Valentine's Day and
      the last day of the season.
    - The server picks the day's roast the first time anyone opens the app
-     that day (or on its scheduled run) and saves it as an event: type
-     'roast', key 'roast:YYYY-MM-DD' in the group's time zone. Everyone gets
-     that saved one, so the whole crew sees the same roast all day. The
-     saved roasts are also how it knows which ones are used up.
+     that day (or on its scheduled run) and saves it (the roasts table; the
+     app sees it as an event: type 'roast', key 'roast:YYYY-MM-DD' in the
+     group's time zone). Everyone gets that saved one, so the whole crew sees
+     the same roast all day. The saved roasts are also how it knows which
+     ones are used up.
    - Nobody on the injury report gets roasted until he's marked recovered.
    - Goals are per person: Jake's 8-point weeks count as 8.
    - Each roast gets a number (#1-#100) the day it first airs. A 17-week
