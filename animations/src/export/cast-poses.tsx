@@ -167,6 +167,8 @@ const HANDS_UP: Partial<Pose> = { shL: 158, elL: -14, shR: 158, elR: -14, handL:
 const BY_FACE: Partial<Pose> = { shL: 52, elL: 128, shR: 52, elR: 128, handL: 'open', handR: 'open', shrugL: 16, shrugR: 16 };
 const SHRUG: Partial<Pose> = { shL: 34, elL: 108, shR: 34, elR: 108, handL: 'open', handR: 'open', shrugL: 34, shrugR: 34, head: 7 };
 const A = Math.PI / 2, B = (3 * Math.PI) / 2;
+/** Every member's colourway, for poses The Monday Report shows each of them in. */
+const CREW = ['osim', 'amaan', 'ayaad', 'connor', 'dean', 'dylan', 'gaurav', 'jake', 'phil'];
 
 export const POSES: Look[] = [
   /* ---- Thanksgiving: the max-effort fork lift ---- */
@@ -187,15 +189,15 @@ export const POSES: Look[] = [
   },
 
   /* ---- shared standing poses ---- */
-  { id: 'grin', p: { ...JOY, eyes: 0, mouthOpen: 0.8, shL: 20, elL: 30, shR: 20, elR: 30, handL: 'relax', handR: 'relax' } },
-  { id: 'nervous', p: { ...NERVOUS, shL: 8, elL: -70, shR: 8, elR: -70, handL: 'fist', handR: 'fist', shrugL: 20, shrugR: 20 } },
-  { id: 'scared', p: { ...SCARED, ...BY_FACE } },
+  { id: 'grin', p: { ...JOY, eyes: 0, mouthOpen: 0.8, shL: 20, elL: 30, shR: 20, elR: 30, handL: 'relax', handR: 'relax' }, members: CREW },
+  { id: 'nervous', p: { ...NERVOUS, shL: 8, elL: -70, shR: 8, elR: -70, handL: 'fist', handR: 'fist', shrugL: 20, shrugR: 20 }, members: CREW },
+  { id: 'scared', p: { ...SCARED, ...BY_FACE }, members: CREW },
   { id: 'handsup', p: { ...SCARED, mouthOpen: 0.8, ...HANDS_UP } },
   { id: 'shrug', p: { ...SMUG, lid: 0.2, ...SHRUG } },
   { id: 'smug', p: { ...SMUG, shL: 14, elL: -150, shR: 14, elR: -150, handL: 'relax', handR: 'relax' } },
   { id: 'annoyed', p: { eyes: 0, lid: 0.5, mouthMode: 'grit', mouthOpen: 0.2, smile: 0.1, brow: 1.4, browTilt: -0.8, red: 0.5, shL: 14, elL: -150, shR: 14, elR: -150, lookY: -0.6 } },
   { id: 'phone', p: { ...SMUG, lid: 0.3, lookY: 0.5, shR: 22, elR: -118, handR: 'grip', wrR: -10, handL: 'relax' }, itemR: <HandPhone glow={1} /> },
-  { id: 'thumbs', p: { ...JOY, shR: 70, elR: 100, handR: 'thumb', handL: 'relax' } },
+  { id: 'thumbs', p: { ...JOY, shR: 70, elR: 100, handR: 'thumb', handL: 'relax' }, members: CREW },
 
   /* ---- walks and runs (two frames each, alternated in the clip) ---- */
   { id: 'walk-a', p: walk(A, { turn: 0.45, lookX: 0.6 }), plant: true, members: ['dylan', 'connor'] },
@@ -236,11 +238,11 @@ export const POSES: Look[] = [
 
   /* ---- the car (only the top half shows) ---- */
   { id: 'drive', p: { ...SMUG, shL: 40, elL: -96, handL: 'grip', shR: 40, elR: -96, handR: 'grip' }, headExtra: <Shades /> },
-  { id: 'dazed', p: { ...DAZED, shL: 30, elL: 30, shR: 30, elR: 30, handL: 'open', handR: 'open', head: 8 } },
+  { id: 'dazed', p: { ...DAZED, shL: 30, elL: 30, shR: 30, elR: 30, handL: 'open', handR: 'open', head: 8 }, members: CREW },
 
   /* ---- wasted, parole ---- */
   { id: 'slip', p: { ...SCARED, shL: 140, elL: 40, shR: 110, elR: -40, handL: 'open', handR: 'open', hipL: 2, hipR: 70, knR: -20, ftR: 30, torso: -8, head: -10 } },
-  { id: 'flat', p: { ...DAZED, shL: 96, elL: 20, shR: 96, elR: 20, handL: 'open', handR: 'open', hipL: 14, hipR: 14 } },
+  { id: 'flat', p: { ...DAZED, shL: 96, elL: 20, shR: 96, elR: 20, handL: 'open', handR: 'open', hipL: 14, hipR: 14 }, members: CREW },
   { id: 'bars', p: { ...SAD, shL: 104, elL: 44, handL: 'grip', shR: 104, elR: 44, handR: 'grip' } },
   { id: 'free-a', p: walk(A, { ...JOY, eyes: 1, turn: 0.4 }), plant: true },
   { id: 'free-b', p: walk(B, { ...JOY, eyes: 1, turn: 0.4 }), plant: true },
@@ -248,6 +250,12 @@ export const POSES: Look[] = [
   /* ---- partners in crime: slow-motion strut with the bags ---- */
   { id: 'heist-a', p: walk(A, { ...SMUG, shL: 22, elL: -4, handL: 'grip', shR: 22, elR: -4, handR: 'grip', turn: 0 }), plant: true, itemL: <Duffel />, itemR: <Duffel flip />, headExtra: <Shades />, members: ['anon2'] },
   { id: 'heist-b', p: walk(B, { ...SMUG, shL: 22, elL: -4, handL: 'grip', shR: 22, elR: -4, handR: 'grip', turn: 0 }), plant: true, itemL: <Duffel />, itemR: <Duffel flip />, headExtra: <Shades />, members: ['anon2'] },
+
+  /* ---- The Monday Report (recap-*.html): the anchor, the champ, the sad sit ---- */
+  { id: 'present', p: { ...JOY, eyes: 0, mouthOpen: 0.75, shR: 96, elR: 6, handR: 'open', shL: 20, elL: 30, handL: 'relax', head: 4, lookX: 0.5 } },
+  { id: 'champ', p: { ...JOY, eyes: 1, shL: 152, elL: -24, shR: 152, elR: -24, handL: 'fist', handR: 'fist', shrugL: 12, shrugR: 12 }, members: CREW },
+  { id: 'slump', p: { ...SIT, ...SAD, lookY: 0.9, head: 8, shL: 6, elL: -58, shR: 6, elR: -58, handL: 'relax', handR: 'relax', shrugL: 14, shrugR: 14 }, members: CREW },
+  { id: 'slump-look', p: { ...SIT, ...SAD, lid: 0.45, lookX: -1, lookY: 0.8, mouthMode: 'o', mouthOpen: 0.3, head: -5, shL: 6, elL: -58, shR: 6, elR: -58, handL: 'relax', handR: 'relax', shrugL: 14, shrugR: 14 }, members: CREW },
 ];
 
 /** Props the clips place on their own: exported as prop-<id>.svg on a 600x600 canvas centred at 0,0. */

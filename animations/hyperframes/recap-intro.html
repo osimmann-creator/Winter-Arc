@@ -1,0 +1,128 @@
+<!doctype html>
+<!--
+  The Monday Report: intro (recap-intro). Opens the weekly recap: the show logo spins in under the WINTER ARC WEEKLY
+  banner, Flexander pops up behind the news desk and presents LAST WEEK on the desk monitor, over a drumroll that
+  leads into Player of the Week.
+  Beats (30 fps): logo 2-14, banner 8, desk 6-16, Flexander up 12-22, PRESENT 30, monitor 32, drumroll 44-75,
+  push-in 62-75, end 75.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/props.js"></script>
+<script src="assets/recap.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<link rel="stylesheet" href="assets/recap.css" />
+<style>
+  #in-cam { position: absolute; inset: 0; transform-origin: 820px 1480px; }
+  #in-rays { position: absolute; left: 540px; top: 900px; width: 0; height: 0; }
+  #in-rays svg { position: absolute; left: -1400px; top: -1400px; }
+  #in-logo { position: absolute; left: 540px; top: 900px; width: 0; height: 0; }
+  #in-logo svg { position: absolute; left: -250px; top: -250px; overflow: visible; }
+  #in-flake { transform-origin: 0px 0px; }
+  #in-desk { position: absolute; left: 0; top: 1690px; width: 1080px; height: 700px; }
+  #in-mon { position: absolute; left: 820px; top: 1500px; width: 0; height: 0; }
+  #in-mon svg { position: absolute; left: -180px; top: -190px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="recap-intro" data-start="0" data-duration="2.5" data-width="1080" data-height="2348">
+ <div id="in-scene" class="clip" data-start="0" data-duration="2.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#1B1640">
+  <div id="in-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="in-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#161236"/><stop offset=".6" stop-color="#3B2C6E"/><stop offset="1" stop-color="#5A43A0"/></linearGradient></defs>
+    <rect width="1080" height="2348" fill="url(#in-bg)"/>
+  </svg>
+  <div id="in-rays"><svg width="2800" height="2800" viewBox="-1400 -1400 2800 2800">
+    <g fill="#FFFFFF" opacity=".07">
+      <path d="M0 0 L-120 -1400 L120 -1400 Z"/><path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(30)"/><path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(60)"/>
+      <path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(90)"/><path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(120)"/><path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(150)"/>
+      <path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(180)"/><path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(210)"/><path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(240)"/>
+      <path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(270)"/><path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(300)"/><path d="M0 0 L-120 -1400 L120 -1400 Z" transform="rotate(330)"/>
+    </g>
+  </svg></div>
+  <!-- the show logo: a gold medallion with a snowflake -->
+  <div id="in-logo"><svg width="500" height="500" viewBox="-250 -250 500 500">
+    <circle r="236" fill="#341720" transform="translate(0 16)"/>
+    <circle r="236" fill="#C77928" stroke="#341720" stroke-width="12"/>
+    <circle r="206" fill="#FFD064" stroke="#341720" stroke-width="9"/>
+    <circle r="168" fill="#7254DC" stroke="#341720" stroke-width="9"/>
+    <circle r="190" fill="none" stroke="#C77928" stroke-width="7" stroke-dasharray="4 18" stroke-linecap="round"/>
+    <g id="in-flake" stroke="#341720" stroke-linecap="round">
+      <g stroke-width="34"><path d="M0 -112 L0 112 M-97 -56 L97 56 M-97 56 L97 -56"/></g>
+      <g stroke="#FFFFFF" stroke-width="18"><path d="M0 -112 L0 112 M-97 -56 L97 56 M-97 56 L97 -56"/></g>
+      <g stroke="#FFFFFF" stroke-width="14" fill="none"><path d="M-26 -88 L0 -62 L26 -88 M-26 88 L0 62 L26 88 M-89 -22 L-54 -31 L-63 -66 M89 22 L54 31 L63 66 M-89 22 L-54 31 L-63 66 M89 -22 L54 -31 L63 -66"/></g>
+      <circle r="24" fill="#FFD064" stroke="#341720" stroke-width="8"/>
+    </g>
+    <path d="M-150 -96 Q-110 -150 -50 -168" stroke="#BCABFF" stroke-width="16" fill="none" stroke-linecap="round" opacity=".8"/>
+  </svg></div>
+  <div id="in-guy"></div>
+  <div id="in-desk"><svg width="1080" height="700" viewBox="0 1690 1080 700">
+    <g stroke="#341720" stroke-linejoin="round">
+      <rect x="40" y="1690" width="1000" height="60" rx="16" fill="#E9DFC2" stroke-width="10"/>
+      <path d="M80 1750 L1000 1750 L968 2420 L112 2420 Z" fill="#7254DC" stroke-width="10"/>
+      <path d="M104 1790 L976 1790 M138 2180 L942 2180" stroke="#FFD064" stroke-width="14"/>
+    </g>
+    <path d="M70 1712 L1010 1712" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity=".6"/>
+    <g transform="translate(540 1985)">
+      <circle r="120" fill="#FFD064" stroke="#341720" stroke-width="9"/>
+      <circle r="92" fill="#4F35B0" stroke="#341720" stroke-width="7"/>
+      <text y="24" text-anchor="middle" font-family="Luckiest Guy" font-size="74" fill="#FFFFFF" stroke="#341720" stroke-width="10" paint-order="stroke">WA</text>
+    </g>
+  </svg></div>
+  <div id="in-mon"><svg width="360" height="300" viewBox="-180 -190 360 300">
+    <path d="M-40 90 L40 90 L60 120 L-60 120 Z" fill="#2B2236" stroke="#341720" stroke-width="8" stroke-linejoin="round"/>
+    <rect x="-170" y="-180" width="340" height="270" rx="26" fill="#341720" transform="translate(0 12)"/>
+    <rect x="-170" y="-180" width="340" height="270" rx="26" fill="#2B2236" stroke="#341720" stroke-width="10"/>
+    <rect x="-146" y="-156" width="292" height="222" rx="14" fill="#7FD3FF" stroke="#341720" stroke-width="6"/>
+    <g id="in-cal">
+      <rect x="-60" y="-138" width="120" height="96" rx="12" fill="#FFFFFF" stroke="#341720" stroke-width="6"/>
+      <rect x="-60" y="-138" width="120" height="30" rx="10" fill="#E0444E" stroke="#341720" stroke-width="6"/>
+      <path d="M-30 -146 L-30 -126 M30 -146 L30 -126" stroke="#341720" stroke-width="8" stroke-linecap="round"/>
+      <path d="M-34 -78 L-14 -58 L30 -98" stroke="#2FA36B" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <text x="0" y="40" text-anchor="middle" font-family="Luckiest Guy" font-size="64" fill="#FFFFFF" stroke="#341720" stroke-width="10" paint-order="stroke" letter-spacing="2">LAST WEEK</text>
+  </svg></div>
+  </div>
+  <div id="in-banner"></div>
+ </div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), s = 0.74;
+  WA.recap.banner('in-banner', 'THE MONDAY REPORT', '#7254DC', '#4F35B0', '#E2D9FF');
+  WA.actor('in-guy', ['grin', 'present'], { x: 330, y: 2060, s: s });
+  WA.pose(tl, '#in-guy', 'grin', 0);
+  gsap.set('#in-logo', { scale: 0, rotation: -200 });
+  gsap.set('#in-desk', { y: 700 });
+  gsap.set('#in-guy', { y: 620, opacity: 0 });
+  gsap.set('#in-mon', { scale: 0 });
+
+  // light rays turn slowly the whole time
+  tl.fromTo('#in-rays', { rotation: -6, scale: 0.7 }, { rotation: 18, scale: 1, duration: 75 * F, ease: 'none' }, 0);
+  // the logo spins in, then the show title slams under the WINTER ARC WEEKLY tab
+  tl.fromTo('#in-logo', { scale: 0, rotation: -200 }, { scale: 1.16, rotation: 0, duration: 12 * F, ease: 'back.out(1.7)', immediateRender: false }, 2 * F);
+  WA.recap.bannerIn(tl, 'in-banner', 8 * F);
+  gsap.set('#in-flake', { svgOrigin: '0 0' });
+  tl.fromTo('#in-flake', { rotation: 0 }, { rotation: 60, duration: 60 * F, ease: 'none', immediateRender: false }, 14 * F);
+  WA.bob(tl, '#in-logo', 16 * F, 2.0, 10, 1.2);
+  // the desk slides up, Flexander pops up behind it and presents LAST WEEK
+  tl.fromTo('#in-desk', { y: 700 }, { y: 0, duration: 10 * F, ease: 'back.out(1.4)', immediateRender: false }, 6 * F);
+  tl.fromTo('#in-guy', { y: 620, opacity: 1 }, { y: 0, opacity: 1, duration: 10 * F, ease: 'back.out(1.6)', immediateRender: false }, 14 * F);
+  WA.squash(tl, '#in-guy', 24 * F, 0.08, 10);
+  WA.take(tl, '#in-guy', 'present', 30 * F, 0.08);
+  WA.popIn(tl, '#in-mon', 32 * F, 10, { rot0: 14, rot: 0 });
+  WA.squash(tl, '#in-mon', 42 * F, 0.06, 10);
+  WA.hop(tl, '#in-guy', 48 * F, 14, 10);
+  WA.hop(tl, '#in-guy', 60 * F, 14, 10);
+  // push in on the monitor, into Player of the Week
+  tl.fromTo('#in-cam', { scale: 1 }, { scale: 1.1, duration: 13 * F, ease: 'power2.in', immediateRender: false }, 62 * F);
+
+  window.__timelines['recap-intro'] = tl;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<!--
+  The Monday Report: Everybody Survived (recap-allsafe). Plays instead of the strike clips when nobody took a strike
+  last week. All nine line up for a team photo on the self-timer: 3, 2, 1, FLASH, fists and thumbs up, and the shot
+  turns into a polaroid on the table: NOBODY LEFT BEHIND.
+  Beats (30 fps): banner 0, crew hops in 2-20, 3 / 2 / 1 at 16 / 28 / 40, FLASH 50, polaroid 50-62, caption 58,
+  confetti 56, end 81.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/props.js"></script>
+<script src="assets/recap.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<link rel="stylesheet" href="assets/recap.css" />
+<style>
+  #as-table { position: absolute; inset: 0; }
+  #as-print { position: absolute; inset: 0; transform-origin: 540px 1240px; }
+  #as-paper { position: absolute; left: 34px; top: 500px; width: 1012px; height: 1716px; background: #FFFDF6; border: 10px solid #341720;
+    border-radius: 14px; box-shadow: 0 18px 0 rgba(52,23,32,.55); opacity: 0; }
+  #as-photo { position: absolute; inset: 0; overflow: hidden; clip-path: inset(0px 0px 0px 0px); }
+  #as-cap { position: absolute; left: 540px; top: 2084px; width: 0; height: 0; opacity: 0; }
+  #as-cap svg { position: absolute; left: -480px; top: -60px; overflow: visible; }
+  .as-n { position: absolute; left: 540px; top: 2010px; width: 0; height: 0; opacity: 0; }
+  .as-n svg { position: absolute; left: -90px; top: -110px; overflow: visible; }
+  #as-crew .tag { font-size: 32px; padding: 9px 18px 4px; border-width: 6px; box-shadow: 0 6px 0 #341720; }
+  #as-crew .feet .tag::after { display: none; }
+  #as-rec { position: absolute; left: 0; top: 0; }
+  #as-flash { position: absolute; inset: 0; background: #FFFFFF; opacity: 0; }
+  #as-fx { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="recap-allsafe" data-start="0" data-duration="2.7" data-width="1080" data-height="2348">
+ <div id="as-scene" class="clip" data-start="0" data-duration="2.7" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#8E5A33">
+  <svg id="as-table" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <rect width="1080" height="2348" fill="#8E5A33"/>
+    <g stroke="#6E4224" stroke-width="10" fill="none" stroke-linecap="round" opacity=".8">
+      <path d="M-20 300 Q300 270 600 310 T1100 290"/><path d="M-20 900 Q260 940 560 900 T1100 930"/>
+      <path d="M-20 1500 Q320 1470 640 1510 T1100 1490"/><path d="M-20 2150 Q280 2190 600 2150 T1100 2170"/>
+    </g>
+  </svg>
+  <div id="as-print">
+   <div id="as-paper"></div>
+   <div id="as-photo">
+    <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+      <defs><linearGradient id="as-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86C8F2"/><stop offset="1" stop-color="#D8F0FF"/></linearGradient></defs>
+      <rect width="1080" height="1600" fill="url(#as-sky)"/>
+      <circle cx="880" cy="700" r="90" fill="#FFE27A" stroke="#341720" stroke-width="9"/>
+      <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+        <path d="M-40 1260 Q200 1120 420 1220 Q640 1100 860 1200 Q980 1150 1120 1210 L1120 1600 L-40 1600 Z" fill="#EEF6FC"/>
+      </g>
+      <!-- pines -->
+      <g stroke="#341720" stroke-width="7" stroke-linejoin="round" fill="#4F7F6E">
+        <path d="M40 1300 L100 1150 L160 1300 Z M60 1230 L100 1120 L140 1230 Z"/><path d="M930 1290 L990 1130 L1050 1290 Z M950 1220 L990 1100 L1030 1220 Z"/>
+      </g>
+      <!-- the riser for the back row, then the snow they stand in -->
+      <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+        <rect x="40" y="1490" width="1000" height="70" rx="10" fill="#C98F55"/>
+        <rect x="70" y="1560" width="40" height="230" fill="#8E5A33"/><rect x="970" y="1560" width="40" height="230" fill="#8E5A33"/>
+      </g>
+      <path d="M60 1506 L1020 1506" stroke="#E8B47A" stroke-width="10" stroke-linecap="round"/>
+      <rect x="0" y="1600" width="1080" height="760" fill="#F7FBFF"/>
+      <path d="M0 1600 L1080 1600" stroke="#341720" stroke-width="0"/>
+      <path d="M100 1880 Q300 1850 500 1886 M600 2000 Q800 1970 1000 2006" stroke="#DCEBF6" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <!-- the camera on its tripod, bottom right -->
+      <g stroke="#341720" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M910 2060 L860 2230 M930 2060 L930 2240 M950 2060 L1000 2230" fill="none"/>
+        <rect x="840" y="1960" width="180" height="110" rx="18" fill="#2B2236"/>
+        <rect x="880" y="1940" width="60" height="28" rx="8" fill="#2B2236"/>
+        <circle cx="930" cy="2015" r="38" fill="#5B6478"/><circle cx="930" cy="2015" r="20" fill="#9FC2FF"/>
+      </g>
+      <circle id="as-led" cx="996" cy="1984" r="12" fill="#5A1F28" stroke="#341720" stroke-width="5"/>
+    </svg>
+    <div id="as-crew"></div>
+    <div class="as-n" id="as-n3"><svg width="180" height="220" viewBox="-90 -110 180 220"><text class="wt" font-size="220" y="10" style="fill:#FFD064">3</text></svg></div>
+    <div class="as-n" id="as-n2"><svg width="180" height="220" viewBox="-90 -110 180 220"><text class="wt" font-size="220" y="10" style="fill:#FFD064">2</text></svg></div>
+    <div class="as-n" id="as-n1"><svg width="180" height="220" viewBox="-90 -110 180 220"><text class="wt" font-size="220" y="10" style="fill:#FFD064">1</text></svg></div>
+   </div>
+   <div id="as-cap"><svg width="960" height="120" viewBox="-480 -60 960 120">
+     <text x="0" y="26" text-anchor="middle" font-family="Luckiest Guy" font-size="74" fill="#341720" letter-spacing="2">NOBODY LEFT BEHIND</text>
+   </svg></div>
+  </div>
+  <div id="as-fx"></div>
+  <div id="as-flash"></div>
+  <div id="as-banner"></div>
+ </div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  var CREW = {
+    osim: ['Osim', '#7254DC'], amaan: ['Amaan', '#F2853A'], ayaad: ['Ayaad', '#2FA36B'], connor: ['Connor', '#2F66E6'], dean: ['Dean', '#EE5982'],
+    dylan: ['Dylan', '#1FA3A0'], gaurav: ['Gaurav', '#B45AC8'], jake: ['Jake', '#E39A2E'], phil: ['Phil', '#D9644F'],
+  };
+  // back row on the riser (tags over their heads), front row in the snow (tags at their feet)
+  var BACK = [['dean', 150], ['connor', 345], ['osim', 540], ['ayaad', 735], ['phil', 930]];
+  var FRONT = [['amaan', 245], ['dylan', 440], ['jake', 640], ['gaurav', 835]];
+  var crew = document.getElementById('as-crew'), all = [];
+  WA.recap.banner('as-banner', 'EVERYBODY SURVIVED', '#2FA36B', '#1D6E48', '#C8F0DA');
+  function place(row, y, s, feet) {
+    row.forEach(function (m, i) {
+      var d = document.createElement('div'); d.id = 'as-' + m[0]; crew.appendChild(d);
+      WA.actor(d.id, ['grin', 'champ', 'thumbs'], { x: m[1], y: y, s: s, member: m[0], tag: CREW[m[0]][0].toUpperCase(), color: CREW[m[0]][1],
+        tagY: feet ? (y + 6) - (y - 1340 * s) : null });
+      if (feet) d.classList.add('feet');
+      gsap.set(d, { opacity: 0, y: 90 });
+      WA.pose(tl, d, 'grin', 0);
+      all.push(d);
+    });
+  }
+  place(BACK, 1500, 0.42, false);
+  place(FRONT, 1792, 0.46, true);
+
+  WA.recap.bannerIn(tl, 'as-banner', 0);
+  // the crew hops into place
+  all.forEach(function (d, i) {
+    var at = (2 + i * 2) * F;
+    tl.fromTo(d, { opacity: 0, y: 90 }, { opacity: 1, y: 0, duration: 5 * F, ease: 'back.out(2)', immediateRender: false }, at);
+    WA.squash(tl, d, at + 5 * F, 0.08, 8);
+  });
+  // 3, 2, 1 on the self-timer
+  [[16, 'as-n3'], [28, 'as-n2'], [40, 'as-n1']].forEach(function (c) {
+    WA.popIn(tl, '#' + c[1], c[0] * F, 7, { rot0: -16, rot: 0, from: 0.3 });
+    tl.to('#' + c[1], { scale: 1.5, opacity: 0, duration: 6 * F, ease: 'power1.in' }, (c[0] + 7) * F);
+    tl.fromTo('#as-led', { attr: { fill: '#FF5A4E' } }, { attr: { fill: '#5A1F28' }, duration: 6 * F, ease: 'none', immediateRender: false }, c[0] * F);
+  });
+  // FLASH: fists and thumbs up, and it becomes a polaroid on the table
+  tl.fromTo('#as-flash', { opacity: 1 }, { opacity: 0, duration: 12 * F, ease: 'power2.out', immediateRender: false }, 50 * F);
+  all.forEach(function (d, i) { WA.pose(tl, d, i % 2 ? 'thumbs' : 'champ', 50 * F); WA.squash(tl, d, 50 * F, 0.1, 10); });
+  tl.fromTo('#as-photo', { clipPath: 'inset(0px 0px 0px 0px)' }, { clipPath: 'inset(530px 60px 412px 60px)', duration: 1 * F, ease: 'none', immediateRender: false }, 49 * F);
+  tl.fromTo('#as-paper', { opacity: 0 }, { opacity: 1, duration: 1 * F, ease: 'none', immediateRender: false }, 49 * F);
+  tl.fromTo('#as-print', { scale: 1, rotation: 0, y: 0 }, { scale: 0.9, rotation: -3, y: -20, duration: 12 * F, ease: 'back.out(1.8)', immediateRender: false }, 50 * F);
+  WA.popIn(tl, '#as-cap', 58 * F, 9, { rot0: -8, rot: -1, from: 0.4 });
+  WA.confetti(tl, '#as-fx', 56 * F, 120, 760, { seed: 2, n: 40, angle: -0.6, spread: 0.6, speed: 30, frames: 40 });
+  WA.confetti(tl, '#as-fx', 58 * F, 960, 760, { seed: 9, n: 40, angle: -2.55, spread: 0.6, speed: 30, frames: 40 });
+
+  window.__timelines['recap-allsafe'] = tl;
+})();
+</script>
+</body>
+</html>

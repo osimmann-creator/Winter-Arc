@@ -128,7 +128,17 @@
     698,
     1315
    ],
-   "members": []
+   "members": [
+    "osim",
+    "amaan",
+    "ayaad",
+    "connor",
+    "dean",
+    "dylan",
+    "gaurav",
+    "jake",
+    "phil"
+   ]
   },
   "nervous": {
    "handL": [
@@ -159,7 +169,17 @@
     698,
     1315
    ],
-   "members": []
+   "members": [
+    "osim",
+    "amaan",
+    "ayaad",
+    "connor",
+    "dean",
+    "dylan",
+    "gaurav",
+    "jake",
+    "phil"
+   ]
   },
   "scared": {
    "handL": [
@@ -190,7 +210,17 @@
     698,
     1315
    ],
-   "members": []
+   "members": [
+    "osim",
+    "amaan",
+    "ayaad",
+    "connor",
+    "dean",
+    "dylan",
+    "gaurav",
+    "jake",
+    "phil"
+   ]
   },
   "handsup": {
    "handL": [
@@ -376,7 +406,17 @@
     698,
     1315
    ],
-   "members": []
+   "members": [
+    "osim",
+    "amaan",
+    "ayaad",
+    "connor",
+    "dean",
+    "dylan",
+    "gaurav",
+    "jake",
+    "phil"
+   ]
   },
   "walk-a": {
    "handL": [
@@ -1105,7 +1145,17 @@
     698,
     1315
    ],
-   "members": []
+   "members": [
+    "osim",
+    "amaan",
+    "ayaad",
+    "connor",
+    "dean",
+    "dylan",
+    "gaurav",
+    "jake",
+    "phil"
+   ]
   },
   "slip": {
    "handL": [
@@ -1167,7 +1217,17 @@
     744,
     1309
    ],
-   "members": []
+   "members": [
+    "osim",
+    "amaan",
+    "ayaad",
+    "connor",
+    "dean",
+    "dylan",
+    "gaurav",
+    "jake",
+    "phil"
+   ]
   },
   "bars": {
    "handL": [
@@ -1326,6 +1386,160 @@
    ],
    "members": [
     "anon2"
+   ]
+  },
+  "present": {
+   "handL": [
+    312,
+    998
+   ],
+   "handR": [
+    1099,
+    699
+   ],
+   "headTop": [
+    661,
+    363
+   ],
+   "eyes": [
+    650,
+    520
+   ],
+   "mouth": [
+    642,
+    632
+   ],
+   "ankleL": [
+    582,
+    1315
+   ],
+   "ankleR": [
+    698,
+    1315
+   ],
+   "members": []
+  },
+  "champ": {
+   "handL": [
+    290,
+    503
+   ],
+   "handR": [
+    990,
+    503
+   ],
+   "headTop": [
+    640,
+    362
+   ],
+   "eyes": [
+    640,
+    520
+   ],
+   "mouth": [
+    640,
+    632
+   ],
+   "ankleL": [
+    582,
+    1315
+   ],
+   "ankleR": [
+    698,
+    1315
+   ],
+   "members": [
+    "osim",
+    "amaan",
+    "ayaad",
+    "connor",
+    "dean",
+    "dylan",
+    "gaurav",
+    "jake",
+    "phil"
+   ]
+  },
+  "slump": {
+   "handL": [
+    614,
+    987
+   ],
+   "handR": [
+    666,
+    987
+   ],
+   "headTop": [
+    682,
+    365
+   ],
+   "eyes": [
+    660,
+    521
+   ],
+   "mouth": [
+    644,
+    632
+   ],
+   "ankleL": [
+    570,
+    1223
+   ],
+   "ankleR": [
+    710,
+    1223
+   ],
+   "members": [
+    "osim",
+    "amaan",
+    "ayaad",
+    "connor",
+    "dean",
+    "dylan",
+    "gaurav",
+    "jake",
+    "phil"
+   ]
+  },
+  "slump-look": {
+   "handL": [
+    614,
+    987
+   ],
+   "handR": [
+    666,
+    987
+   ],
+   "headTop": [
+    614,
+    363
+   ],
+   "eyes": [
+    628,
+    521
+   ],
+   "mouth": [
+    637,
+    632
+   ],
+   "ankleL": [
+    570,
+    1223
+   ],
+   "ankleR": [
+    710,
+    1223
+   ],
+   "members": [
+    "osim",
+    "amaan",
+    "ayaad",
+    "connor",
+    "dean",
+    "dylan",
+    "gaurav",
+    "jake",
+    "phil"
    ]
   }
  }

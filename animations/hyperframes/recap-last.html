@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+  The Monday Report: Dead Last (recap-last-<member>). He sits slumped on a crate under the bottom row of the board,
+  a rain cloud over his head, while a snail zooms past him. One render per member (variables: member, name, color,
+  dark; see VARIANTS in render.mjs).
+  Beats (30 fps): banner 0, rain 0+, snail 4-74 (passes him ~38), looks 22, follows it 38, SIGH 56, end 75.
+-->
+<html lang="en" data-composition-variables='[
+  { "id": "member", "type": "string", "label": "Cast colourway (assets/cast/flex-<pose>-<member>.svg)", "default": "dean" },
+  { "id": "name", "type": "string", "label": "Name tag", "default": "Dean" },
+  { "id": "color", "type": "color", "label": "Tag colour", "default": "#EE5982" },
+  { "id": "dark", "type": "color", "label": "Tag shade", "default": "#A83560" }
+]'>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/recap.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<link rel="stylesheet" href="assets/recap.css" />
+<style>
+  #ls-cloud { position: absolute; left: 540px; top: 1200px; width: 0; height: 0; }
+  #ls-cloud svg { position: absolute; left: -170px; top: -80px; overflow: visible; }
+  #ls-rain { position: absolute; left: 420px; top: 1240px; width: 240px; height: 644px; overflow: hidden; }
+  #ls-snail { position: absolute; left: 0; top: 1880px; width: 0; height: 0; }
+  #ls-snail .body { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  #ls-snail svg { position: absolute; left: -110px; top: -150px; overflow: visible; }
+  .ls-line { transform-origin: 100% 50%; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="recap-last" data-start="0" data-duration="2.5" data-width="1080" data-height="2348">
+ <div id="ls-scene" class="clip" data-start="0" data-duration="2.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#7D7A99">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="ls-wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E5B7E"/><stop offset="1" stop-color="#9B97B5"/></linearGradient></defs>
+    <rect width="1080" height="1880" fill="url(#ls-wall)"/>
+    <!-- the board -->
+    <g stroke="#341720" stroke-linejoin="round">
+      <rect x="150" y="548" width="780" height="476" rx="30" fill="#341720" transform="translate(0 14)"/>
+      <rect x="150" y="548" width="780" height="476" rx="30" fill="#F4EEDC" stroke-width="10"/>
+      <rect x="176" y="574" width="728" height="424" rx="18" fill="none" stroke="#D8CBA8" stroke-width="6"/>
+    </g>
+    <g stroke="#341720" stroke-width="6">
+      <circle cx="236" cy="626" r="32" fill="#FFD064"/><rect x="290" y="604" width="560" height="44" rx="22" fill="#E9DFC2"/>
+      <circle cx="236" cy="706" r="32" fill="#D9DFEA"/><rect x="290" y="684" width="500" height="44" rx="22" fill="#E9DFC2"/>
+      <circle cx="236" cy="786" r="32" fill="#E0A060"/><rect x="290" y="764" width="440" height="44" rx="22" fill="#E9DFC2"/>
+    </g>
+    <g fill="#B8AA86"><circle cx="540" cy="852" r="9"/><circle cx="540" cy="880" r="9"/><circle cx="540" cy="908" r="9"/></g>
+    <g stroke="#341720" stroke-width="6">
+      <rect x="196" y="930" width="688" height="58" rx="20" fill="#F7C9C2" stroke="#E0444E"/>
+      <circle cx="236" cy="959" r="32" fill="#E0444E"/>
+    </g>
+    <g font-family="Luckiest Guy" text-anchor="middle" fill="#341720" font-size="40">
+      <text x="236" y="640">1</text><text x="236" y="720">2</text><text x="236" y="800">3</text>
+    </g>
+    <!-- a little skull in the last row's badge -->
+    <g transform="translate(236 957)">
+      <path d="M-16 6 Q-20 -18 0 -19 Q20 -18 16 6 L10 9 L10 15 L-10 15 L-10 9 Z" fill="#FFFFFF" stroke="#341720" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="-7" cy="-3" r="5" fill="#341720"/><circle cx="7" cy="-3" r="5" fill="#341720"/>
+    </g>
+    <text x="560" y="975" text-anchor="middle" font-family="Luckiest Guy" font-size="40" fill="#E0444E" letter-spacing="4">LAST</text>
+    <!-- floor, crate -->
+    <rect x="0" y="1880" width="1080" height="480" fill="#4E4B6B"/>
+    <path d="M0 1880 L1080 1880" stroke="#341720" stroke-width="10"/>
+    <path d="M0 2000 L1080 2000 M0 2150 L1080 2150" stroke="#5C5980" stroke-width="10"/>
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <rect x="420" y="1756" width="240" height="128" rx="8" fill="#B07A45"/>
+      <path d="M420 1800 L660 1800 M420 1842 L660 1842" stroke-width="6"/>
+    </g>
+    <path d="M436 1770 L646 1770" stroke="#D9A066" stroke-width="8" stroke-linecap="round"/>
+  </svg>
+  <div id="ls-guy"></div>
+  <div id="ls-rain"></div>
+  <div id="ls-cloud"><svg width="340" height="160" viewBox="-170 -80 340 160">
+    <path d="M-130 40 Q-170 40 -170 4 Q-170 -34 -128 -36 Q-122 -80 -70 -80 Q-36 -110 10 -92 Q46 -122 92 -94 Q140 -96 146 -50 Q176 -40 170 0 Q166 40 130 40 Z" fill="#341720" transform="translate(0 12)"/>
+    <path d="M-130 40 Q-170 40 -170 4 Q-170 -34 -128 -36 Q-122 -80 -70 -80 Q-36 -110 10 -92 Q46 -122 92 -94 Q140 -96 146 -50 Q176 -40 170 0 Q166 40 130 40 Z" fill="#8F97AB" stroke="#341720" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M-110 -30 Q-96 -60 -60 -60" stroke="#C4CAD8" stroke-width="12" fill="none" stroke-linecap="round"/>
+  </svg></div>
+  <div id="ls-snail"><div class="body"><svg width="240" height="170" viewBox="-110 -150 240 170">
+    <g class="ls-lines" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" opacity=".85">
+      <path class="ls-line" d="M-200 -40 L-120 -40"/><path class="ls-line" d="M-230 -80 L-130 -80"/><path class="ls-line" d="M-190 -116 L-120 -116"/>
+    </g>
+    <path d="M-100 0 Q-110 -30 -70 -34 L60 -34 Q100 -36 110 -70 L128 -108 Q140 -120 146 -104 L132 -60 Q120 -6 80 0 Z" fill="#9BD86A" stroke="#341720" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M118 -90 L108 -136 M134 -96 L140 -142" stroke="#341720" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="106" cy="-140" r="12" fill="#FFFFFF" stroke="#341720" stroke-width="5"/><circle cx="142" cy="-146" r="12" fill="#FFFFFF" stroke="#341720" stroke-width="5"/>
+    <circle cx="110" cy="-140" r="5" fill="#341720"/><circle cx="146" cy="-146" r="5" fill="#341720"/>
+    <path d="M112 -70 Q124 -62 134 -72" stroke="#341720" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <circle cx="-8" cy="-84" r="66" fill="#F2A33A" stroke="#341720" stroke-width="9"/>
+    <path d="M-8 -84 m0 -8 a8 8 0 1 1 -8 8 a16 16 0 1 1 16 16 a28 28 0 1 1 -28 -28 a42 42 0 1 1 42 42" fill="none" stroke="#B8651E" stroke-width="7" stroke-linecap="round"/>
+    <path d="M-50 -120 Q-30 -142 0 -146" stroke="#FFD08A" stroke-width="10" fill="none" stroke-linecap="round"/>
+  </svg></div></div>
+  <div class="word" id="ls-sigh" style="left:300px;top:1290px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="92" style="fill:#BFD7FF">SIGH…</text></svg></div></div>
+  <div id="ls-banner"></div>
+ </div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), s = 0.6, X = 540, Y = 1880;
+  var M = WA.recap.member({ member: 'dean', name: 'Dean', color: '#EE5982', dark: '#A83560' });
+  WA.recap.banner('ls-banner', 'DEAD LAST', '#5B6478', '#394052', '#DCE2EE');
+  // the tag sits between the board and the cloud (tagY is px from the actor's top)
+  WA.actor('ls-guy', ['slump', 'slump-look'], { x: X, y: Y, s: s, member: M.member, tag: M.name, color: M.color, tagY: 1022 - (Y - 1340 * s) });
+  gsap.set('#ls-guy .flip', { scaleX: 1 });
+  WA.pose(tl, '#ls-guy', 'slump', 0);
+  WA.snow(tl, '#ls-rain', { n: 16, seed: 4, w: 240, h: 644, speed: 900, drift: -20, dur: 2.5,
+    html: function () { return '<i style="display:block;width:9px;height:34px;border-radius:5px;background:#7FB2F0;border:3px solid #341720"></i>'; } });
+  gsap.set('#ls-snail', { x: -200 });
+
+  WA.recap.bannerIn(tl, 'ls-banner', 0);
+  // the cloud hangs and wobbles over him
+  tl.fromTo('#ls-cloud', { y: 0 }, { y: -10, duration: 18 * F, ease: 'sine.inOut', yoyo: true, repeat: 3 }, 0);
+  // the snail zooms past, squishing as it goes
+  tl.fromTo('#ls-snail', { x: -200 }, { x: 1300, duration: 70 * F, ease: 'none', immediateRender: false }, 4 * F);
+  for (var k = 0; k < 12; k++) {
+    tl.to('#ls-snail .body', { scaleX: 1.08, scaleY: 0.94, duration: 3 * F, ease: 'sine.inOut', yoyo: true, repeat: 1 }, (4 + k * 6) * F);
+  }
+  tl.fromTo('#ls-snail .ls-lines', { x: 0 }, { x: -24, duration: 4 * F, ease: 'none', yoyo: true, repeat: 17 }, 4 * F);
+  // he watches it go by
+  WA.take(tl, '#ls-guy', 'slump-look', 22 * F, 0.05);
+  tl.set('#ls-guy .flip', { scaleX: -1 }, 38 * F);
+  WA.squash(tl, '#ls-guy', 38 * F, 0.04, 8);
+  // and sighs
+  tl.set('#ls-guy .flip', { scaleX: 1 }, 56 * F);
+  WA.take(tl, '#ls-guy', 'slump', 56 * F, 0.12);
+  WA.word(tl, '#ls-sigh', 57 * F, 18, { rot: -4, rot0: 8, seed: 3, amp: 3 });
+
+  window.__timelines['recap-last'] = tl;
+})();
+</script>
+</body>
+</html>

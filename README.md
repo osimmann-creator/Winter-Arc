@@ -92,6 +92,8 @@ The GTA clips (Grand Theft #1 through Partners in Crime) and the holidays can be
 
 **Hoat Guarantee:** whenever Osim reaches 7 points in a week, a red rubber stamp with a thumbs up slams onto his screen. It then sits on his ring card, and a Hoat Guarantee card goes to the feed for everyone (tap the stamp to replay it).
 
+**The Monday Report:** a weekly recap made of 30 short clips in `assets/celebrations` (`recap-*`): an intro, Player of the Week, a strike for each member who took one (or Everybody Survived if nobody did), Dead Last and an outro. Every clip that shows a name has one version per member, because the standings aren't known until Sunday night. The app doesn't play them yet. It needs to play a list of clips back to back on Monday and record a `recap:<w>` event so each person sees it once. See [animations/README.md](animations/README.md#the-monday-report).
+
 The settings live in `INSIDE_JOKES` and `HOAT` in `js/config.js` and match people by username; the exact rules are in `Logic.jokes` in `js/logic.js`. Joke replays are attached to their feed posts.
 
 **Roast of the day:** the banner at the top of Home. There are 100 roasts in `js/jokes.js` and one airs a day, the same one for everyone. There's nothing to tap.

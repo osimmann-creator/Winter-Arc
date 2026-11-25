@@ -1,0 +1,156 @@
+<!doctype html>
+<!--
+  The Monday Report: Strike (recap-strike-<member>). He stands on the pin deck like a pin, a bowling ball rolls in,
+  he panics, and it knocks him flat: STRIKE, and the scoreboard gets an X. One render per member (variables: member,
+  name, color, dark; see VARIANTS in render.mjs). One plays for each member who took a strike last week.
+  Beats (30 fps): banner 0, ball rolls 2-28, sees it 16, HIT + STRIKE! 28, pins fly 28, X 31, airborne 28-46,
+  lands flat 46, tag back 48, stars 50, end 66.
+-->
+<html lang="en" data-composition-variables='[
+  { "id": "member", "type": "string", "label": "Cast colourway (assets/cast/flex-<pose>-<member>.svg)", "default": "dean" },
+  { "id": "name", "type": "string", "label": "Name tag", "default": "Dean" },
+  { "id": "color", "type": "color", "label": "Tag colour", "default": "#EE5982" },
+  { "id": "dark", "type": "color", "label": "Tag shade", "default": "#A83560" }
+]'>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/props.js"></script>
+<script src="assets/recap.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<link rel="stylesheet" href="assets/recap.css" />
+<style>
+  #sk-cam { position: absolute; inset: 0; transform-origin: 700px 1700px; }
+  #sk-ball { position: absolute; left: 0; top: 1660px; width: 170px; height: 170px; margin-left: -85px; }
+  #sk-ball svg { position: absolute; left: 0; top: 0; }
+  .sk-pin { position: absolute; width: 0; height: 0; }
+  .sk-pin svg { position: absolute; left: -46px; top: -226px; overflow: visible; }
+  #sk-x { position: absolute; left: 781px; top: 725px; width: 0; height: 0; opacity: 0; }
+  #sk-x svg { position: absolute; left: -70px; top: -70px; overflow: visible; }
+  .sk-star { position: absolute; width: 0; height: 0; opacity: 0; }
+  .sk-star svg { position: absolute; left: -26px; top: -26px; overflow: visible; }
+  .sk-dust { position: absolute; width: 100px; height: 100px; margin: -50px 0 0 -50px; border-radius: 50%; background: #fff; border: 6px solid #341720; opacity: 0; }
+  #sk-flash { position: absolute; inset: 0; background: #FFFFFF; opacity: 0; }
+  #sk-fx { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="recap-strike" data-start="0" data-duration="2.2" data-width="1080" data-height="2348">
+ <div id="sk-scene" class="clip" data-start="0" data-duration="2.2" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#20365A">
+  <div id="sk-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs>
+      <linearGradient id="sk-wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#172846"/><stop offset="1" stop-color="#2E5A86"/></linearGradient>
+      <linearGradient id="sk-lane" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6D9A4"/><stop offset="1" stop-color="#D9A866"/></linearGradient>
+    </defs>
+    <rect width="1080" height="1810" fill="url(#sk-wall)"/>
+    <!-- lane lights along the wall -->
+    <g fill="#FFD064" stroke="#341720" stroke-width="5">
+      <circle cx="80" cy="1000" r="16"/><circle cx="260" cy="1000" r="16"/><circle cx="440" cy="1000" r="16"/><circle cx="620" cy="1000" r="16"/><circle cx="800" cy="1000" r="16"/><circle cx="980" cy="1000" r="16"/>
+    </g>
+    <path d="M0 1000 L1080 1000" stroke="#FFD064" stroke-width="4" opacity=".4"/>
+    <!-- the scoreboard -->
+    <g stroke="#341720" stroke-linejoin="round">
+      <rect x="196" y="572" width="700" height="320" rx="30" fill="#341720" transform="translate(0 14)"/>
+      <rect x="196" y="572" width="700" height="320" rx="30" fill="#2B3550" stroke-width="10"/>
+      <rect x="226" y="600" width="640" height="264" rx="16" fill="#101827" stroke-width="7"/>
+      <g fill="#1C2740" stroke="#3B4C74" stroke-width="5">
+        <rect x="244" y="640" width="138" height="170" rx="10"/><rect x="400" y="640" width="138" height="170" rx="10"/><rect x="556" y="640" width="138" height="170" rx="10"/>
+        <rect x="712" y="640" width="138" height="170" rx="10" fill="#22304E"/>
+      </g>
+    </g>
+    <g font-family="Luckiest Guy" font-size="96" text-anchor="middle" fill="#7FD3FF" opacity=".85">
+      <text x="313" y="760">9</text><text x="469" y="760">7</text><text x="625" y="760">8</text>
+    </g>
+    <!-- the pit behind the pins -->
+    <rect x="560" y="1230" width="540" height="580" fill="#0F1A2E" stroke="#341720" stroke-width="10"/>
+    <path d="M560 1230 L1100 1230 L1100 1300 Q1060 1330 1020 1300 Q980 1330 940 1300 Q900 1330 860 1300 Q820 1330 780 1300 Q740 1330 700 1300 Q660 1330 620 1300 Q590 1320 560 1300 Z" fill="#7A2335" stroke="#341720" stroke-width="8" stroke-linejoin="round"/>
+    <!-- the lane, gutter and floor -->
+    <rect x="-10" y="1810" width="1100" height="110" fill="url(#sk-lane)" stroke="#341720" stroke-width="10"/>
+    <path d="M40 1846 L1040 1846 M40 1880 L1040 1880" stroke="#C48D4E" stroke-width="5" opacity=".7"/>
+    <g fill="#E05A47" stroke="#341720" stroke-width="5"><path d="M180 1830 l22 14 -22 14 Z M320 1830 l22 14 -22 14 Z M460 1830 l22 14 -22 14 Z"/></g>
+    <rect x="-10" y="1920" width="1100" height="60" fill="#2B2236" stroke="#341720" stroke-width="10"/>
+    <rect x="-10" y="1980" width="1100" height="380" fill="#3A2E5A"/>
+    <path d="M0 2080 L1080 2080 M0 2200 L1080 2200" stroke="#4A3D72" stroke-width="10"/>
+  </svg>
+  <div class="sk-pin" id="sk-pin0" style="left:948px;top:1818px"></div>
+  <div class="sk-pin" id="sk-pin1" style="left:1036px;top:1818px"></div>
+  <div id="sk-guy"></div>
+  <div id="sk-tag"></div>
+  <div id="sk-ball"><svg width="170" height="170" viewBox="-85 -85 170 170">
+    <circle r="78" fill="#3B2A6E" stroke="#341720" stroke-width="9"/>
+    <path d="M-50 -46 Q-20 -72 22 -66" stroke="#8C74E0" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <circle cx="-10" cy="-22" r="12" fill="#1B1236" stroke="#341720" stroke-width="5"/>
+    <circle cx="22" cy="-30" r="12" fill="#1B1236" stroke="#341720" stroke-width="5"/>
+    <circle cx="10" cy="14" r="14" fill="#1B1236" stroke="#341720" stroke-width="5"/>
+  </svg></div>
+  <div id="sk-dust"></div>
+  <div class="sk-star" id="sk-s0"></div><div class="sk-star" id="sk-s1"></div><div class="sk-star" id="sk-s2"></div>
+  <div id="sk-x"><svg width="140" height="140" viewBox="-70 -70 140 140">
+    <path d="M-48 -54 L0 -8 L48 -54 L60 -42 L12 4 L60 50 L48 62 L0 16 L-48 62 L-60 50 L-12 4 L-60 -42 Z" fill="#E0444E" stroke="#341720" stroke-width="8" stroke-linejoin="round"/>
+  </svg></div>
+  <div class="word" id="sk-word" style="left:520px;top:1240px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="190" style="fill:#FFD064" letter-spacing="6">STRIKE!</text></svg></div></div>
+  <div id="sk-fx"></div>
+  </div>
+  <div id="sk-flash"></div>
+  <div id="sk-banner"></div>
+ </div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), s = 0.62, X = 845, Y = 1818;
+  var M = WA.recap.member({ member: 'dean', name: 'Dean', color: '#EE5982', dark: '#A83560' });
+  WA.recap.banner('sk-banner', 'STRIKE', '#E05A47', '#9A3B2B', '#FFD9D0');
+  WA.actor('sk-guy', ['nervous', 'scared', 'flat', 'dazed'], { x: X, y: Y, s: s, member: M.member });
+  WA.recap.tag('sk-tag', M.name, M.color, X, Y - 1340 * s + 330 * s - 150);
+  gsap.set('#sk-guy', { transformOrigin: (640 * s) + 'px ' + (1340 * s) + 'px' });
+  var PIN = '<svg width="92" height="232" viewBox="-46 -226 92 232"><path d="M0 -222 C-22 -222 -26 -196 -22 -176 C-18 -158 -14 -146 -20 -128 C-30 -100 -44 -72 -42 -40 C-40 -14 -26 0 0 0 C26 0 40 -14 42 -40 C44 -72 30 -100 20 -128 C14 -146 18 -158 22 -176 C26 -196 22 -222 0 -222 Z" fill="#FFFFFF" stroke="#341720" stroke-width="8" stroke-linejoin="round"/><path d="M-19 -168 L19 -168 M-18 -152 L18 -152" stroke="#E0444E" stroke-width="9"/><path d="M-26 -90 C-34 -66 -34 -40 -24 -22" stroke="#D9DFEA" stroke-width="10" fill="none" stroke-linecap="round"/></svg>';
+  document.getElementById('sk-pin0').innerHTML = PIN; document.getElementById('sk-pin1').innerHTML = PIN;
+  for (var i = 0; i < 3; i++) document.getElementById('sk-s' + i).innerHTML = '<svg width="52" height="52" viewBox="-26 -26 52 52">' + WA.star(24, '#FFD064', 5) + '</svg>';
+  gsap.set('#sk-ball', { x: -220, rotation: 0 });
+  WA.pose(tl, '#sk-guy', 'nervous', 0);
+
+  WA.recap.bannerIn(tl, 'sk-banner', 0);
+  // the ball rolls in; he sweats, then panics
+  tl.fromTo('#sk-ball', { x: -220, rotation: 0 }, { x: 712, rotation: 760, duration: 26 * F, ease: 'power1.in', immediateRender: false }, 2 * F);
+  WA.shake(tl, '#sk-guy .jit', 4 * F, 12 * F, 3, { seed: 2, step: 2 });
+  WA.take(tl, '#sk-guy', 'scared', 16 * F, 0.1);
+  WA.shake(tl, '#sk-guy .jit', 18 * F, 10 * F, 6, { seed: 4, step: 2 });
+  // HIT
+  tl.fromTo('#sk-flash', { opacity: 0.7 }, { opacity: 0, duration: 5 * F, ease: 'power1.out', immediateRender: false }, 28 * F);
+  WA.shake(tl, '#sk-cam', 28 * F, 12 * F, 16, { decay: true, seed: 5, rot: 0.5 });
+  WA.word(tl, '#sk-word', 28 * F, 30, { rot: -6, rot0: 14, seed: 6, amp: 7 });
+  tl.to('#sk-ball', { x: 1240, y: 60, rotation: 1300, duration: 12 * F, ease: 'none' }, 28 * F);
+  WA.pose(tl, '#sk-guy', 'flat', 28 * F);
+  tl.to('#sk-tag', { scale: 0, opacity: 0, duration: 4 * F, ease: 'power1.in' }, 28 * F);
+  tl.to('#sk-guy', { x: 120, y: -420, rotation: -250, duration: 11 * F, ease: 'power2.out' }, 28 * F);
+  tl.to('#sk-guy', { x: 200, y: -110, rotation: -450, duration: 7 * F, ease: 'power2.in' }, 39 * F);
+  WA.pose(tl, '#sk-guy', 'dazed', 45 * F);
+  WA.toss(tl, '#sk-pin0', 29 * F, { x0: 0, y0: 0, vx: 9, vy: -40, g: 2.0, frames: 26, spin: 22 });
+  WA.toss(tl, '#sk-pin1', 30 * F, { x0: 0, y0: 0, vx: 17, vy: -34, g: 2.0, frames: 24, spin: 28 });
+  WA.popIn(tl, '#sk-x', 31 * F, 8, { rot0: -40, rot: -6, from: 1.8 });
+  WA.squash(tl, '#sk-x', 39 * F, 0.15, 10);
+  // lands flat, the tag comes back, dizzy stars
+  WA.squash(tl, '#sk-guy', 46 * F, 0.12, 10);
+  var dust = document.getElementById('sk-dust');
+  for (var j = 0; j < 6; j++) {
+    var d = document.createElement('div'); d.className = 'sk-dust'; d.style.left = (560 + j * 80) + 'px'; d.style.top = '1800px'; dust.appendChild(d);
+    tl.fromTo(d, { scale: 0.3, opacity: 1, x: 0, y: 0 }, { scale: 1.1, opacity: 0, x: (j - 2.5) * 40, y: -40 - (j % 2) * 30, duration: 14 * F, ease: 'power2.out', immediateRender: false }, 46 * F);
+  }
+  tl.fromTo('#sk-tag', { x: 0, y: 0, scale: 0, opacity: 1 }, { x: -320, y: 380, scale: 1, opacity: 1, duration: 8 * F, ease: 'back.out(2.4)', immediateRender: false }, 48 * F);
+  ['#sk-s0', '#sk-s1', '#sk-s2'].forEach(function (id, k) {
+    var cx = 520, cy = 1630;
+    tl.set(id, { opacity: 1, left: cx, top: cy, x: Math.cos(k * 2.1) * 70, y: Math.sin(k * 2.1) * 22 }, 50 * F);
+    for (var q = 0; q < 4; q++) {
+      var a = k * 2.1 + (q + 1) * 0.9;
+      tl.to(id, { x: Math.cos(a) * 70, y: Math.sin(a) * 22, duration: 4 * F, ease: 'none' }, (50 + q * 4) * F);
+    }
+  });
+
+  window.__timelines['recap-strike'] = tl;
+})();
+</script>
+</body>
+</html>

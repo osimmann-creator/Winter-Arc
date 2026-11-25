@@ -90,6 +90,29 @@ HyperFrames needs a Chrome. If it can't find one, point `PUPPETEER_EXECUTABLE_PA
 
 Sound works exactly as for the Remotion videos: each clip has an entry in `sound/cues.py`, under "round 2", and `render.mjs` runs `scripts/sound.py mix` on it.
 
+### The Monday Report
+
+The weekly recap is 30 short clips (2.2 to 2.7 s each) that the app plays back to back on Mondays. They're made ahead of time because the standings aren't known until Sunday night, so every clip that shows a name has one version per member:
+
+| Clip | Versions | Scene |
+|---|---|---|
+| `recap-intro` | 1 | the logo spins in, Flexander presents LAST WEEK from the news desk over a drumroll |
+| `recap-mvp-<member>` | 9 | Player of the Week: he lands on the top step, a gold medal drops onto him, fists up into the confetti |
+| `recap-strike-<member>` | 9 | Strike: he stands on the pin deck, the ball knocks him flat, STRIKE! and an X on the scoreboard |
+| `recap-allsafe` | 1 | Everybody Survived (instead of strikes): all nine in a self-timer team photo that turns into a polaroid |
+| `recap-last-<member>` | 9 | Dead Last: slumped on a crate under the bottom row of the board, in the rain, while a snail zooms past |
+| `recap-outro` | 1 | sunrise, LAST WEEK tears off the calendar, end card NEW WEEK · 7 PTS · SAME GOAL |
+
+```
+node render.mjs recap                    # all 30
+node render.mjs recap-mvp-dean           # one
+```
+
+- The three per-member scenes are one html each (`recap-mvp.html`, `recap-strike.html`, `recap-last.html`). `VARIANTS` in `render.mjs` renders each once per member, passing who it's about as HyperFrames variables (`member`, `name`, `color`, `dark`), which `WA.recap.member()` reads. A new member needs a row in `CREW` there, his colourway in `MEMBERS` (`src/export/cast.tsx`) and in `CREW` (`src/export/cast-poses.tsx`), then `./scripts/export-cast.sh` and `node render.mjs recap`.
+- `hyperframes/assets/recap.js` and `recap.css` hold the WINTER ARC WEEKLY banner every segment opens with, so the clips read as one show.
+- Their sound cues are at the end of `sound/cues.py` (`RECAP_*`, shared by the nine versions of each scene).
+- The clips have no numbers in them. The app's recap card shows last week's points.
+
 ## Sound
 
 Each video's soundtrack is built from short sound effects placed on frames, then muxed into the finished mp4. The picture is copied, not re-encoded.

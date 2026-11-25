@@ -5,6 +5,7 @@
 
      node render.mjs                        every clip below
      node render.mjs joke-thanksgiving      just these
+     node render.mjs recap                  all 30 Monday Report clips (recap-*)
      DRAFT=1 node render.mjs joke-wanted    quick draft master only (../out/videos/<id>.draft.mp4), app untouched
 
    Chrome: set PUPPETEER_EXECUTABLE_PATH (or CHROME) to a Chrome / chrome-headless-shell binary if HyperFrames
@@ -38,17 +39,38 @@ export const CLIPS = {
   'joke-nye': 2.55,
   'joke-groundhog': 2.9,
   'joke-valentine': 1.6,
+  // The Monday Report (the weekly recap the app plays back to back on Mondays)
+  'recap-intro': 1.6,
+  'recap-allsafe': 2.2,
+  'recap-outro': 1.9,
 };
+
+/** The Monday Report's per-member clips: one html rendered once per member, who it's about passed in as HyperFrames
+    variables (read by WA.recap.member() in assets/recap.js). id : [html, variables, poster second].
+    Names and colours as ROSTER in js/config.js; the shade as MEMBERS in src/export/cast.tsx. */
+const CREW = {
+  osim: ['Osim', '#7254DC', '#4F35B0'], amaan: ['Amaan', '#F2853A', '#B4521C'], ayaad: ['Ayaad', '#2FA36B', '#1D6E48'],
+  connor: ['Connor', '#2F66E6', '#1C46A8'], dean: ['Dean', '#EE5982', '#A83560'], dylan: ['Dylan', '#1FA3A0', '#136E6C'],
+  gaurav: ['Gaurav', '#B45AC8', '#7A3590'], jake: ['Jake', '#E39A2E', '#A8661A'], phil: ['Phil', '#D9644F', '#963B2C'],
+};
+export const VARIANTS = {};
+for (const [member, [name, color, dark]] of Object.entries(CREW)) {
+  const vars = { member, name, color, dark };
+  VARIANTS['recap-mvp-' + member] = ['recap-mvp.html', vars, 1.2];
+  VARIANTS['recap-strike-' + member] = ['recap-strike.html', vars, 1.0];
+  VARIANTS['recap-last-' + member] = ['recap-last.html', vars, 1.3];
+}
 
 const env = { ...process.env, HYPERFRAMES_NO_TELEMETRY: '1', DO_NOT_TRACK: '1' };
 if (!env.PUPPETEER_EXECUTABLE_PATH && env.CHROME) env.PUPPETEER_EXECUTABLE_PATH = env.CHROME;
 const run = (cmd, args, opt = {}) => execFileSync(cmd, args, { stdio: 'inherit', env, ...opt });
 
-const want = process.argv.slice(2);
-const ids = want.length ? want : Object.keys(CLIPS);
-const unknown = ids.filter((id) => !(id in CLIPS));
+const everything = [...Object.keys(CLIPS), ...Object.keys(VARIANTS)];
+const want = process.argv.slice(2).flatMap((a) => (a === 'recap' ? everything.filter((id) => id.startsWith('recap-')) : [a]));
+const ids = want.length ? want : everything;
+const unknown = ids.filter((id) => !(id in CLIPS) && !(id in VARIANTS));
 if (unknown.length) {
-  console.error('Not in CLIPS: ' + unknown.join(', '));
+  console.error('Not in CLIPS or VARIANTS: ' + unknown.join(', '));
   process.exit(1);
 }
 mkdirSync(OUT, { recursive: true });
@@ -57,14 +79,15 @@ mkdirSync(join(APP, 'celebrations'), { recursive: true });
 for (const id of ids) {
   const draft = !!process.env.DRAFT;
   const master = join(OUT, id + (draft ? '.draft.mp4' : '.mp4'));
-  run('npx', ['hyperframes', 'render', '-c', id + '.html', '-o', master, '--quiet',
+  const [src, vars, poster] = VARIANTS[id] || [id + '.html', null, CLIPS[id]];
+  run('npx', ['hyperframes', 'render', '-c', src, '-o', master, '--quiet', ...(vars ? ['--variables', JSON.stringify(vars)] : []),
     ...(draft ? ['--quality', 'draft'] : ['--crf', '18'])], { cwd: HERE });
   if (draft) { console.log('draft ' + master); continue; }
   const mp4 = join(APP, 'celebrations', id + '.mp4');
   run('ffmpeg', ['-y', '-loglevel', 'error', '-i', master, '-vf', 'scale=720:1566', '-c:v', 'libx264', '-crf', '26',
     '-preset', 'veryfast', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', mp4]);
   run('python3', [join(ANIM, 'scripts', 'sound.py'), 'mix', id]);
-  run('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(CLIPS[id]), '-i', master, '-frames:v', '1', '-vf', 'scale=360:782',
+  run('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(poster), '-i', master, '-frames:v', '1', '-vf', 'scale=360:782',
     '-c:v', 'libwebp', '-quality', '80', join(APP, 'celebrations', id + '.webp')]);
   console.log('done ' + id);
 }

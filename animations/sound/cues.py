@@ -686,3 +686,53 @@ CUES['joke-valentine'] = [  # Valentine's Day: scrolling 0-28, arrow 22-30 (THUN
     C(92, 'door_slam', -4), word(92, -11), C(96, 'sparkle', -14),
     *joke_card(120),
 ]
+
+# ---------------------------------------------------------------- The Monday Report (HyperFrames: hyperframes/recap-*.html)
+# The weekly recap the app plays back to back on Mondays. Every segment opens on the WINTER ARC WEEKLY banner
+# (assets/recap.js: plate pops at its start, tab 5 frames later). The per-member clips share one cue list each.
+def recap_banner(at=0):
+    return [C(at, 'whoosh', -10), C(at + 3, 'slam', -8), C(at + 6, 'pop', -13)]
+
+
+CUES['recap-intro'] = [  # intro: logo spins in 2-14, banner 8, desk 6-16, Flexander up 14-24, PRESENT 30, monitor 32, drumroll 44-75, push-in 62
+    opening(-12), C(3, 'whoosh', -9), C(13, 'logo_spark', -8), C(10, 'fanfare', -9), cheer(12, -16, d=1.4),
+    *recap_banner(8), C(8, 'whoosh_heavy', -13), C(16, 'thud', -12),
+    C(15, 'whoosh_fast', -13), C(24, 'pop_pluck', -12), C(30, 'swish', -12),
+    C(32, 'pop_in', -10), C(34, 'notify', -12), C(42, 'tick', -16),
+    C(44, 'drumroll', -8, d=1.03, fi=0.15), C(64, 'whoosh_big', -13, r=1.2),
+]
+RECAP_MVP = [  # player of the week: lands 9, medal falls 12-22, hits 22, CHAMP 25, confetti 25/29, glints 30/44/58, hops 34/50
+    *recap_banner(0), C(2, 'whoosh_fast', -11), C(9, 'land', -6), C(9, 'thud', -10), C(10, 'powder', -14),
+    C(13, 'whoosh', -12, r=1.2), C(22, 'ding', -5), C(22, 'coin_drop', -11), C(23, 'gem', -12),
+    C(25, 'fanfare', -6), C(25, 'party_pop', -8), C(29, 'party_pop', -9, r=1.1), cheer(25, -9, d=1.7), applause(27, -12, d=1.6),
+    C(30, 'sparkle', -12), C(44, 'twinkle', -14), C(58, 'twinkle', -15, r=1.1), C(34, 'jump', -15), C(50, 'jump', -16),
+]
+RECAP_STRIKE = [  # strike: ball rolls 2-28, panic 16, HIT + STRIKE! 28, pins 29/30, X 31, airborne 28-46, lands 46, tag 48, stars 50
+    *recap_banner(0), C(2, 'rumble', -10, d=0.95, fi=0.15, fo=0.1, r=1.3), C(4, 'heartbeat', -14, d=0.8),
+    C(16, 'gasp', -8), C(17, 'pop_pluck', -14),
+    C(28, 'crash', -5, d=1.1, fo=0.5), C(28, 'thud', -6), C(28, 'boom_short', -9), C(29, 'clank', -10), C(30, 'clang', -12), word(28, -10),
+    ooh(30, -11), C(31, 'stamp', -7), C(32, 'game8bit', -15), C(30, 'whoosh_heavy', -10), C(38, 'whoosh', -12),
+    C(46, 'land', -7), C(46, 'person_fall', -9), C(47, 'powder', -13), C(48, 'pop_in', -12), C(50, 'twinkle', -13), C(54, 'chirp', -17, r=1.2),
+]
+RECAP_LAST = [  # dead last: rain all along, snail 4-74 (passes ~38), looks 22, follows it 38, SIGH 56
+    *recap_banner(0), C(0, 'pad', -22, d=2.5, fi=0.3, fo=0.4), C(0, 'wind_soft', -24, d=2.5, fi=0.2, fo=0.4),
+    *[C(f, 'tick', -25, r=1.7 + 0.1 * (i % 3)) for i, f in enumerate(range(2, 75, 5))],
+    *[C(f, 'squeak', -21, r=1.8) for f in range(6, 74, 12)], C(36, 'whoosh_fast', -11),
+    C(22, 'pop_pluck', -16), C(38, 'swish', -15), C(56, 'power_down', -9), word(57, -14), C(64, 'sting_soft', -15),
+]
+CUES['recap-allsafe'] = [  # everybody survived: crew hops 2-20, 3/2/1 at 16/28/40, FLASH 50, polaroid 50-62, confetti 56/58, caption 58
+    *recap_banner(0), *[C(7 + 2 * i, 'pop_pluck', -16, r=0.9 + 0.05 * i) for i in range(9)],
+    C(16, 'tick', -6), C(16, 'click', -12), C(28, 'tick', -6, r=1.1), C(40, 'tick', -6, r=1.25), C(40, 'heartbeat', -14, d=0.35),
+    C(49, 'whoosh_fast', -14), C(50, 'shutter_big', -3), C(50, 'sparkle', -10), cheer(51, -8, d=1.0), C(52, 'fanfare', -9),
+    C(52, 'whoosh', -12), C(56, 'party_pop', -9), C(58, 'party_pop', -10, r=1.1), applause(54, -11, d=0.9),
+    C(58, 'pop_in', -11), C(60, 'card_slap', -10), C(66, 'twinkle', -15),
+]
+CUES['recap-outro'] = [  # outro: sunrise 0-40, rooster 2, calendar drops 0-10, tear 16, NEW WEEK 20, thumbs 24, card 30, hop 40
+    C(0, 'bed_warm', -22, d=2.5, fi=0.3, fo=0.8), C(2, 'rooster', -8), C(2, 'whoosh', -12), C(10, 'thud', -12),
+    C(16, 'paper_crumple', -9, d=0.4, fo=0.15), C(17, 'swipe', -10), C(20, 'pop', -11), C(24, 'pop_pluck', -12), C(24, 'ding', -13),
+    *card(30), C(40, 'jump', -16),
+]
+for _m in ('osim', 'amaan', 'ayaad', 'connor', 'dean', 'dylan', 'gaurav', 'jake', 'phil'):
+    CUES['recap-mvp-' + _m] = RECAP_MVP
+    CUES['recap-strike-' + _m] = RECAP_STRIKE
+    CUES['recap-last-' + _m] = RECAP_LAST

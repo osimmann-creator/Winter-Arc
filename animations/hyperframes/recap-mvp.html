@@ -1,0 +1,148 @@
+<!doctype html>
+<!--
+  The Monday Report: Player of the Week (recap-mvp-<member>). He drops onto the top step of the podium, a gold medal
+  falls onto him, and he throws both fists up into the confetti. One render per member (variables: member, name,
+  color, dark; see VARIANTS in render.mjs).
+  Beats (30 fps): banner 0, lands 9, medal falls 12-22 (hits 22, swings to 40), CHAMP 25, confetti 26/30,
+  glints 30/44/58, hops 34/50, end 75.
+-->
+<html lang="en" data-composition-variables='[
+  { "id": "member", "type": "string", "label": "Cast colourway (assets/cast/flex-<pose>-<member>.svg)", "default": "dean" },
+  { "id": "name", "type": "string", "label": "Name tag", "default": "Dean" },
+  { "id": "color", "type": "color", "label": "Tag colour", "default": "#EE5982" },
+  { "id": "dark", "type": "color", "label": "Tag shade", "default": "#A83560" }
+]'>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/props.js"></script>
+<script src="assets/recap.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<link rel="stylesheet" href="assets/recap.css" />
+<style>
+  #mv-cam { position: absolute; inset: 0; transform-origin: 540px 1500px; }
+  #mv-beams { position: absolute; inset: 0; }
+  #mv-medal { position: absolute; left: 540px; top: 1104px; width: 0; height: 0; }
+  #mv-medal svg { position: absolute; left: -90px; top: -20px; overflow: visible; }
+  .mv-glint { position: absolute; width: 0; height: 0; opacity: 0; }
+  .mv-glint svg { position: absolute; left: -30px; top: -30px; overflow: visible; }
+  .mv-dust { position: absolute; width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 50%; background: #fff; border: 6px solid #341720; opacity: 0; }
+  #mv-flash { position: absolute; inset: 0; background: #FFF6D6; opacity: 0; }
+  #mv-fx { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="recap-mvp" data-start="0" data-duration="2.5" data-width="1080" data-height="2348">
+ <div id="mv-scene" class="clip" data-start="0" data-duration="2.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#3B2C6E">
+  <div id="mv-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs>
+      <linearGradient id="mv-wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E2258"/><stop offset=".7" stop-color="#5A43A0"/><stop offset="1" stop-color="#6E56B8"/></linearGradient>
+      <radialGradient id="mv-glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFF3C4" stop-opacity=".95"/><stop offset=".55" stop-color="#FFD064" stop-opacity=".35"/><stop offset="1" stop-color="#FFD064" stop-opacity="0"/></radialGradient>
+      <radialGradient id="mv-pool" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFF3C4" stop-opacity=".7"/><stop offset="1" stop-color="#FFF3C4" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="1080" height="1900" fill="url(#mv-wall)"/>
+    <circle id="mv-halo" cx="540" cy="1180" r="620" fill="url(#mv-glow)"/>
+    <!-- a ring of stars on the wall -->
+    <g fill="#FFD064" stroke="#341720" stroke-width="6" stroke-linejoin="round" opacity=".9">
+      <path d="M140 760 l14 30 33 4 -24 22 6 33 -29 -16 -29 16 6 -33 -24 -22 33 -4 Z"/>
+      <path d="M940 700 l14 30 33 4 -24 22 6 33 -29 -16 -29 16 6 -33 -24 -22 33 -4 Z"/>
+      <path d="M200 1180 l10 22 24 3 -18 16 5 24 -21 -12 -21 12 5 -24 -18 -16 24 -3 Z"/>
+      <path d="M880 1120 l10 22 24 3 -18 16 5 24 -21 -12 -21 12 5 -24 -18 -16 24 -3 Z"/>
+    </g>
+    <!-- curtains -->
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <path d="M-20 200 L150 200 Q120 700 170 1300 Q120 1600 150 1910 L-20 1910 Z" fill="#C2334A"/>
+      <path d="M1100 200 L930 200 Q960 700 910 1300 Q960 1600 930 1910 L1100 1910 Z" fill="#C2334A"/>
+    </g>
+    <path d="M40 260 Q60 1000 50 1880 M1040 260 Q1020 1000 1030 1880" stroke="#8E1F33" stroke-width="16" fill="none" stroke-linecap="round"/>
+    <path d="M100 240 Q90 900 110 1880 M980 240 Q990 900 970 1880" stroke="#E06A7C" stroke-width="9" fill="none" stroke-linecap="round" opacity=".7"/>
+    <!-- stage floor -->
+    <rect x="0" y="1900" width="1080" height="460" fill="#2B2246"/>
+    <path d="M0 1900 L1080 1900" stroke="#341720" stroke-width="10"/>
+    <ellipse cx="540" cy="1990" rx="460" ry="80" fill="url(#mv-pool)"/>
+    <path d="M60 2060 L1020 2060 M0 2200 L1080 2200" stroke="#3D3263" stroke-width="8"/>
+    <!-- the podium: 2, 3, then 1 on top -->
+    <g stroke="#341720" stroke-width="10" stroke-linejoin="round">
+      <rect x="90" y="1690" width="290" height="214" rx="10" fill="#D9DFEA"/>
+      <rect x="700" y="1750" width="290" height="154" rx="10" fill="#E0A060"/>
+      <rect x="350" y="1560" width="380" height="344" rx="12" fill="#FFD064"/>
+    </g>
+    <path d="M110 1712 L360 1712 M720 1772 L970 1772 M372 1584 L708 1584" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" opacity=".55"/>
+        <g font-family="Luckiest Guy" text-anchor="middle" stroke="#341720" stroke-width="12" paint-order="stroke" stroke-linejoin="round">
+      <text x="235" y="1850" font-size="120" fill="#FFFFFF">2</text>
+      <text x="845" y="1878" font-size="100" fill="#FFFFFF">3</text>
+      <text x="540" y="1820" font-size="190" fill="#FFFFFF">1</text>
+    </g>
+  </svg>
+  <svg id="mv-beams" class="abs" style="left:0;top:0;mix-blend-mode:screen" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <path id="mv-beamL" d="M120 140 L200 140 L700 1900 L360 1900 Z" fill="#FFF3C4" opacity=".16"/>
+    <path id="mv-beamR" d="M880 140 L960 140 L720 1900 L380 1900 Z" fill="#FFF3C4" opacity=".16"/>
+  </svg>
+  <div id="mv-dust"></div>
+  <div id="mv-guy"></div>
+  <div id="mv-medal"><svg width="180" height="200" viewBox="-90 -20 180 200">
+    <path d="M-42 -6 L-12 56 L12 56 L42 -6 L20 -6 L0 36 L-20 -6 Z" fill="#2D7BF0" stroke="#341720" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M-31 -4 L-7 46 M31 -4 L7 46" stroke="#E0444E" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="0" cy="99" r="54" fill="#341720"/>
+    <circle cx="0" cy="92" r="54" fill="#FFD064" stroke="#341720" stroke-width="8"/>
+    <circle cx="0" cy="92" r="38" fill="none" stroke="#C77928" stroke-width="6" stroke-dasharray="3 10" stroke-linecap="round"/>
+    <path d="M0 64 l8 17 19 3 -14 13 4 19 -17 -9 -17 9 4 -19 -14 -13 19 -3 Z" fill="#FFFFFF" stroke="#341720" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M-32 70 Q-22 54 -4 50" stroke="#FFFFFF" stroke-width="8" fill="none" stroke-linecap="round" opacity=".7"/>
+  </svg></div>
+  <div class="mv-glint" id="mv-g0" style="left:594px;top:1166px"></div>
+  <div class="mv-glint" id="mv-g1" style="left:486px;top:1228px"></div>
+  <div class="mv-glint" id="mv-g2" style="left:600px;top:1262px"></div>
+  <div id="mv-fx"></div>
+  </div>
+  <div id="mv-flash"></div>
+  <div id="mv-banner"></div>
+ </div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), s = 0.72;
+  var M = WA.recap.member({ member: 'dean', name: 'Dean', color: '#EE5982', dark: '#A83560' });
+  WA.recap.banner('mv-banner', 'PLAYER OF THE WEEK', '#F2B233', '#C77928', '#FFF0B7');
+  WA.actor('mv-guy', ['grin', 'champ'], { x: 540, y: 1560, s: s, member: M.member, tag: M.name, color: M.color });
+  for (var i = 0; i < 3; i++) document.getElementById('mv-g' + i).innerHTML = '<svg width="60" height="60" viewBox="-30 -30 60 60">' + WA.star(26, '#FFFFFF', 5) + '</svg>';
+  gsap.set('#mv-medal', { y: -1500, rotation: 0, scale: 1.16, transformOrigin: '0px 0px' });
+  WA.pose(tl, '#mv-guy', 'grin', 0);
+
+  WA.recap.bannerIn(tl, 'mv-banner', 0);
+  // drops onto the top step
+  tl.fromTo('#mv-guy', { y: -900 }, { y: 0, duration: 9 * F, ease: 'power2.in' }, 0);
+  WA.squash(tl, '#mv-guy', 9 * F, 0.16, 12);
+  var dust = document.getElementById('mv-dust');
+  for (var j = 0; j < 5; j++) {
+    var d = document.createElement('div'); d.className = 'mv-dust'; d.style.left = (400 + j * 70) + 'px'; d.style.top = '1550px'; dust.appendChild(d);
+    tl.fromTo(d, { scale: 0.3, opacity: 1, x: 0, y: 0 }, { scale: 1.1, opacity: 0, x: (j - 2) * 46, y: -36 - (j % 2) * 24, duration: 14 * F, ease: 'power2.out', immediateRender: false }, 9 * F);
+  }
+  // the medal falls onto him and swings
+  tl.fromTo('#mv-medal', { y: -1500 }, { y: 0, duration: 10 * F, ease: 'power2.in', immediateRender: false }, 12 * F);
+  WA.squash(tl, '#mv-guy', 22 * F, 0.06, 10);
+  [[14, 3], [-9, 4], [5, 5], [-2, 5], [0, 6]].forEach(function (r, k, a) {
+    var t0 = 22 + a.slice(0, k).reduce(function (n, q) { return n + q[1]; }, 0);
+    tl.to('#mv-medal', { rotation: r[0], duration: r[1] * F, ease: 'sine.inOut' }, t0 * F);
+  });
+  // CHAMP: fists up, flash, confetti
+  WA.take(tl, '#mv-guy', 'champ', 25 * F, 0.1);
+  tl.fromTo('#mv-flash', { opacity: 0.55 }, { opacity: 0, duration: 8 * F, ease: 'power1.out', immediateRender: false }, 25 * F);
+  gsap.set('#mv-halo', { svgOrigin: '540 1180' });
+  tl.fromTo('#mv-halo', { scale: 1 }, { scale: 1.12, duration: 6 * F, ease: 'power2.out', immediateRender: false }, 25 * F);
+  WA.confetti(tl, '#mv-fx', 26 * F, 250, 1320, { seed: 3, n: 52, angle: -1.15, spread: 0.8, speed: 34, frames: 44 });
+  WA.confetti(tl, '#mv-fx', 29 * F, 830, 1320, { seed: 8, n: 52, angle: -2.0, spread: 0.8, speed: 34, frames: 44 });
+  [30, 44, 58].forEach(function (f, k) { WA.popIn(tl, '#mv-g' + k, f * F, 7, { rot0: -40, rot: 20 }); WA.popOut(tl, '#mv-g' + k, (f + 9) * F, 5); });
+  ['#mv-guy', '#mv-medal'].forEach(function (el) { WA.hop(tl, el, 34 * F, 34, 12); WA.hop(tl, el, 50 * F, 28, 12); });
+  // the spotlights sway
+  gsap.set('#mv-beamL', { svgOrigin: '160 140' }); gsap.set('#mv-beamR', { svgOrigin: '920 140' });
+  tl.fromTo('#mv-beamL', { rotation: -4 }, { rotation: 5, duration: 75 * F, ease: 'sine.inOut' }, 0);
+  tl.fromTo('#mv-beamR', { rotation: 4 }, { rotation: -5, duration: 75 * F, ease: 'sine.inOut' }, 0);
+
+  window.__timelines['recap-mvp'] = tl;
+})();
+</script>
+</body>
+</html>

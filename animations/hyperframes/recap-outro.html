@@ -1,0 +1,85 @@
+<!doctype html>
+<!--
+  The Monday Report: outro (recap-outro). Closes the weekly recap: the sun comes up over the snow, a rooster crows,
+  the LAST WEEK page tears off the calendar to show NEW WEEK, Flexander gives a thumbs up, and the end card:
+  NEW WEEK · 7 PTS · SAME GOAL.
+  Beats (30 fps): sunrise 0-40, crow 2, tear 16, NEW WEEK 20, thumbs 24, card 30, end 75.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #ou-sun { position: absolute; left: 880px; top: 1470px; width: 0; height: 0; }
+  #ou-sun svg { position: absolute; left: -420px; top: -420px; overflow: visible; }
+  #ou-cal { position: absolute; left: 600px; top: 1220px; width: 0; height: 0; }
+  #ou-cal .pg { position: absolute; left: -210px; top: 70px; width: 420px; height: 330px; background: #FFFDF6; border: 10px solid #341720;
+    border-radius: 0 0 22px 22px; display: flex; align-items: center; justify-content: center; text-align: center;
+    font-family: 'Luckiest Guy'; font-size: 86px; line-height: .95; color: #341720; transform-origin: 0 0; }
+  #ou-cal .pg.new { color: #2FA36B; box-shadow: 0 16px 0 #341720; }
+  #ou-cal .top { position: absolute; left: -222px; top: 0; width: 444px; height: 96px; background: #E0444E; border: 10px solid #341720; border-radius: 22px; z-index: 3; }
+  #ou-cal .ring { position: absolute; top: -26px; width: 26px; height: 64px; border-radius: 13px; background: #D9DFEA; border: 7px solid #341720; z-index: 4; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="recap-outro" data-start="0" data-duration="2.5" data-width="1080" data-height="2348">
+ <div id="ou-scene" class="clip" data-start="0" data-duration="2.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#FFC9A0">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="ou-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FC6F0"/><stop offset=".45" stop-color="#FFD9B8"/><stop offset=".72" stop-color="#FFB38A"/></linearGradient></defs>
+    <rect width="1080" height="1700" fill="url(#ou-sky)"/>
+  </svg>
+  <div id="ou-sun"><svg width="840" height="840" viewBox="-420 -420 840 840">
+    <g id="ou-rays" fill="#FFE27A" opacity=".55">
+      <path d="M-26 -400 L26 -400 L0 -250 Z"/><path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(30)"/><path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(60)"/>
+      <path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(90)"/><path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(120)"/><path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(150)"/>
+      <path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(210)"/><path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(240)"/><path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(270)"/>
+      <path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(300)"/><path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(330)"/><path d="M-26 -400 L26 -400 L0 -250 Z" transform="rotate(0)"/>
+    </g>
+    <circle r="200" fill="#FFE27A" stroke="#341720" stroke-width="10"/>
+    <path d="M-120 -90 Q-80 -150 -10 -160" stroke="#FFF6D0" stroke-width="20" fill="none" stroke-linecap="round"/>
+  </svg></div>
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <path d="M-40 1640 Q220 1520 460 1610 Q700 1500 940 1600 Q1040 1570 1120 1590 L1120 2400 L-40 2400 Z" fill="#F4FAFF"/>
+    </g>
+    <path d="M60 1820 Q260 1790 460 1826 M560 1960 Q760 1930 960 1966 M140 2120 Q340 2090 540 2126" stroke="#DCEBF6" stroke-width="14" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div id="ou-cal">
+    <div class="pg new">NEW<br>WEEK</div>
+    <div class="pg" id="ou-old">LAST<br>WEEK</div>
+    <div class="top"></div>
+    <div class="ring" style="left:-130px"></div><div class="ring" style="left:-13px"></div><div class="ring" style="left:104px"></div>
+  </div>
+  <div id="ou-guy"></div>
+ </div>
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="1.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"NEW WEEK","pts":"7","unit":"PTS","sub":"SAME GOAL","color":"#7254DC","dark":"#4F35B0","light":"#E2D9FF"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  WA.actor('ou-guy', ['grin', 'thumbs'], { x: 220, y: 1990, s: 0.52 });
+  WA.pose(tl, '#ou-guy', 'grin', 0);
+  gsap.set('#ou-rays', { svgOrigin: '0 0' });
+
+  // the sun comes up and its rays turn
+  tl.fromTo('#ou-sun', { y: 300 }, { y: 0, duration: 40 * F, ease: 'power2.out' }, 0);
+  tl.fromTo('#ou-rays', { rotation: 0 }, { rotation: 40, duration: 75 * F, ease: 'none' }, 0);
+  // the calendar drops in, then LAST WEEK tears off
+  tl.fromTo('#ou-cal', { y: -1600 }, { y: 0, duration: 10 * F, ease: 'back.out(1.3)' }, 0);
+  WA.squash(tl, '#ou-cal', 10 * F, 0.06, 10);
+  WA.shake(tl, '#ou-old', 12 * F, 4 * F, 4, { seed: 3 });
+  tl.to('#ou-old', { x: -380, y: -620, rotation: -70, opacity: 0, duration: 14 * F, ease: 'power2.in' }, 16 * F);
+  WA.squash(tl, '#ou-cal', 20 * F, 0.08, 12);
+  // thumbs up
+  WA.take(tl, '#ou-guy', 'thumbs', 24 * F, 0.1);
+  WA.hop(tl, '#ou-guy', 40 * F, 20, 10);
+
+  window.__timelines['recap-outro'] = tl;
+})();
+</script>
+</body>
+</html>
