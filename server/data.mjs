@@ -19,7 +19,11 @@ const EVENT_KEYS = {
   radiator: POST_ID, mom: WEEK, nets: WEEK, phil: POST_ID,
   scared: `[0-9]{4}-[0-9]{2}-[0-9]{2}:${COUNT}`, timesheet: WEEK, hoat: WEEK,
   roast: '[0-9]{4}-[0-9]{2}-[0-9]{2}',
-  thanksgiving: YEAR,
+  // round 2 (animations/hyperframes)
+  crossing: WEEK, mycar: WEEK, finalcall: WEEK, worthit: WEEK, basement: POST_ID, nomap: `${POST_ID}:${POST_ID}`,
+  grandtheft: WEEK, wanted: POST_ID, busted: POST_ID, wasted: POST_ID, parole: POST_ID,
+  partners: `${WEEK}:${POST_ID}:${POST_ID}`,
+  thanksgiving: YEAR, xmas: YEAR, nye: YEAR, groundhog: YEAR, valentine: YEAR,
 };
 
 function fail(message, status = 400) {
@@ -618,9 +622,82 @@ async function saveRoast(env, now = new Date()) {
   return saved.results.length ? roastEvent(saved.results[0]) : null;
 }
 
+/* Christmas: Naughty or Nice (XMAS in js/config.js). Votes are taken on Dec 24 in the group's timezone, from
+   signed-in members, for anyone else in the group; each voter can change his vote until midnight. Nobody sees a
+   tally before Dec 25. Before that the server only says how many have voted and who hasn't; after, it gives each
+   member's nice and naughty totals and the verdicts, never who voted what. */
+const XMAS_CHOICES = new Set(['nice', 'naughty']);
+
+async function xmasState(env, now) {
+  const group = await statement(env, 'SELECT timezone FROM group_settings WHERE id = 1').first();
+  if (!group) return null;
+  const { phase, year } = Logic.xmasPhase(now, group.timezone);
+  return { phase, year, timezone: group.timezone };
+}
+
+async function xmasVotes(env, year) {
+  const [memberRows, voteRows] = await env.DB.batch([
+    statement(env, 'SELECT id FROM members ORDER BY created_at, id'),
+    statement(env, 'SELECT voter_id, target_id, choice FROM xmas_votes WHERE year = ?', year),
+  ]);
+  const ids = memberRows.results.map(row => row.id), current = new Set(ids);
+  const votes = voteRows.results
+    .filter(row => current.has(row.voter_id) && current.has(row.target_id))
+    .map(row => ({ voter: row.voter_id, target: row.target_id, choice: row.choice }));
+  return { ids, votes };
+}
+
+async function getXmas(env, session, now = new Date()) {
+  const state = await xmasState(env, now);
+  if (!state || !state.year) return { phase: 'closed', year: null };
+  const { ids, votes } = await xmasVotes(env, state.year);
+  const out = {
+    phase: state.phase,
+    year: state.year,
+    members: ids.length,
+    voted: [...new Set(votes.map(vote => vote.voter))],
+    mine: Object.fromEntries(votes.filter(vote => vote.voter === session.member_id).map(vote => [vote.target, vote.choice])),
+  };
+  if (state.phase === 'reveal') {
+    out.results = Logic.xmasResults(ids, votes);
+    await ensureXmasEvent(env, now, state, { ids, votes }).catch(() => {});
+  }
+  return out;
+}
+
+async function castXmasVote(env, session, input, now = new Date()) {
+  const state = await xmasState(env, now);
+  if (!state || state.phase !== 'voting') fail('Naughty or Nice voting is only open on December 24.', 403);
+  const { target, choice } = input || {};
+  requireId(target, 'a member');
+  if (!XMAS_CHOICES.has(choice)) fail('Pick nice or naughty.');
+  if (target === session.member_id) fail('You can’t vote on yourself.');
+  const member = await statement(env, 'SELECT id FROM members WHERE id = ?', target).first();
+  if (!member) fail('That member isn’t in the group.', 404);
+  await statement(env, `
+    INSERT INTO xmas_votes (year, voter_id, target_id, choice, at) VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT (year, voter_id, target_id) DO UPDATE SET choice = excluded.choice, at = excluded.at
+  `, state.year, session.member_id, target, choice, now.toISOString()).run();
+  return getXmas(env, session, now);
+}
+
+/* On Dec 25 the results become the xmas event, so each person's phone plays the reveal once. */
+async function ensureXmasEvent(env, now = new Date(), state, ballots) {
+  state ||= await xmasState(env, now);
+  if (!state || state.phase !== 'reveal' || !INSIDE_JOKES.xmas) return null;
+  const key = `xmas:${state.year}`;
+  if (await statement(env, 'SELECT 1 FROM events WHERE key = ?', key).first()) return null;
+  const { ids, votes } = ballots || await xmasVotes(env, state.year);
+  if (!votes.length) return null;   // nobody voted: nothing to reveal
+  const { rows, voters } = Logic.xmasResults(ids, votes);
+  const event = validatedEvent({ type: 'xmas', key, at: now.toISOString(), data: { year: state.year, voters, rows } }, now);
+  return eventInsert(env, event, state.timezone).run();
+}
+
 export async function runEvents(env, now = new Date()) {
   // The roast stands alone: if it can't be picked, the inside jokes still run.
   try { await saveRoast(env, now); } catch { console.warn('Winter Arc couldn’t pick the roast of the day.'); }
+  try { await ensureXmasEvent(env, now); } catch { console.warn('Winter Arc couldn’t record the Naughty or Nice results.'); }
   const { events, timezone } = await findEvents(env, now);
   if (!events.length) return;
   const rows = events.map(input => validatedEvent(input, now));
@@ -682,6 +759,8 @@ export async function handleData(action, request, env, payload, session, ctx) {
     case 'listEvents': data = await listEvents(env, session); break;
     case 'recordEvent': data = await recordEvent(env, payload); break;
     case 'markSeen': data = await markSeen(env, session, payload.id); break;
+    case 'getXmas': data = await getXmas(env, session); break;
+    case 'castXmasVote': data = await castXmasVote(env, session, payload); break;
     default: return undefined;
   }
   return { data };

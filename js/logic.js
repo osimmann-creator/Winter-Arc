@@ -250,6 +250,15 @@ const Logic = (() => {
     if (J.thanksgiving && month === 11 && weekday === 4 && date >= 22 && date <= 28 && calc.alive.length) {
       add('thanksgiving', year, lowest());
     }
+    if (J.nye && month === 12 && date === 31) add('nye', year, { year: year + 1 });
+    if (J.groundhog && month === 2 && date === 2) {
+      const host = byUsername.get(J.groundhog.host);
+      add('groundhog', year, host ? { who: host.id } : {});
+    }
+    if (J.valentine && month === 2 && date === 14) {
+      const short = members.filter(m => alive(m) && pts(m) < calc.by[m.id].goal).map(m => m.id);
+      add('valentine', year, { who: short, sunday: weekday === 0 });
+    }
 
     const [dean, jake] = people('coin');
     if (dean && jake && pts(dean) > 0 && pts(dean) === pts(jake)) {
@@ -340,11 +349,150 @@ const Logic = (() => {
         break;
       }
     }
+    roundTwo(add, { members, calc, J, now, tz, w, S, clock, counted, week, people, pts, alive, firstWeek });
     if (hoat) {
       const h = byUsername.get(hoat.username);
       if (h && pts(h) >= hoat.min) add('hoat', w, { pts: pts(h), who: h.id });
     }
     return out;
+  }
+
+  /* Round 2 inside jokes (animations/hyperframes). Holidays are with the others near the top of jokes(). */
+  function roundTwo(add, { members, calc, J, now, tz, w, S, clock, counted, week, people, pts, alive, firstWeek }) {
+    const goal = m => calc.by[m.id].goal;
+    const upToNow = week.filter(p => Date.parse(p.at) <= +now);
+
+    // Osim's Sunday: still short at 6 PM -> The Crossing; the post that gets him there lands on Sunday -> Final Call
+    const [osim] = people('crossing');
+    if (alive(osim) && clock.day === J.crossing.day && clock.hour >= J.crossing.from && pts(osim) < goal(osim)) {
+      add('crossing', w, { who: osim.id, pts: pts(osim), goal: goal(osim) });
+    }
+    const [flyer] = people('finalcall');
+    if (flyer && !calc.by[flyer.id].fraudWeeks.has(w)) {
+      let points = 0;
+      for (const post of upToNow.filter(p => p.memberId === flyer.id)) {
+        points += CATS[post.cat]?.pts || 0;
+        if (points < goal(flyer)) continue;
+        if (J.finalcall.days.includes(zoned(post.at, tz).day)) add('finalcall', w, { who: flyer.id, post: post.id, pts: points });
+        break;
+      }
+    }
+    // ...and Monday, if he missed last week by a little: #worthit
+    const [eater] = people('worthit');
+    const last = S.lastComplete;
+    if (eater && clock.day === 1 && last >= 0 && last === w - 1) {
+      const R = calc.by[eater.id], short = R.weekGoals[last] - R.weekPts[last];
+      const wasIn = R.elimWeek === null || R.elimWeek >= last;
+      if (wasIn && short > 0 && short <= J.worthit.short) add('worthit', w, { who: eater.id, pts: R.weekPts[last], short });
+    }
+
+    // Dean logs something timed between 10 PM and 3:59 AM: Operation Basement
+    const [dean] = people('basement');
+    if (dean) {
+      for (const post of upToNow) {
+        const hour = zoned(post.at, tz).hour;
+        if (post.memberId === dean.id && (hour >= J.basement.from || hour < J.basement.to)) add('basement', post.id, { who: dean.id, post: post.id });
+      }
+    }
+
+    // Dylan and Connor both still in and both 72+ hours without a log: No Map
+    const lost = people('nomap');
+    if (lost.length === 2 && lost.every(alive)) {
+      const latest = lost.map(m => counted.filter(p => p.memberId === m.id && Date.parse(p.at) <= +now).at(-1));
+      const dry = lost.every((m, i) => +now - (latest[i] ? Date.parse(latest[i].at) : firstWeek(m)) >= J.nomap.hours * HOUR);
+      if (dry) add('nomap', latest.map(p => p?.id || 'start').join(':'), { who: lost.map(m => m.id), posts: latest.map(p => p?.id || null) });
+    }
+
+    // First place changing hands this week, post by post: Grand Theft #1 (Fri/Sat), My Car, My Rules (Sunday)
+    const running = new Map(members.map(m => [m.id, 0]));
+    const soleLeader = () => {
+      let best = -Infinity, ids = [];
+      for (const [id, v] of running) { if (v > best) { best = v; ids = [id]; } else if (v === best) ids.push(id); }
+      return best > 0 && ids.length === 1 ? ids[0] : null;
+    };
+    let stolen = false, crashed = false;   // once a week each: the first time it happens
+    for (const post of upToNow) {
+      if (!running.has(post.memberId) || calc.by[post.memberId].fraudWeeks.has(w)) continue;
+      const before = soleLeader();
+      running.set(post.memberId, running.get(post.memberId) + (CATS[post.cat]?.pts || 0));
+      const after = soleLeader(), day = zoned(post.at, tz).day;
+      if (J.grandtheft && !stolen && before && after && after !== before && J.grandtheft.days.includes(day)) {
+        stolen = true;
+        add('grandtheft', w, { who: after, victim: before, post: post.id });
+      }
+      if (J.mycar && !crashed && before && after !== before && day === 0) {
+        crashed = true;
+        add('mycar', w, { who: before, by: post.memberId, post: post.id });
+      }
+    }
+
+    // A post gets its third cap: Wanted. A post is voided: Busted.
+    const thisWeek = p => {
+      const t = Date.parse(p.at);
+      return t >= +S.wkStart && t < +S.wkEnd;
+    };
+    const lastWeekStart = +addDays(S.wkStart, -7, tz);
+    for (const m of members) {
+      for (const post of calc.by[m.id].posts) {
+        if (J.wanted && !post.voided && thisWeek(post) && (post.reactions?.[CAP]?.length || 0) >= CAP_DISPUTE) {
+          add('wanted', post.id, { who: post.memberId, post: post.id, n: post.reactions[CAP].length });
+        }
+        if (J.busted && post.voided && Date.parse(post.at) >= lastWeekStart && Date.parse(post.at) <= +now) {
+          add('busted', post.id, { who: post.memberId, post: post.id });
+        }
+      }
+    }
+
+    // Someone takes his last strike: Wasted. He logs again afterwards: Out on Parole.
+    for (const m of members) {
+      const R = calc.by[m.id];
+      if (!R.eliminated) continue;
+      if (J.wasted && R.elimWeek === S.lastComplete) add('wasted', m.id, { who: m.id, strikes: R.strikes, week: R.elimWeek });
+      if (J.parole) {
+        const out = +addDays(S.start, (R.elimWeek + 1) * 7, tz);
+        const back = R.counted.find(p => Date.parse(p.at) >= out && Date.parse(p.at) <= +now);
+        if (back && thisWeek(back)) add('parole', m.id, { who: m.id, post: back.id });
+      }
+    }
+
+    // Two members log the same activity on the same day and tag each other: Partners in Crime
+    if (J.partners) {
+      const seen = new Set();
+      for (const a of upToNow) {
+        for (const b of upToNow) {
+          if (a.memberId >= b.memberId || a.cat !== b.cat || ordinal(a.at, tz) !== ordinal(b.at, tz)) continue;
+          if (!(a.witnesses || []).includes(b.memberId) || !(b.witnesses || []).includes(a.memberId)) continue;
+          const pair = [a.memberId, b.memberId].sort(), key = `${w}:${pair.join(':')}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          add('partners', key, { who: pair, cat: a.cat, posts: [a.id, b.id] });
+        }
+      }
+    }
+  }
+
+  /* Christmas: Naughty or Nice (XMAS in config.js). Which part of the vote today is, in the group's timezone. */
+  function xmasPhase(now = new Date(), tz = CONFIG.timezone, rules = XMAS) {
+    const [year, month, date] = dayKey(now, tz).split('-').map(Number);
+    if (month === rules.vote[0] && date === rules.vote[1]) return { phase: 'voting', year };
+    if (month === rules.reveal[0] && date >= rules.reveal[1]) return { phase: 'reveal', year };
+    return { phase: 'closed', year: month === rules.vote[0] ? year : null };
+  }
+  /* The verdicts from the votes ({ voter, target, choice }), with totals only (never who voted what).
+     Nice list first (nicest first), then the naughty list with the naughtiest last. */
+  function xmasResults(memberIds, votes, rules = XMAS) {
+    const ids = new Set(memberIds), valid = votes.filter(v => ids.has(v.voter) && ids.has(v.target) && v.voter !== v.target);
+    const voters = new Set(valid.map(v => v.voter));
+    const rows = memberIds.map(id => {
+      const mine = valid.filter(v => v.target === id), nice = mine.filter(v => v.choice === 'nice').length, naughty = mine.length - nice;
+      const voted = voters.has(id);
+      let verdict = nice > naughty ? 'nice' : naughty > nice ? 'naughty' : rules.ties;
+      if (!voted && rules.nonVoters) verdict = rules.nonVoters;
+      return { id, nice, naughty, voted, verdict };
+    });
+    const score = r => r.naughty - r.nice + (r.voted ? 0 : 0.5);
+    rows.sort((a, b) => a.verdict !== b.verdict ? (a.verdict === 'nice' ? -1 : 1) : score(a) - score(b));
+    return { rows, voters: voters.size, nonVoters: rows.filter(r => !r.voted).map(r => r.id) };
   }
 
   function displayName(member, calc) {
@@ -368,5 +516,5 @@ const Logic = (() => {
     return new Set(Object.values(wk).filter(s => s.id && !s.fraud).map(s => s.id));
   }
 
-  return { compute, season, mondayOf, addDays, dayKey, parseDay, weekIdx, draftProblems, zoned, jokes, insideJokesStarted, jokeCooldownStart, crossings, displayName };
+  return { compute, season, mondayOf, addDays, dayKey, parseDay, weekIdx, draftProblems, zoned, jokes, insideJokesStarted, jokeCooldownStart, crossings, displayName, xmasPhase, xmasResults };
 })();

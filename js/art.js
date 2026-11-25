@@ -127,10 +127,48 @@ const Art = (() => {
 </svg>`;
   }
 
+  /* Christmas: the NICE (gold, a gift) and NAUGHTY (red, a lump of coal) stamps from the Naughty or Nice reveal,
+     drawn like the Hoat stamp. `line` goes under the word: the vote count (6–2) or DIDN'T VOTE. */
+  function xmasStamp(verdict, line = '') {
+    const nice = verdict === 'nice', id = 'xs' + (++stampN), R = U.rng(nice ? 11 : 13), ink = nice ? '#C98A0C' : '#D7263D';
+    let specks = '';
+    for (let i = 0; i < 60; i++) specks += `<circle cx="${(R() * 360).toFixed(1)}" cy="${(R() * 220).toFixed(1)}" r="${(0.8 + R() * 2.4).toFixed(1)}"/>`;
+    const font = `font-family="'Luckiest Guy', Impact, sans-serif" fill="${ink}" text-anchor="middle"`;
+    // the cut-outs (ribbon on the gift, facets on the coal) are holes in the mask, so the face shows through
+    const cuts = nice
+      ? '<rect x="83" y="88" width="10" height="64"/>'
+      : '<path d="M80 82 L92 106 L124 102 M92 106 L86 146 M92 106 L60 96" stroke="#000" stroke-width="4.5" fill="none" stroke-linejoin="round"/>';
+    const icon = nice
+      ? `<rect x="-36" y="-24" width="72" height="18" rx="5" fill="${ink}"/><rect x="-30" y="-2" width="60" height="40" rx="5" fill="${ink}"/>
+      <path d="M0-24C-6-42-30-44-26-30C-23-22-10-23 0-24ZM0-24C6-42 30-44 26-30C23-22 10-23 0-24Z" fill="none" stroke="${ink}" stroke-width="6" stroke-linejoin="round"/>`
+      : `<path d="M-36 14L-28-14L-8-30L16-26L34-8L38 16L24 34L-14 36Z" fill="${ink}" stroke="${ink}" stroke-width="4" stroke-linejoin="round"/>`;
+    const marks = nice
+      ? [214, 244, 274].map(x => `<path transform="translate(${x} 36) scale(.8)" d="M0 0l4.2 8.6 9.5 1.4-6.9 6.7 1.6 9.4-8.4-4.4-8.4 4.4 1.6-9.4-6.9-6.7 9.5-1.4z" fill="${ink}"/>`).join('')
+      : [216, 244, 272].map(x => `<path transform="translate(${x} 46)" d="M-8-8L8 8M8-8L-8 8" stroke="${ink}" stroke-width="5" stroke-linecap="round"/>`).join('');
+    const word = nice
+      ? `<text x="244" y="126" textLength="150" lengthAdjust="spacingAndGlyphs" font-size="80" ${font}>NICE</text>`
+      : `<text x="244" y="118" textLength="176" lengthAdjust="spacingAndGlyphs" font-size="54" ${font}>NAUGHTY</text>`;
+    const under = line.length > 5
+      ? `<text x="244" y="164" textLength="150" lengthAdjust="spacingAndGlyphs" font-size="26" ${font}>${line}</text>`
+      : `<text x="244" y="166" font-size="38" ${font}>${line}</text>`;
+    return `<svg class="hoat-svg xmas-svg ${nice ? 'nice' : 'naughty'}" viewBox="0 0 360 220" aria-hidden="true">
+  <defs><mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="220"><rect width="360" height="220" fill="#fff"/><g fill="#000">${specks}${cuts}</g>
+    <path d="M30 172 Q120 150 200 180" stroke="#000" stroke-width="3" fill="none" opacity=".6"/></mask></defs>
+  <g mask="url(#${id})">
+    <rect x="9" y="9" width="342" height="202" rx="30" fill="none" stroke="${ink}" stroke-width="12"/>
+    <rect x="25" y="25" width="310" height="170" rx="18" fill="none" stroke="${ink}" stroke-width="4"/>
+    <g transform="translate(88 112)"><circle r="58" fill="none" stroke="${ink}" stroke-width="7"/>${icon}</g>
+    ${word}${line ? under : ''}
+    <path d="M178 180h132" stroke="${ink}" stroke-width="4" stroke-linecap="round"/>
+    ${marks}
+  </g>
+</svg>`;
+  }
+
   const mascot = pose => `assets/mascot/${pose}.webp`;
   const photo = p => (!p ? '' : p.startsWith('demo:') ? `assets/demo/${p.slice(5)}.webp` : p);
   const video = id => `/media/celebrations/${id}.mp4`;
   const poster = id => `/media/celebrations/${id}.webp`;
 
-  return { icon64, ui, mascot, photo, video, poster, hoatStamp, ICON };
+  return { icon64, ui, mascot, photo, video, poster, hoatStamp, xmasStamp, ICON };
 })();

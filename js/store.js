@@ -101,6 +101,8 @@ const Store = (() => {
     listEvents: () => call('listEvents'),
     recordEvent: event => call('recordEvent', event),
     markSeen: id => call('markSeen', { id }),
+    getXmas: () => call('getXmas'),
+    castXmasVote: (target, choice) => call('castXmasVote', { target, choice }),
     subscribe(fn) {
       listeners.add(fn);
       if (!timer) {

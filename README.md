@@ -20,11 +20,11 @@ Run `npm run build` from the repository root. The deployable output is in `dist/
 | `js/logic.js` | Rules engine: weeks, strikes, elimination, streaks, badges, leaderboards and the inside-joke rules (pure functions) |
 | `js/jokes.js` | Roast of the day: the 100 roasts and how the day's one is picked |
 | `js/store.js` | Browser client for the hosted Worker API |
-| `js/app.js` | The screens: sign-in, pick your own password, Home, Feed, Board, Me, Account, the log sheet, inside-joke pop-ups, the stamp, toasts and dialogs |
+| `js/app.js` | The screens: sign-in, pick your own password, Home, Feed, Board, Me, Account, the log sheet, inside-joke pop-ups, the stamps, the Naughty or Nice ballot and reveal, toasts and dialogs |
 | `js/celebrate.js` | Full-screen celebration videos (with the speaker button) and confetti |
 | `server/` | Worker routes for accounts, activity, the feed, and private media |
 | `drizzle/` | D1 schema migrations |
-| `js/art.js` | Built-in icons and paths to the art files |
+| `js/art.js` | Built-in icons, the Hoat and NICE/NAUGHTY stamps, and paths to the art files |
 | `assets/celebrations/` | Celebration and inside-joke videos (`<id>.mp4` plus a `<id>.webp` poster) |
 | `assets/intro/` | Archived opening animation assets |
 | `assets/mascot/` | Mascot poses used around the app |
@@ -65,8 +65,28 @@ Inside-joke videos can pop up once per member when the trigger fires. Members ca
 | **Scared of Girls** | Nobody has logged a date in 30 days. Again every 30 days it goes on. | Yes |
 | **The Time Sheet** | Jake's post that gets him to his weekly goal lands on a Saturday or Sunday. Big night out, so he files his work time sheet from the club at 11:59. | Yes |
 | **Thanksgiving** | Thanksgiving Day (the 4th Thursday of November). A guy at the dinner table maxes out on a fork: NEW PR! No name in the video. | Yes, naming the week's lowest scorer |
+| **The Crossing** | Osim is still in and still short of his weekly goal at 6 PM on a Sunday. The canoe drifts toward the island. | Yes, with what he still needs |
+| **Final Call** | The post that gets Osim to his weekly goal is dated Sunday. He dives through the gate, then the Hoat stamp lands (his real Hoat Guarantee still fires too). | Yes |
+| **#worthit** | Monday, when Osim missed last week's goal by 1.5 points or less. Missed the flight, kept the burger. | Yes, with how much he missed by |
+| **My Car, My Rules** | Someone alone in first for the week gets tied or passed by a post dated Sunday. Osim rides along in the video. | Yes, naming who lost first and who caught him |
+| **Operation Basement** | Dean logs anything timed between 10 PM and 3:59 AM. Once per post. | Yes, with the time |
+| **No Map** | Dylan and Connor are both still in and both 72+ hours without a log. Once per dry spell. | Yes |
+| **Grand Theft #1** | A post dated Friday or Saturday takes first place from whoever was alone in first. No names in the video. | Yes, naming who took it from whom |
+| **Wanted** | A post from this week gets its 3rd 🧢. Once per post. | Yes, naming whose post |
+| **Busted** | A post is voided. Once per post. | Yes |
+| **Wasted** | Someone takes his last strike. Once per member. | Yes |
+| **Out on Parole** | An eliminated member logs again for the first time. Once per member. | Yes |
+| **Partners in Crime** | Two members log the same activity on the same day and tag each other as witnesses. Once per pair per week. | Yes, naming both |
+| **Naughty or Nice** | Christmas: everyone votes on Dec 24, the results come out on Dec 25 (below). | Yes, with both lists |
+| **New Year's Eve** | Dec 31. A giant kettlebell drops at midnight. | Yes |
+| **Groundhog Day** | Feb 2. Phil has spoken: back in 6 weeks. | Yes |
+| **Valentine's Day** | Feb 14. Cupid's arrow lands on the couch. | Yes, naming everyone still short (a date is worth 4) |
 
-The same joke can be triggered again after one full intervening game week (Monday through Sunday).
+The GTA clips (Grand Theft #1 through Partners in Crime) and the holidays can be about anyone, so their videos have no names in them. The same joke can be triggered again after one full intervening game week (Monday through Sunday).
+
+**Naughty or Nice (Christmas):** all day on Dec 24 (group timezone) a ballot is pinned to the top of the feed, with a nudge on Home. Everyone votes 😇 Nice or 😈 Naughty on every other member, eliminated guys included, and can change his votes until 11:59 PM. Until then the ballot only shows how many people have voted and who hasn't. From 12:00 AM on Dec 25 the server saves the results as the `xmas` event, so each phone plays the `joke-xmas` intro once and then stamps every face NICE (gold, a gift) or NAUGHTY (red, coal) with its count, nice list first and the naughtiest last. A results card with both lists stays in the feed; tap it to replay the reveal. The rules are `XMAS` in `js/config.js`: majority decides, ties go naughty, anyone who doesn't vote goes naughty, and the server never sends who voted what. Votes are kept in the `xmas_votes` table (migration 0011).
+
+**Busted and self-voiding:** only the commissioner can void a post, and a void is a fraud ruling, so that week is worth 0 points (rule 9). If members ever get to void their own posts, decide first whether that should carry the same penalty. Deleting a post already removes it without one.
 
 **La4:** while Dylan has exactly 4 points in a week, the app calls him La4 everywhere: the board, the feed, the roasts. It's display only (`ALIASES` in `js/config.js`).
 
@@ -130,4 +150,4 @@ To add another:
 
    With no file names it uploads every clip in `assets/celebrations/` and `assets/intro/`. Do that after remixing the sound, because that changes every video.
 
-For a new inside joke, register the clip in `INSIDE_JOKES`, implement the trigger in `Logic.jokes`, and add the server event validation and a D1 migration when the event type is new. The round 2 clips are made with HyperFrames in `animations/hyperframes` (see [animations/README.md](animations/README.md#hyperframes)), and their event types arrive with D1 migration `drizzle/0011_round2_jokes.sql`. **Apply 0011 before publishing the code that records them**: until then the database refuses those event types (the other jokes still get recorded). 0011 rebuilds the events table, so it first copies every table that points at it (seen marks, comments, comment hearts, reactions) and drops the old ones leaves-first. Nothing is lost, even though D1 runs ON DELETE CASCADE during a migration. It also adds the `xmas_votes` table for the Christmas vote. Keep the GitHub and Sites source histories in sync. A GitHub push alone does not publish the Site or upload clips to R2.
+For a new inside joke, register the clip in `INSIDE_JOKES`, implement the trigger in `Logic.jokes`, and add the server event validation and a D1 migration when the event type is new. The round 2 clips are made with HyperFrames in `animations/hyperframes` (see [animations/README.md](animations/README.md#hyperframes)), and their event types arrive with D1 migration `drizzle/0011_round2_jokes.sql`. **Apply 0011 before publishing the code that records them**: until then the database refuses those event types (the other jokes still get recorded). 0011 rebuilds the events table, so it first copies every table that points at it (seen marks, comments, comment hearts, reactions) and drops the old ones leaves-first. Nothing is lost, even though D1 runs ON DELETE CASCADE during a migration. It also adds the `xmas_votes` table for the Christmas vote, which has to be live before Dec 24. Keep the GitHub and Sites source histories in sync. A GitHub push alone does not publish the Site or upload clips to R2.

@@ -100,8 +100,36 @@ const INSIDE_JOKES = {
   phil: { video: 'joke-phil', title: 'Punxsutawney Phil', users: ['phil'], feed: true, playFor: 48, days: 3 }, // Philip logs after 3+ days without logging
   scared: { video: 'joke-scared', title: 'Scared of Girls', users: [], feed: true, playFor: 72, days: 30 },
   timesheet: { video: 'joke-timesheet', title: 'The Time Sheet', users: ['jake'], feed: true, playFor: 48, days: [6, 0] }, // Jake's post that gets him to the weekly minimum lands on a Saturday or Sunday
-  /* Round 2 (animations/hyperframes). Holidays play for everyone on the day, in the group timezone. */
+  /* Round 2 (animations/hyperframes). Osim's Sundays: The Crossing at 6 PM, then Final Call if he makes it or #worthit on Monday if he just misses. */
+  crossing: { video: 'joke-crossing', title: 'The Crossing', users: ['osim'], feed: true, playFor: 6, day: 0, from: 18 }, // still in and short of his goal at 6 PM Sunday
+  mycar: { video: 'joke-mycar', title: 'My Car, My Rules', users: [], feed: true, playFor: 24 },          // a Sunday post ties or passes whoever was alone in first
+  finalcall: { video: 'joke-finalcall', title: 'Final Call', users: ['osim'], feed: true, playFor: 12, days: [0] }, // the post that gets Osim to his goal is dated Sunday
+  worthit: { video: 'joke-worthit', title: '#worthit', users: ['osim'], feed: true, playFor: 24, short: 1.5 },  // Monday, and he missed last week's goal by 1.5 or less
+  basement: { video: 'joke-basement', title: 'Operation Basement', users: ['dean'], feed: true, playFor: 24, from: 22, to: 4 }, // Dean logs something timed 10 PM-3:59 AM
+  nomap: { video: 'joke-nomap', title: 'No Map', users: ['dylan', 'connor'], feed: true, playFor: 48, hours: 72 }, // both still in and both 72+ hours without a log
+  /* GTA: anyone, so no names in the videos; the feed card says who. */
+  grandtheft: { video: 'joke-grandtheft', title: 'Grand Theft #1', users: [], feed: true, playFor: 24, days: [5, 6] }, // a Fri/Sat post steals first place
+  wanted: { video: 'joke-wanted', title: 'Wanted', users: [], feed: true, playFor: 48 },          // a post gets its CAP_DISPUTE-th cap
+  busted: { video: 'joke-busted', title: 'Busted', users: [], feed: true, playFor: 48 },          // a post is voided
+  wasted: { video: 'joke-wasted', title: 'Wasted', users: [], feed: true, playFor: 72 },          // someone takes his last strike
+  parole: { video: 'joke-parole', title: 'Out on Parole', users: [], feed: true, playFor: 48 },   // an eliminated member logs again
+  partners: { video: 'joke-partners', title: 'Partners in Crime', users: [], feed: true, playFor: 48 }, // same activity, same day, each other's witness
+  /* Holidays play for everyone on the day, in the group timezone. */
   thanksgiving: { video: 'joke-thanksgiving', title: 'Thanksgiving', users: [], feed: true, playFor: 24 }, // 4th Thursday of November; names the week's lowest scorer
+  xmas: { video: 'joke-xmas', title: 'Naughty or Nice', users: [], feed: true, playFor: 72 },     // recorded by the server on Dec 25 with the vote results (XMAS below)
+  nye: { video: 'joke-nye', title: 'New Year’s Eve', users: [], feed: true, playFor: 24 },        // Dec 31
+  groundhog: { video: 'joke-groundhog', title: 'Groundhog Day', users: [], feed: true, playFor: 24, host: 'phil' }, // Feb 2; Phil has spoken
+  valentine: { video: 'joke-valentine', title: 'Valentine’s Day', users: [], feed: true, playFor: 24 }, // Feb 14; names everyone still short
+};
+
+/* Christmas: Naughty or Nice. Everyone votes on everyone else on Dec 24 (group timezone); the results come out
+   on Dec 25 as the xmas event, revealed in the app with a stamp on each face. The rules below are the defaults. */
+const XMAS = {
+  vote: [12, 24],          // [month, day] voting is open all day
+  reveal: [12, 25],        // [month, day] results from 12:00 AM
+  ties: 'naughty',         // a tied (or empty) count goes this way
+  nonVoters: 'naughty',    // anyone who doesn't vote at all goes straight on this list
+  anonymous: true,         // the reveal shows totals, never who voted what (the server never sends voter names)
 };
 /* Osim's own stamp every week he reaches the minimum: it slams onto his screen,
    sits on his ring card, and a card goes to the feed for everyone. */

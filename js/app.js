@@ -54,9 +54,14 @@ const App = (() => {
     const inn = !!(S.auth && S.auth.signedIn && !S.auth.mustChangePassword);
     S.me = inn ? await Store.getMe() : null;
     S.group = S.me ? await Store.getGroup() : null;
-    const [members, posts, events, social] = S.me
-      ? await Promise.all([Store.listMembers(), Store.listPosts(), Store.listEvents(), Store.listSocial()])
-      : [[], [], [], { messages: [], comments: [], activeInjuries: [] }];
+    // Naughty or Nice: the ballot on Dec 24, the results from Dec 25 (asking for them also records the xmas event)
+    const xmasOn = !!S.me && Logic.xmasPhase(new Date(), cfg().timezone).phase !== 'closed';
+    let [members, posts, events, social, xmas] = S.me
+      ? await Promise.all([Store.listMembers(), Store.listPosts(), Store.listEvents(), Store.listSocial(),
+        xmasOn ? Store.getXmas().catch(err => { console.warn('Could not load Naughty or Nice', err); return null; }) : null])
+      : [[], [], [], { messages: [], comments: [], activeInjuries: [] }, null];
+    if (xmas && xmas.phase === 'reveal' && xmas.voted.length && !events.some(e => e.key === 'xmas:' + xmas.year)) events = await Store.listEvents();
+    S.xmas = xmas;
     S.members = members;
     if (S.me && !S.members.some(m => m.id === S.me.id)) S.me = null;
     S.posts = posts;
@@ -185,6 +190,7 @@ const App = (() => {
     const recent = S.posts.filter(p => !p.voided && Logic.weekIdx(new Date(p.at), se.start) === se.idx).sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 4);
     return `<section class="screen home" aria-labelledby="hT">
   <h1 id="hT" class="sr">Home</h1>
+  ${xmasNudgeHTML()}
   ${roastHTML(roastToday())}
   <div class="greet"><img class="mascot" src="${Art.mascot(pose)}" alt="" width="338" height="640"><p class="bubble">${esc(line)}</p></div>
   <div class="card ringcard">
@@ -344,6 +350,7 @@ const App = (() => {
     const evs = S.events.filter(inFeed).map(e => ({ ...e, isEvent: true }));
     const list = [...S.posts, ...evs, ...S.messages].sort((a, b) => new Date(b.at) - new Date(a.at));
     return `<section class="screen feed"><div class="screen-h"><h1>Feed</h1></div>
+  ${xmasBallotHTML()}
   ${feedComposer()}
   ${list.length ? list.map(p => p.isEvent ? jokeCard(p) : p.kind ? messageCard(p) : postCard(p)).join('') : `<div class="card empty"><img src="${Art.mascot('point')}" alt="" width="104" height="160"><h2>Nothing here yet</h2><p class="note">Log something and it shows up here for the fellas.</p></div>`}
   <p class="cap-hint">Think a post is fake? Tap ${CAP} to call cap. ${CAP_DISPUTE} caps marks it disputed.</p>
@@ -897,6 +904,40 @@ const App = (() => {
     if (e.type === 'hoat') return `${realName(d.who)} hit ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week. Stamped and guaranteed.`;
     const they = (ids = []) => ids.length > 1;
     if (e.type === 'thanksgiving') return `Happy Thanksgiving. ${names(d.who)} ${they(d.who) ? 'have' : 'has'} ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week, the fewest of anyone, so the heaviest thing ${they(d.who) ? 'they' : 'he'} lifted all week is a fork.`;
+    // round 2: the post a joke is about, if it's still there
+    const post = d.post ? S.posts.find(p => p.id === d.post) : null;
+    const what = post ? `${catName(post.cat)} post` : 'post';
+    const clock = iso => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: cfg().timezone });
+    const weekday = iso => new Date(iso).toLocaleDateString('en-US', { weekday: 'long', timeZone: cfg().timezone });
+    const J = INSIDE_JOKES[e.type] || {};
+    if (e.type === 'crossing') {
+      const left = Math.max(0, (d.goal || 0) - (d.pts || 0));
+      return `It’s ${J.from % 12 || 12} ${J.from < 12 ? 'AM' : 'PM'} on Sunday and ${realName(d.who)} still needs ${fmtPts(left)} ${ptsWord(left)}. The canoe is drifting toward the island, and nobody is paddling.`;
+    }
+    if (e.type === 'mycar') return `${realName(d.who)} was alone in first until ${d.by ? realName(d.by) : 'someone'} caught him on Sunday. My car, my rules, my fault.`;
+    if (e.type === 'finalcall') return `${realName(d.who)} hit his weekly goal on Sunday with ${fmtPts(d.pts)} ${ptsWord(d.pts)}. Boarded. Barely.`;
+    if (e.type === 'worthit') return `${realName(d.who)} missed last week’s goal by ${fmtPts(d.short)} ${ptsWord(d.short)}. Missed the flight. No regrets.`;
+    if (e.type === 'basement') return post
+      ? `${realName(d.who)} logged ${catName(post.cat)} at ${clock(post.at)}. Operation Basement: he snuck out for points.`
+      : `${realName(d.who)} logged something in the middle of the night. Operation Basement: he snuck out for points.`;
+    if (e.type === 'nomap') return `${names(d.who)} haven’t logged anything in ${Math.round((J.hours || 72) / 24)} days. No map. No signal. No idea.`;
+    if (e.type === 'grandtheft') return `${realName(d.who)} stole first place from ${realName(d.victim)}${post ? ' on ' + weekday(post.at) : ''}. First place: stolen.`;
+    if (e.type === 'wanted') return `${realName(d.who)}’s ${what} has ${d.n} ${CAP}. ${d.n} caps, ${d.n} stars. He’s wanted.`;
+    if (e.type === 'busted') return `${realName(d.who)}’s ${what} got voided, so that week is worth 0 points. Busted.`;
+    if (e.type === 'wasted') return `${realName(d.who)} took strike ${d.strikes} and he’s out. Wasted. See you next season.`;
+    if (e.type === 'parole') return `${realName(d.who)} logged ${post ? catName(post.cat) : 'something'} for the first time since he was eliminated. Out on parole. Still eliminated, but every point counts toward all-time.`;
+    if (e.type === 'partners') return `${names(d.who)} both logged ${d.cat && CATS[d.cat] ? catName(d.cat) : 'the same thing'} on the same day and vouched for each other. Partners in crime.`;
+    if (e.type === 'xmas') {
+      const rows = xmasRows(e), naughty = rows.filter(r => r.verdict !== 'nice'), skipped = rows.filter(r => !r.voted);
+      return `The votes are in. ${rows.length - naughty.length} made the nice list and ${naughty.length} got coal.${skipped.length ? ` Didn’t vote: ${names(skipped.map(r => r.id))}.` : ''}`;
+    }
+    if (e.type === 'nye') return `It’s New Year’s Eve. ${d.year ? d.year + ': new' : 'New'} year, same goals.`;
+    if (e.type === 'groundhog') return `Happy Groundhog Day. ${d.who && member(d.who) ? realName(d.who) : 'Phil'} has spoken: six more weeks of Winter Arc.`;
+    if (e.type === 'valentine') {
+      const short = (d.who || []).filter(id => member(id));
+      if (!short.length) return 'Happy Valentine’s Day. Everyone’s already safe this week.';
+      return `Happy Valentine’s Day. ${d.sunday ? 'It’s Sunday, and ' : ''}${names(short)} ${they(short) ? 'are' : 'is'} still short. A date is worth ${fmtPts(CATS.date.pts)}.`;
+    }
     return '';
   }
   const JOKE_EYEBROW = {
@@ -905,13 +946,18 @@ const App = (() => {
     puke: 'Last place', mma: 'Fight night', radiator: 'Missing person', mom: 'Sunday', nets: 'Strike',
     phil: 'Sighting', scared: 'Date drought', timesheet: 'Last minute', hoat: 'Every week, as promised',
     thanksgiving: 'Holiday special',
+    crossing: 'Sunday night', mycar: 'First place lost', finalcall: 'Sunday save', worthit: 'So close',
+    basement: 'Late night', nomap: 'Missing persons', grandtheft: 'First place stolen', wanted: 'Disputed',
+    busted: 'Post voided', wasted: 'Eliminated', parole: 'Back in action', partners: 'Witnesses',
+    xmas: 'The votes are in', nye: 'Holiday special', groundhog: 'Holiday special', valentine: 'Holiday special',
   };
   /** Every inside joke that has happened goes in the feed (config: feed). */
   const inFeed = e => (e.type === 'hoat' ? HOAT.feed !== false : !!(INSIDE_JOKES[e.type] && INSIDE_JOKES[e.type].feed));
   function jokeCard(e) {
+    if (e.type === 'xmas') return xmasCard(e);
     const hoat = e.type === 'hoat', J = hoat ? { title: HOAT.title } : INSIDE_JOKES[e.type], d = e.data || {};
     const eyebrow = e.type === 'fight' ? (d.post ? 'Gym and beers' : 'Tied for first') : JOKE_EYEBROW[e.type] || 'Inside joke';
-    const who = [...new Set([d.a, d.b, d.who, d.tied, d.target].flat().filter(id => id && member(id)))].slice(0, 6);
+    const who = [...new Set([d.a, d.b, d.who, d.tied, d.target, d.by, d.victim].flat().filter(id => id && member(id)))].slice(0, 6);
     const vis = hoat
       ? `<button class="jk-vid jk-stamp" data-act="hoat-replay" aria-label="${esc(HOAT.text)}: play the stamp again">${Art.hoatStamp()}</button>`
       : J.video ? `<button class="jk-vid" data-act="play" data-id="${J.video}" aria-label="Play ${esc(J.title)}"><img src="${Art.poster(J.video)}" alt="" loading="lazy" width="96" height="209"><span class="gplay">${ic('play')}</span></button>` : '';
@@ -928,7 +974,7 @@ const App = (() => {
 </article>`;
   }
   let jokeBusy = false;
-  const quiet = () => $('#avatarCrop').open || S.busy || Celebrate.busy() || !$('#sheet').hidden || !!$('#layer .modal');
+  const quiet = () => $('#avatarCrop').open || S.busy || Celebrate.busy() || !$('#sheet').hidden || !!$('#layer .modal') || !!$('.xmas-reveal');
   /** Record any inside joke that's true right now (straight to the feed), then pop up the ones you haven't seen (once each). */
   async function checkJokes() {
     if (!inApp() || jokeBusy) return;
@@ -960,7 +1006,8 @@ const App = (() => {
         Celebrate.prefetch(J.video);
         await Celebrate.play(J.video);
         await Store.markSeen(e.id); e.seen = true;
-        toast(jokeText(e), 'cheer');
+        if (e.type === 'xmas') await xmasReveal(e);   // the video is the intro; the app stamps the faces
+        else toast(jokeText(e), 'cheer');
         await wait(900);
       }
     } catch (err) { console.error(err); } finally { jokeBusy = false; }
@@ -987,6 +1034,216 @@ const App = (() => {
     await st.animate([{ transform: 'scale(1) rotate(-8deg)', opacity: 1 }, to], { duration: 520, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards' }).finished.catch(() => {});
     if (tgt) tgt.classList.add('on');
     el.remove();
+  }
+
+  /* ------------------------------------------------------------ Christmas: Naughty or Nice (XMAS in config.js) */
+  /* Dec 24: a ballot pinned to the top of the feed (plus a nudge on Home). Dec 25: the server saves the results
+     as the xmas event; each phone plays the joke-xmas intro once, then stamps every face NICE or NAUGHTY. */
+  const pendingXmas = new Map();   // target -> choice, while that vote is on its way to the server
+  const xmasVoting = () => !!(S.me && S.xmas && S.xmas.phase === 'voting');
+  const xmasOthers = () => S.members.filter(m => m.id !== S.me.id);
+  const xmasMine = () => Object.assign({}, S.xmas && S.xmas.mine, Object.fromEntries(pendingXmas));
+  const xmasList = ids => new Intl.ListFormat('en').format(ids.map(id => (S.me && id === S.me.id ? 'you' : displayName(member(id)))));
+  /** The verdicts saved with the xmas event (nicest first, naughtiest last), for people still in the group. */
+  function xmasRows(e) { return ((e && e.data && e.data.rows) || []).filter(r => r && member(r.id)); }
+  /** Under the word on someone's stamp: his own side of the count first (NICE 6–2, NAUGHTY 5–3). */
+  function xmasLine(r) { return !r.voted ? 'DIDN’T VOTE' : r.verdict === 'nice' ? `${r.nice}–${r.naughty}` : `${r.naughty}–${r.nice}`; }
+
+  function xmasNudgeHTML() {
+    if (!xmasVoting()) return '';
+    const mine = xmasMine(), others = xmasOthers(), done = others.filter(m => mine[m.id]).length, all = done === others.length;
+    return `<button type="button" class="card xmas-nudge${all ? ' done' : ''}" data-act="xmas-go">
+    <span class="xn-ic" aria-hidden="true">${all ? '😇' : '🎅'}</span>
+    <span class="xn-t"><b>${all ? 'Your ballot’s in' : 'Naughty or Nice is open'}</b><small>${all ? 'You can still change your votes until 11:59 PM.' : `You’ve voted on ${done} of ${others.length}. Votes lock at 11:59 PM, and anyone who doesn’t vote gets coal.`}</small></span>
+    ${ic('chevron')}
+  </button>`;
+  }
+  function xmasBallotHTML() {
+    if (!xmasVoting()) return '';
+    const mine = xmasMine();
+    const row = m => {
+      const c = mine[m.id], n = esc(displayName(m));
+      return `<li class="xb-row">${avatar(m.id, 38)}<b>${n}</b><span class="xb-btns" role="group" aria-label="${n}">
+      <button type="button" class="xb nice" data-act="xmas-vote" data-id="${m.id}" data-c="nice" aria-label="Nice" aria-pressed="${c === 'nice'}"><span aria-hidden="true">😇</span><span class="w"> Nice</span></button><button type="button" class="xb naughty" data-act="xmas-vote" data-id="${m.id}" data-c="naughty" aria-label="Naughty" aria-pressed="${c === 'naughty'}"><span aria-hidden="true">😈</span><span class="w"> Naughty</span></button>
+    </span></li>`;
+    };
+    return `<section class="card xmas-ballot" aria-labelledby="xbT">
+  <p class="eyebrow">Christmas Eve · votes lock at 11:59 PM</p>
+  <h2 id="xbT">Naughty or Nice</h2>
+  <p class="note">Vote on everyone. Nobody sees a count until Christmas morning, and nobody ever sees who voted what. Don’t vote at all and you go straight on the naughty list.</p>
+  <ul class="xb-list">${xmasOthers().map(row).join('')}</ul>
+  ${xmasStatusHTML()}
+</section>`;
+  }
+  function xmasStatusHTML() {
+    const mine = xmasMine(), others = xmasOthers(), done = others.filter(m => mine[m.id]).length;
+    const voted = new Set(S.xmas.voted || []);
+    if (done) voted.add(S.me.id);
+    const waiting = S.members.filter(m => !voted.has(m.id)).map(m => m.id);
+    return `<div class="xb-status" aria-live="polite">
+    <p><b>${done === others.length ? 'Your ballot’s in.' : `You’ve voted on ${done} of ${others.length}.`}</b>${done === others.length ? ' You can change it until 11:59 PM.' : ''}</p>
+    <p class="note">${voted.size} of ${S.members.length} have voted.${waiting.length ? ` Still waiting on ${esc(xmasList(waiting))}.` : ' Everyone’s in.'}</p>
+  </div>`;
+  }
+  /** Update the ballot in place (the buttons keep focus). */
+  function paintBallot() {
+    const card = $('.xmas-ballot');
+    if (!card) return;
+    if (!xmasVoting()) { card.remove(); return; }
+    const mine = xmasMine();
+    $$('[data-act="xmas-vote"]', card).forEach(b => b.setAttribute('aria-pressed', String(mine[b.dataset.id] === b.dataset.c)));
+    const st = $('.xb-status', card);
+    if (st) st.outerHTML = xmasStatusHTML();
+  }
+  async function castXmasVote(target, choice) {
+    if (!xmasVoting() || xmasMine()[target] === choice) return;
+    pendingXmas.set(target, choice);
+    paintBallot();
+    try {
+      const next = await Store.castXmasVote(target, choice);
+      if (pendingXmas.get(target) === choice) pendingXmas.delete(target);
+      S.xmas = next;
+    } catch (err) {
+      if (pendingXmas.get(target) === choice) pendingXmas.delete(target);
+      toast(err.message || 'That vote didn’t go through. Try again.', 'shrug');
+      if (err.status === 403) { await load(); renderView(); return; }   // voting closed at midnight
+    }
+    paintBallot();
+  }
+
+  /** The results card in the feed: both lists with the counts. Tapping the poster replays the reveal. */
+  function xmasCard(e) {
+    const rows = xmasRows(e), d = e.data || {}, J = INSIDE_JOKES.xmas;
+    const item = r => `<li>${avatar(r.id, 30)}<span class="xr-who"><b>${esc(displayName(member(r.id)))}</b><small>😇 ${r.nice} · 😈 ${r.naughty}${r.voted ? '' : ' · didn’t vote'}</small></span></li>`;
+    const col = (nice, label) => {
+      const xs = rows.filter(r => (r.verdict === 'nice') === nice);
+      return `<section class="xr-col ${nice ? 'nice' : 'naughty'}"><h4>${label}</h4>${xs.length ? `<ul>${xs.map(item).join('')}</ul>` : '<p class="note">Nobody.</p>'}</section>`;
+    };
+    return `<article class="post card joke joke-xmas" data-eid="${e.id}">
+  <button class="jk-vid" data-act="xmas-replay" data-id="${e.id}" aria-label="Play the Naughty or Nice reveal again"><img src="${Art.poster(J.video)}" alt="" loading="lazy" width="96" height="209"><span class="gplay">${ic('play')}</span></button>
+  <div class="jk-body">
+    <p class="eyebrow">${JOKE_EYEBROW.xmas}${d.year ? ' · ' + d.year : ''}</p>
+    <h3 class="long">${esc(J.title)}</h3>
+    <p class="jk-text">${esc(jokeText(e))}</p>
+    <p class="jk-meta"><em>${ago(e.at)}</em></p>
+  </div>
+  <div class="xr-lists">${col(true, '😇 Nice list')}${col(false, '😈 Naughty list')}</div>
+  <footer>${reactionsHTML('event', e.id)}</footer>
+  ${commentsHTML('event', e.id)}
+</article>`;
+  }
+
+  /** The reveal: one face at a time gets stamped NICE or NAUGHTY with its count (nice list first, the naughtiest
+      last), then drops onto its list. Tap anywhere to skip to the end. Resolves when it's closed. */
+  function xmasReveal(e) {
+    const rows = xmasRows(e);
+    if (!rows.length) return Promise.resolve();
+    const d = e.data || {}, nice = rows.filter(r => r.verdict === 'nice'), naughty = rows.filter(r => r.verdict !== 'nice');
+    const skipped = rows.filter(r => !r.voted), back = document.activeElement;
+    const nameOfRow = r => esc(displayName(member(r.id)));
+    const slot = r => `<li class="xr-slot" data-id="${r.id}">${avatar(r.id, 40)}<span class="xr-who"><b>${nameOfRow(r)}</b><small>😇 ${r.nice} · 😈 ${r.naughty}</small></span></li>`;
+    const snow = Array.from({ length: 26 }, (_, i) => `<i style="--x:${(i * 37 + 11) % 100}%;--d:${6 + (i * 7) % 9}s;--t:-${((i * 1.7) % 9).toFixed(1)}s;--s:${4 + (i * 5) % 8}px"></i>`).join('');
+    const el = document.createElement('div');
+    el.className = 'xmas-reveal';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-labelledby', 'xrT');
+    el.innerHTML = `<div class="xr-snow" aria-hidden="true">${snow}</div>
+  <div class="xr-board">
+    <p class="xr-eyebrow">Christmas${d.year ? ' ' + d.year : ''} · ${d.voters || 0} of ${rows.length} voted</p>
+    <h2 id="xrT" class="xr-title">Naughty or Nice</h2>
+    <div class="xr-cols">
+      <section class="xr-col nice"><h3>😇 Nice list</h3><ul>${nice.map(slot).join('') || '<li class="xr-none">Nobody</li>'}</ul></section>
+      <section class="xr-col naughty"><h3>😈 Naughty list</h3><ul>${naughty.map(slot).join('') || '<li class="xr-none">Nobody</li>'}</ul></section>
+    </div>
+    ${skipped.length ? `<p class="xr-note">Didn’t vote, so straight to the naughty list: ${esc(xmasList(skipped.map(r => r.id)))}.</p>` : ''}
+    <button type="button" class="btn btn-primary xr-done">Skip to the results</button>
+  </div>
+  <div class="xr-stage" aria-hidden="true"></div>`;
+    document.body.appendChild(el);
+    const stage = $('.xr-stage', el), btn = $('.xr-done', el);
+    const running = new Set(), waiters = new Set();
+    let skip = matchMedia('(prefers-reduced-motion: reduce)').matches, finished = false;
+    const anim = (node, frames, opts) => {
+      const a = node.animate(frames, opts);
+      if (skip) a.finish(); else running.add(a);
+      return a.finished.catch(() => {}).then(() => { running.delete(a); });
+    };
+    const pause = ms => skip ? Promise.resolve() : new Promise(res => {
+      let t;
+      const done = () => { clearTimeout(t); waiters.delete(done); res(); };
+      t = setTimeout(done, ms);
+      waiters.add(done);
+    });
+    const skipAll = () => {
+      if (skip) return;
+      skip = true;
+      [...running].forEach(a => a.finish());
+      [...waiters].forEach(fn => fn());
+    };
+    const buzz = pattern => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* not supported */ } };
+
+    async function run() {
+      const order = [...nice, ...naughty];
+      for (let i = 0; i < order.length && !skip; i++) {
+        const r = order[i], last = order.length > 1 && i === order.length - 1 && r.verdict !== 'nice';
+        const face = document.createElement('div');
+        face.className = `xr-face ${r.verdict === 'nice' ? 'nice' : 'naughty'}`;
+        face.innerHTML = `${last ? '<p class="xr-kicker">And the naughtiest of them all…</p>' : ''}<span class="xr-av">${avatar(r.id, 150)}<span class="xr-stamp">${Art.xmasStamp(r.verdict, xmasLine(r))}</span></span><b class="xr-name">${nameOfRow(r)}</b><small class="xr-count">😇 ${r.nice} · 😈 ${r.naughty}${r.voted ? '' : ' · didn’t vote'}</small>`;
+        stage.appendChild(face);
+        stage.classList.add('on');
+        await anim(face, [{ transform: 'translateY(70px) scale(.6)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 300, easing: 'cubic-bezier(.2,1.4,.4,1)', fill: 'both' });
+        await pause(last ? 1000 : 300);
+        if (skip) break;
+        buzz(last ? [30, 50, 160] : [20, 40, 90]);
+        await anim($('.xr-stamp', face), [
+          { transform: 'translate(-50%,-50%) scale(3.2) rotate(-22deg)', opacity: 0 },
+          { transform: 'translate(-50%,-50%) scale(.88) rotate(-8deg)', opacity: 1, offset: 0.62 },
+          { transform: 'translate(-50%,-50%) scale(1) rotate(-8deg)', opacity: 1 },
+        ], { duration: 420, easing: 'cubic-bezier(.55,0,.7,.4)', fill: 'forwards' });
+        face.classList.add('inked');
+        anim(face, [{ transform: 'none' }, { transform: 'translate(-8px,6px)' }, { transform: 'translate(7px,-5px)' }, { transform: 'translate(-3px,2px)' }, { transform: 'none' }], { duration: last ? 520 : 340 });
+        await pause(last ? 1800 : r.verdict === 'nice' ? 650 : 800);
+        if (skip) break;
+        // fly the face onto its list: scale around the avatar so it lands on the slot's avatar
+        const target = $(`.xr-slot[data-id="${r.id}"]`, el);
+        target.scrollIntoView({ block: 'nearest' });
+        const f = face.getBoundingClientRect(), a = $('.xr-av > .av', face).getBoundingClientRect(), b = $('.av', target).getBoundingClientRect();
+        const ax = a.left + a.width / 2, ay = a.top + a.height / 2;
+        face.style.transformOrigin = `${ax - f.left}px ${ay - f.top}px`;
+        await anim(face, [{ transform: 'none', opacity: 1 }, { transform: `translate(${b.left + b.width / 2 - ax}px,${b.top + b.height / 2 - ay}px) scale(${b.width / a.width})`, opacity: 0.3 }], { duration: 440, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards' });
+        face.remove();
+        stage.classList.remove('on');
+        target.classList.add('on');
+        anim(target, [{ transform: 'scale(1.2)' }, { transform: 'none' }], { duration: 260, easing: 'ease-out' });
+        await pause(120);
+      }
+      stage.innerHTML = '';
+      stage.classList.remove('on');
+      $$('.xr-slot', el).forEach(s => s.classList.add('on'));
+    }
+
+    return new Promise(resolve => {
+      const close = () => {
+        document.removeEventListener('keydown', onKey);
+        el.classList.add('bye');
+        setTimeout(() => { el.remove(); resolve(); }, 240);
+        if (back && back.isConnected && back.focus) back.focus({ preventScroll: true });
+      };
+      const onKey = ev => { if (ev.key === 'Escape') { if (finished) close(); else skipAll(); } };
+      document.addEventListener('keydown', onKey);
+      el.addEventListener('click', ev => {
+        if (finished) { if (ev.target.closest('.xr-done')) close(); return; }
+        skipAll();
+      });
+      btn.focus({ preventScroll: true });
+      run().catch(err => console.error(err)).then(() => {
+        finished = true;
+        el.classList.add('done');
+        btn.textContent = 'Merry Christmas';
+        btn.focus({ preventScroll: true });
+      });
+    });
   }
 
   /* ------------------------------------------------------------ modals + toasts */
@@ -1119,6 +1376,15 @@ const App = (() => {
       await load(); renderView(); toast(`Voided. ${who} gets a 0-point week.`, 'shrug');
     },
     play: el => Celebrate.play(el.dataset.id),
+    'xmas-vote': el => castXmasVote(el.dataset.id, el.dataset.c),
+    'xmas-go': () => go('feed'),
+    async 'xmas-replay'(el) {
+      const e = S.events.find(x => x.id === el.dataset.id && x.type === 'xmas');
+      if (!e || quiet()) return;
+      Celebrate.prefetch(INSIDE_JOKES.xmas.video);
+      await Celebrate.play(INSIDE_JOKES.xmas.video);
+      await xmasReveal(e);
+    },
     badge: el => showBadge(el.dataset.id, false),
     async switch() {
       const pick = await demoChooser('Switch person', 'Preview only: jump into anyone’s account.'); if (!pick) return;
@@ -1221,7 +1487,7 @@ const App = (() => {
     tick.j = Date.now();
     checkJokes();
     Store.subscribe(async () => {
-      if (quiet() || pendingCommentHearts.size || pendingFeedReactions.size || document.activeElement?.closest('[data-feed-form]')) return false;
+      if (quiet() || pendingCommentHearts.size || pendingFeedReactions.size || pendingXmas.size || document.activeElement?.closest('[data-feed-form]')) return false;
       const wasInApp = inApp();
       await load();
       if (inApp() !== wasInApp) render();

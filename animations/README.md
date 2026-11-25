@@ -67,6 +67,8 @@ The mascot's hair can turn blue: set `hairBlue` (0 to 1) in a pose.
 
 The round 2 inside jokes are made with [HyperFrames](https://github.com/heygen-com/hyperframes) (HTML + GSAP rendered to video) in `hyperframes/`, in the same look: flat shapes, espresso outlines, Luckiest Guy titles and Bangers sound words, 1080×2348 at 30 fps, about 5.5 s, the same ribbon end card.
 
+There are 17: `joke-thanksgiving`, Osim's four (`joke-crossing`, `joke-mycar`, `joke-finalcall`, `joke-worthit`), the crew's two (`joke-basement`, `joke-nomap`), the GTA six (`joke-grandtheft`, `joke-wanted`, `joke-busted`, `joke-wasted`, `joke-parole`, `joke-partners`) and the holidays (`joke-xmas`, `joke-nye`, `joke-groundhog`, `joke-valentine`). `joke-xmas` is only the intro to the Naughty or Nice reveal; the app draws the NICE and NAUGHTY stamps itself, because the clip is made before anyone votes.
+
 ```
 cd hyperframes && npm i
 node render.mjs joke-thanksgiving        # master -> app copy (720x1566) -> soundtrack -> poster, into ../../assets/celebrations
@@ -82,6 +84,8 @@ HyperFrames needs a Chrome. If it can't find one, point `PUPPETEER_EXECUTABLE_PA
 | `hyperframes/compositions/endcard.html` | The ribbon end card (TITLE · COIN · CAPTION), mounted over the last 1.5 s with its words and colours as variables. |
 | `hyperframes/assets/kit.js`, `kit.css` | Shared helpers: shake, hop, squash, pose swaps, pop-ins, sound words, tosses, confetti, name tags. `kit.js` also lists the two GSAP rules every clip follows so it survives HyperFrames seeking back and forth. |
 | `hyperframes/assets/cast/` | Flexander's poses as SVG, exported from the Remotion rig by `scripts/export-cast.sh` (poses in `src/export/cast-poses.tsx`, member colourways and hand/head anchors in `cast.tsx`). The clips swap whole poses rather than animating limbs. |
+| `hyperframes/assets/buddy.js` | Buddy, the second character: friends and drivers who aren't in the app (no name tag), the cop, the guy at the table. One SVG with outfits, faces and props as options. |
+| `hyperframes/assets/props.js` | Cars (doors, wheels, police lights), stars and the other shared props. |
 | `hyperframes/render.mjs` | The build: `CLIPS` lists each clip and its poster second. |
 
 Sound works exactly as for the Remotion videos: each clip has an entry in `sound/cues.py`, under "round 2", and `render.mjs` runs `scripts/sound.py mix` on it.
