@@ -1,0 +1,1070 @@
+{
+ "alarm": {
+  "args": [],
+  "design": "timer/done",
+  "onset": 0.0063,
+  "peak": 0.3956,
+  "seconds": 1.483
+ },
+ "applause": {
+  "args": [],
+  "design": "applause/audience",
+  "onset": 0.47,
+  "peak": 1.2501,
+  "seconds": 3.47
+ },
+ "bar": {
+  "args": [],
+  "design": "cafe/busy",
+  "onset": 5.8153,
+  "peak": 12.0555,
+  "seconds": 6.0
+ },
+ "bed_warm": {
+  "args": [],
+  "design": "bed/warm",
+  "onset": 0.007,
+  "peak": 17.8831,
+  "seconds": 6.0
+ },
+ "bell_desk": {
+  "args": [],
+  "design": "bell/desk",
+  "onset": 0.002,
+  "peak": 0.0408,
+  "seconds": 2.419
+ },
+ "bell_shop": {
+  "args": [],
+  "design": "bell/shop",
+  "onset": 0.0,
+  "peak": 0.0043,
+  "seconds": 1.628
+ },
+ "bike_bell": {
+  "args": [],
+  "design": "bell/bike",
+  "onset": 0.0442,
+  "peak": 0.6383,
+  "seconds": 1.712
+ },
+ "boing": {
+  "args": [],
+  "design": "jump/spring",
+  "onset": 0.0008,
+  "peak": 0.0091,
+  "seconds": 0.708
+ },
+ "boo": {
+  "args": [],
+  "design": "crowd/boo",
+  "onset": 0.094,
+  "peak": 3.4545,
+  "seconds": 4.062
+ },
+ "book_close": {
+  "args": [],
+  "design": "book/close",
+  "onset": 0.1133,
+  "peak": 0.1396,
+  "seconds": 0.406
+ },
+ "boom": {
+  "args": [],
+  "design": "boom/deep",
+  "onset": 0.1067,
+  "peak": 0.1502,
+  "seconds": 0.327
+ },
+ "boom_short": {
+  "args": [],
+  "design": "boom/short",
+  "onset": 0.1048,
+  "peak": 0.1471,
+  "seconds": 0.286
+ },
+ "bottle_clink": {
+  "args": [],
+  "design": "bottle/clink",
+  "onset": 0.0147,
+  "peak": 0.0213,
+  "seconds": 0.283
+ },
+ "bounce": {
+  "args": [],
+  "design": "ball/bounce",
+  "onset": 0.0036,
+  "peak": 0.0105,
+  "seconds": 0.248
+ },
+ "braam": {
+  "args": [],
+  "design": "braam/brass",
+  "onset": 0.6445,
+  "peak": 1.746,
+  "seconds": 3.129
+ },
+ "bubble": {
+  "args": [],
+  "design": "pop/bubble",
+  "onset": 0.0002,
+  "peak": 0.011,
+  "seconds": 0.291
+ },
+ "bulb": {
+  "args": [],
+  "design": "bulb/burst",
+  "onset": 0.0208,
+  "peak": 0.0455,
+  "seconds": 0.563
+ },
+ "burp": {
+  "args": [],
+  "design": "burp/person",
+  "onset": 0.1026,
+  "peak": 0.3857,
+  "seconds": 0.729
+ },
+ "cabasa": {
+  "args": [],
+  "design": "cabasa/hit",
+  "onset": 0.0073,
+  "peak": 0.0144,
+  "seconds": 0.6
+ },
+ "cajon": {
+  "args": [],
+  "design": "cajon/bass",
+  "onset": 0.0029,
+  "peak": 0.0163,
+  "seconds": 0.84
+ },
+ "car_door": {
+  "args": [],
+  "design": "car_door/slam",
+  "onset": 0.0226,
+  "peak": 0.0337,
+  "seconds": 0.716
+ },
+ "car_horn": {
+  "args": [],
+  "design": "car_horn/honk",
+  "onset": 0.0453,
+  "peak": 0.3274,
+  "seconds": 0.907
+ },
+ "card_slap": {
+  "args": [],
+  "design": "paper/card",
+  "onset": 0.0202,
+  "peak": 0.1132,
+  "seconds": 0.359
+ },
+ "cash": {
+  "args": [],
+  "design": "cash_register/open",
+  "onset": 0.0507,
+  "peak": 0.799,
+  "seconds": 2.89
+ },
+ "chain": {
+  "args": [],
+  "design": "chain/rattle",
+  "onset": 0.0603,
+  "peak": 0.2545,
+  "seconds": 1.493
+ },
+ "cheer": {
+  "args": [],
+  "design": "crowd/cheer",
+  "onset": 0.0893,
+  "peak": 3.3321,
+  "seconds": 4.554
+ },
+ "chirp": {
+  "args": [],
+  "design": "pro_pop/chirp",
+  "onset": 0.0295,
+  "peak": 0.0392,
+  "seconds": 0.164
+ },
+ "city": {
+  "args": [],
+  "design": "city/street",
+  "onset": 0.0027,
+  "peak": 19.7638,
+  "seconds": 6.0
+ },
+ "clang": {
+  "args": [],
+  "design": "hit/metal",
+  "onset": 0.0,
+  "peak": 0.0083,
+  "seconds": 0.824
+ },
+ "clank": {
+  "args": [],
+  "design": "brake_drum/hit",
+  "onset": 0.0105,
+  "peak": 0.0317,
+  "seconds": 0.873
+ },
+ "clap_e": {
+  "args": [],
+  "design": "clap/electro",
+  "onset": 0.0006,
+  "peak": 0.0483,
+  "seconds": 0.546
+ },
+ "click": {
+  "args": [],
+  "design": "pen/click",
+  "onset": 0.0008,
+  "peak": 0.008,
+  "seconds": 0.194
+ },
+ "clink": {
+  "args": [],
+  "design": "glass/clink",
+  "onset": 0.0,
+  "peak": 0.0044,
+  "seconds": 0.782
+ },
+ "clock": {
+  "args": [],
+  "design": "clock/ticktock",
+  "onset": 0.0279,
+  "peak": 0.5447,
+  "seconds": 1.694
+ },
+ "cloth": {
+  "args": [],
+  "design": "cloth/rustle",
+  "onset": 0.071,
+  "peak": 0.3225,
+  "seconds": 0.685
+ },
+ "cloth_tear": {
+  "args": [],
+  "design": "cloth/tear",
+  "onset": 0.0222,
+  "peak": 0.7844,
+  "seconds": 1.038
+ },
+ "coin_drop": {
+  "args": [],
+  "design": "coin/drop",
+  "onset": 0.0,
+  "peak": 0.0043,
+  "seconds": 0.963
+ },
+ "coin_flip": {
+  "args": [],
+  "design": "coin/flip",
+  "onset": 0.0,
+  "peak": 0.0053,
+  "seconds": 0.742
+ },
+ "coin_soft": {
+  "args": [],
+  "design": "coin/soft",
+  "onset": 0.0154,
+  "peak": 0.1001,
+  "seconds": 2.595
+ },
+ "cork": {
+  "args": [],
+  "design": "cork/pop",
+  "onset": 0.2182,
+  "peak": 0.2254,
+  "seconds": 0.512
+ },
+ "crash": {
+  "args": [],
+  "design": "cymbal/orchestral",
+  "onset": 0.0,
+  "peak": 0.0062,
+  "seconds": 4.5
+ },
+ "crit": {
+  "args": [],
+  "design": "hit/crit",
+  "onset": 0.001,
+  "peak": 0.0294,
+  "seconds": 0.59
+ },
+ "db_grab": {
+  "args": [],
+  "design": "dumbbell/grab",
+  "onset": 0.0413,
+  "peak": 0.0749,
+  "seconds": 0.481
+ },
+ "db_place": {
+  "args": [],
+  "design": "dumbbell/place",
+  "onset": 0.0227,
+  "peak": 0.09,
+  "seconds": 0.779
+ },
+ "ding": {
+  "args": [],
+  "design": "coin/bright",
+  "onset": 0.0006,
+  "peak": 0.0745,
+  "seconds": 0.683
+ },
+ "door_slam": {
+  "args": [],
+  "design": "door/slam",
+  "onset": 0.0647,
+  "peak": 0.08,
+  "seconds": 0.685
+ },
+ "door_slide": {
+  "args": [],
+  "design": "door/slide",
+  "onset": 0.0058,
+  "peak": 0.673,
+  "seconds": 0.961
+ },
+ "doorbell": {
+  "args": [],
+  "design": "doorbell/ring",
+  "onset": 0.0182,
+  "peak": 0.4278,
+  "seconds": 2.261
+ },
+ "drop_sack": {
+  "args": [],
+  "design": "drop/sack",
+  "onset": 0.0154,
+  "peak": 0.0287,
+  "seconds": 0.215
+ },
+ "drumroll": {
+  "args": [],
+  "design": "drum/roll",
+  "onset": 1.114,
+  "peak": 2.0042,
+  "seconds": 2.664
+ },
+ "explosion": {
+  "args": [],
+  "design": "explosion/small",
+  "onset": 0.0,
+  "peak": 0.0199,
+  "seconds": 0.635
+ },
+ "fanfare": {
+  "args": [],
+  "design": "level_up/fanfare",
+  "onset": 0.0425,
+  "peak": 0.3126,
+  "seconds": 2.408
+ },
+ "fire_big": {
+  "args": [],
+  "design": "fire/large",
+  "onset": 0.783,
+  "peak": 6.6413,
+  "seconds": 6.0
+ },
+ "fire_loop": {
+  "args": [],
+  "design": "fire/small",
+  "onset": 0.4893,
+  "peak": 7.1586,
+  "seconds": 6.0
+ },
+ "fire_whoosh": {
+  "args": [],
+  "design": "fire/whoosh",
+  "onset": 0.105,
+  "peak": 0.3974,
+  "seconds": 1.728
+ },
+ "freewheel": {
+  "args": [],
+  "design": "bicycle/freewheel",
+  "onset": 0.044,
+  "peak": 1.8946,
+  "seconds": 2.535
+ },
+ "game8bit": {
+  "args": [],
+  "design": "bed/8bit",
+  "onset": 0.0005,
+  "peak": 9.5657,
+  "seconds": 6.0
+ },
+ "gasp": {
+  "args": [],
+  "design": "gasp/breath",
+  "onset": 0.1965,
+  "peak": 0.2695,
+  "seconds": 0.716
+ },
+ "gem": {
+  "args": [],
+  "design": "gem/sparkle",
+  "onset": 0.0027,
+  "peak": 0.1408,
+  "seconds": 0.998
+ },
+ "glass_break": {
+  "args": [],
+  "design": "glass/break",
+  "onset": 0.0597,
+  "peak": 0.0705,
+  "seconds": 0.758
+ },
+ "glass_cheers": {
+  "args": [],
+  "design": "glass/cheers",
+  "onset": 0.0366,
+  "peak": 0.101,
+  "seconds": 0.621
+ },
+ "glass_set": {
+  "args": [],
+  "design": "glass/set",
+  "onset": 0.0,
+  "peak": 0.0115,
+  "seconds": 0.336
+ },
+ "gravel": {
+  "args": [],
+  "design": "step/pebbles",
+  "onset": 0.0989,
+  "peak": 0.1345,
+  "seconds": 0.514
+ },
+ "growl": {
+  "args": [],
+  "design": "bear/growl",
+  "onset": 2.3582,
+  "peak": 3.433,
+  "seconds": 5.841
+ },
+ "hat_e": {
+  "args": [],
+  "design": "hat/electro",
+  "onset": 0.0,
+  "peak": 0.0051,
+  "seconds": 0.256
+ },
+ "heartbeat": {
+  "args": [],
+  "design": "heart/beat",
+  "onset": 0.0231,
+  "peak": 2.7482,
+  "seconds": 3.45
+ },
+ "jump": {
+  "args": [],
+  "design": "jump/soft",
+  "onset": 0.0,
+  "peak": 0.0679,
+  "seconds": 0.4
+ },
+ "key": {
+  "args": [],
+  "design": "keyboard/laptop",
+  "onset": 0.0209,
+  "peak": 0.0273,
+  "seconds": 0.586
+ },
+ "kick": {
+  "args": [],
+  "design": "ball/kick",
+  "onset": 0.0225,
+  "peak": 0.0321,
+  "seconds": 0.301
+ },
+ "kick_e": {
+  "args": [],
+  "design": "kick/electro",
+  "onset": 0.0,
+  "peak": 0.0149,
+  "seconds": 1.313
+ },
+ "kiss": {
+  "args": [],
+  "design": "kiss/lips",
+  "onset": 0.0669,
+  "peak": 0.0746,
+  "seconds": 0.329
+ },
+ "land": {
+  "args": [],
+  "design": "land/heavy",
+  "onset": 0.0023,
+  "peak": 0.0255,
+  "seconds": 0.832
+ },
+ "land_dirt": {
+  "args": [],
+  "design": "land/dirt",
+  "onset": 0.0239,
+  "peak": 0.03,
+  "seconds": 0.621
+ },
+ "latch": {
+  "args": [],
+  "design": "lock/latch",
+  "onset": 0.0406,
+  "peak": 0.0477,
+  "seconds": 0.315
+ },
+ "laugh": {
+  "args": [],
+  "design": "laugh/crowd",
+  "onset": 0.3186,
+  "peak": 0.7301,
+  "seconds": 3.05
+ },
+ "logo_spark": {
+  "args": [],
+  "design": "logo_sting/spark",
+  "onset": 0.0012,
+  "peak": 0.0445,
+  "seconds": 1.581
+ },
+ "magic": {
+  "args": [],
+  "design": "magic/cast",
+  "onset": 0.2059,
+  "peak": 0.5066,
+  "seconds": 1.375
+ },
+ "metal_drop": {
+  "args": [],
+  "design": "metal/drop",
+  "onset": 0.0428,
+  "peak": 0.1243,
+  "seconds": 1.046
+ },
+ "night": {
+  "args": [],
+  "design": "wind/trees",
+  "onset": 1.8838,
+  "peak": 18.3196,
+  "seconds": 6.0
+ },
+ "notify": {
+  "args": [],
+  "design": "notify/pop",
+  "onset": 0.0059,
+  "peak": 0.0125,
+  "seconds": 0.532
+ },
+ "owl": {
+  "args": [],
+  "design": "owl/hoot",
+  "onset": 0.058,
+  "peak": 0.5544,
+  "seconds": 1.125
+ },
+ "pad": {
+  "args": [],
+  "design": "pad/glass",
+  "onset": 0.1238,
+  "peak": 0.9141,
+  "seconds": 4.518
+ },
+ "page": {
+  "args": [],
+  "design": "paper/page",
+  "onset": 0.0895,
+  "peak": 0.2201,
+  "seconds": 0.511
+ },
+ "paper_crumple": {
+  "args": [],
+  "design": "paper/crumple",
+  "onset": 0.0545,
+  "peak": 0.7613,
+  "seconds": 0.919
+ },
+ "party_pop": {
+  "args": [],
+  "design": "party_popper/pop",
+  "onset": 0.0732,
+  "peak": 0.1144,
+  "seconds": 0.635
+ },
+ "pencil": {
+  "args": [],
+  "design": "pencil/write",
+  "onset": 0.126,
+  "peak": 0.701,
+  "seconds": 3.05
+ },
+ "person_fall": {
+  "args": [],
+  "design": "person/fall",
+  "onset": 0.6544,
+  "peak": 0.6906,
+  "seconds": 1.885
+ },
+ "phone_vibe": {
+  "args": [],
+  "design": "phone/vibrate",
+  "onset": 0.3053,
+  "peak": 0.3824,
+  "seconds": 1.62
+ },
+ "pop": {
+  "args": [],
+  "design": "pop/soft",
+  "onset": 0.0002,
+  "peak": 0.026,
+  "seconds": 0.274
+ },
+ "pop_in": {
+  "args": [],
+  "design": "pro_pop_in/round",
+  "onset": 0.0071,
+  "peak": 0.0158,
+  "seconds": 0.172
+ },
+ "pop_pluck": {
+  "args": [],
+  "design": "pop/pluck",
+  "onset": 0.0005,
+  "peak": 0.0089,
+  "seconds": 0.287
+ },
+ "pot_clang": {
+  "args": [],
+  "design": "pot/clang",
+  "onset": 0.0921,
+  "peak": 0.2167,
+  "seconds": 1.519
+ },
+ "pour": {
+  "args": [],
+  "design": "water/pour",
+  "onset": 0.0029,
+  "peak": 0.8197,
+  "seconds": 2.355
+ },
+ "powder": {
+  "args": [],
+  "design": "step/powder",
+  "onset": 0.2822,
+  "peak": 0.4381,
+  "seconds": 0.853
+ },
+ "power_down": {
+  "args": [],
+  "design": "power_down/synth",
+  "onset": 0.0034,
+  "peak": 0.0455,
+  "seconds": 1.371
+ },
+ "punch": {
+  "args": [],
+  "design": "hit/punch",
+  "onset": 0.0,
+  "peak": 0.0136,
+  "seconds": 0.296
+ },
+ "punch_body": {
+  "args": [],
+  "design": "punch/body",
+  "onset": 0.0744,
+  "peak": 0.0835,
+  "seconds": 0.39
+ },
+ "quack": {
+  "args": [],
+  "design": "duck/quack",
+  "onset": 0.0577,
+  "peak": 0.0934,
+  "seconds": 0.423
+ },
+ "racket": {
+  "args": [],
+  "design": "racket/hit",
+  "onset": 0.0709,
+  "peak": 0.0783,
+  "seconds": 0.632
+ },
+ "rocket": {
+  "args": [],
+  "design": "rocket/launch",
+  "onset": 0.2626,
+  "peak": 0.9899,
+  "seconds": 6.0
+ },
+ "rooster": {
+  "args": [],
+  "design": "rooster/crow",
+  "onset": 0.0652,
+  "peak": 0.2703,
+  "seconds": 1.71
+ },
+ "rope": {
+  "args": [],
+  "design": "whoosh/rope",
+  "onset": 0.1298,
+  "peak": 0.151,
+  "seconds": 0.89
+ },
+ "rumble": {
+  "args": [],
+  "design": "rumble/quake",
+  "onset": 0.0052,
+  "peak": 0.6673,
+  "seconds": 2.0
+ },
+ "sanda": {
+  "args": [
+   "--seed",
+   "1"
+  ],
+  "design": "step/grass",
+  "onset": 0.004,
+  "peak": 0.0218,
+  "seconds": 0.33
+ },
+ "sandb": {
+  "args": [
+   "--seed",
+   "2"
+  ],
+  "design": "step/grass",
+  "onset": 0.005,
+  "peak": 0.0123,
+  "seconds": 0.354
+ },
+ "scratch": {
+  "args": [],
+  "design": "record/scratch",
+  "onset": 0.0566,
+  "peak": 0.8156,
+  "seconds": 1.029
+ },
+ "scream": {
+  "args": [],
+  "design": "scream/person",
+  "onset": 0.2258,
+  "peak": 0.4113,
+  "seconds": 1.855
+ },
+ "shutter": {
+  "args": [],
+  "design": "camera/shutter",
+  "onset": 0.032,
+  "peak": 0.1856,
+  "seconds": 0.394
+ },
+ "shutter_big": {
+  "args": [],
+  "design": "complete/shutter",
+  "onset": 0.0327,
+  "peak": 0.0474,
+  "seconds": 0.592
+ },
+ "sizzle": {
+  "args": [],
+  "design": "water/sizzle",
+  "onset": 0.0269,
+  "peak": 0.3262,
+  "seconds": 1.184
+ },
+ "skid": {
+  "args": [],
+  "design": "tyres/screech",
+  "onset": 0.035,
+  "peak": 0.3909,
+  "seconds": 2.075
+ },
+ "slam": {
+  "args": [],
+  "design": "slam/title",
+  "onset": 0.1553,
+  "peak": 0.199,
+  "seconds": 0.506
+ },
+ "slap": {
+  "args": [],
+  "design": "slapstick/crack",
+  "onset": 0.0031,
+  "peak": 0.0101,
+  "seconds": 0.488
+ },
+ "snowa": {
+  "args": [
+   "--seed",
+   "1"
+  ],
+  "design": "step/snow",
+  "onset": 0.0057,
+  "peak": 0.0125,
+  "seconds": 0.368
+ },
+ "snowb": {
+  "args": [
+   "--seed",
+   "2"
+  ],
+  "design": "step/snow",
+  "onset": 0.0041,
+  "peak": 0.0174,
+  "seconds": 0.337
+ },
+ "space": {
+  "args": [],
+  "design": "space_hum/ship",
+  "onset": 0.0033,
+  "peak": 3.9734,
+  "seconds": 6.0
+ },
+ "sparkle": {
+  "args": [],
+  "design": "sparkle/burst",
+  "onset": 0.001,
+  "peak": 0.0517,
+  "seconds": 0.647
+ },
+ "spin": {
+  "args": [],
+  "design": "whoosh/spin",
+  "onset": 0.5183,
+  "peak": 0.7765,
+  "seconds": 2.558
+ },
+ "splash": {
+  "args": [],
+  "design": "splash/big",
+  "onset": 0.0,
+  "peak": 0.0091,
+  "seconds": 1.343
+ },
+ "splash_small": {
+  "args": [],
+  "design": "splash/small",
+  "onset": 0.0,
+  "peak": 0.0333,
+  "seconds": 0.637
+ },
+ "squeak": {
+  "args": [],
+  "design": "toy/squeak",
+  "onset": 0.0186,
+  "peak": 0.0877,
+  "seconds": 0.534
+ },
+ "stamp": {
+  "args": [],
+  "design": "stamp/press",
+  "onset": 0.0,
+  "peak": 0.0056,
+  "seconds": 0.354
+ },
+ "steam": {
+  "args": [],
+  "design": "swell/air",
+  "onset": 0.1708,
+  "peak": 1.5681,
+  "seconds": 5.059
+ },
+ "stepa": {
+  "args": [
+   "--seed",
+   "1"
+  ],
+  "design": "step/concrete",
+  "onset": 0.0126,
+  "peak": 0.0733,
+  "seconds": 0.335
+ },
+ "stepb": {
+  "args": [
+   "--seed",
+   "2"
+  ],
+  "design": "step/concrete",
+  "onset": 0.1306,
+  "peak": 0.5956,
+  "seconds": 0.862
+ },
+ "sting_reveal": {
+  "args": [],
+  "design": "sting/reveal",
+  "onset": 0.488,
+  "peak": 0.6447,
+  "seconds": 0.812
+ },
+ "sting_soft": {
+  "args": [],
+  "design": "sting/soft",
+  "onset": 0.0046,
+  "peak": 0.056,
+  "seconds": 2.091
+ },
+ "stop_tape": {
+  "args": [],
+  "design": "stop/tape",
+  "onset": 0.0101,
+  "peak": 0.0735,
+  "seconds": 1.34
+ },
+ "sub": {
+  "args": [],
+  "design": "cut_hit/punch",
+  "onset": 0.0027,
+  "peak": 0.0566,
+  "seconds": 0.282
+ },
+ "swipe": {
+  "args": [],
+  "design": "swipe/hand",
+  "onset": 0.0217,
+  "peak": 0.0409,
+  "seconds": 0.478
+ },
+ "swish": {
+  "args": [],
+  "design": "swish/fast",
+  "onset": 0.2609,
+  "peak": 0.3605,
+  "seconds": 0.895
+ },
+ "switch": {
+  "args": [],
+  "design": "switch/power_strip",
+  "onset": 0.0214,
+  "peak": 0.0281,
+  "seconds": 0.374
+ },
+ "thud": {
+  "args": [],
+  "design": "hurt/thud",
+  "onset": 0.0,
+  "peak": 0.0172,
+  "seconds": 0.408
+ },
+ "tick": {
+  "args": [],
+  "design": "tick/wood",
+  "onset": 0.0,
+  "peak": 0.0042,
+  "seconds": 0.145
+ },
+ "tom_hi": {
+  "args": [],
+  "design": "tom/high",
+  "onset": 0.008,
+  "peak": 0.0166,
+  "seconds": 1.595
+ },
+ "tom_mid": {
+  "args": [],
+  "design": "tom/mid",
+  "onset": 0.0,
+  "peak": 0.0141,
+  "seconds": 1.684
+ },
+ "train": {
+  "args": [],
+  "design": "train/pass",
+  "onset": 1.2019,
+  "peak": 2.0094,
+  "seconds": 4.979
+ },
+ "triad": {
+  "args": [],
+  "design": "success/triad",
+  "onset": 0.0194,
+  "peak": 0.2499,
+  "seconds": 1.626
+ },
+ "twinkle": {
+  "args": [],
+  "design": "like/twinkle",
+  "onset": 0.0155,
+  "peak": 0.107,
+  "seconds": 1.631
+ },
+ "waves": {
+  "args": [],
+  "design": "waves/rocks",
+  "onset": 0.5199,
+  "peak": 0.9312,
+  "seconds": 6.0
+ },
+ "whistle": {
+  "args": [],
+  "design": "whistle/referee",
+  "onset": 0.0478,
+  "peak": 0.2022,
+  "seconds": 0.517
+ },
+ "whoosh": {
+  "args": [],
+  "design": "swoosh/in",
+  "onset": 0.1469,
+  "peak": 0.8542,
+  "seconds": 1.067
+ },
+ "whoosh_big": {
+  "args": [],
+  "design": "pro_whoosh_big/windy",
+  "onset": 0.2091,
+  "peak": 0.3723,
+  "seconds": 0.751
+ },
+ "whoosh_fast": {
+  "args": [],
+  "design": "whoosh_fast/whistle",
+  "onset": 0.1364,
+  "peak": 0.1853,
+  "seconds": 0.927
+ },
+ "whoosh_heavy": {
+  "args": [],
+  "design": "whoosh/heavy",
+  "onset": 0.3516,
+  "peak": 0.4486,
+  "seconds": 0.827
+ },
+ "whoosh_out": {
+  "args": [],
+  "design": "swoosh/out",
+  "onset": 0.0034,
+  "peak": 0.0198,
+  "seconds": 0.969
+ },
+ "wind": {
+  "args": [],
+  "design": "wind/mountain",
+  "onset": 8.1398,
+  "peak": 8.4748,
+  "seconds": 6.0
+ },
+ "wind_soft": {
+  "args": [],
+  "design": "wind/open",
+  "onset": 0.5884,
+  "peak": 4.457,
+  "seconds": 6.0
+ },
+ "wings": {
+  "args": [],
+  "design": "wings/flap",
+  "onset": 0.0242,
+  "peak": 0.5325,
+  "seconds": 1.972
+ },
+ "zap": {
+  "args": [],
+  "design": "zap/laser",
+  "onset": 0.0,
+  "peak": 0.0071,
+  "seconds": 0.479
+ }
+}

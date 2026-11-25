@@ -21,7 +21,7 @@ Run `npm run build` from the repository root. The deployable output is in `dist/
 | `js/jokes.js` | Roast of the day: the 100 roasts and how the day's one is picked |
 | `js/store.js` | Browser client for the hosted Worker API |
 | `js/app.js` | The screens: sign-in, pick your own password, Home, Feed, Board, Me, Account, the log sheet, inside-joke pop-ups, the stamp, toasts and dialogs |
-| `js/celebrate.js` | Full-screen celebration videos and confetti |
+| `js/celebrate.js` | Full-screen celebration videos (with the speaker button) and confetti |
 | `server/` | Worker routes for accounts, activity, the feed, and private media |
 | `drizzle/` | D1 schema migrations |
 | `js/art.js` | Built-in icons and paths to the art files |
@@ -114,9 +114,11 @@ Rules the app enforces when you log:
 
 Everything else has one. A logged activity picks at random from the clips assigned to its category and never repeats the last one. An entry with `users: ['amaan']` only plays for those usernames, though everyone sees it in the gallery.
 
+**Sound.** Every celebration and inside-joke video has a soundtrack: sound effects made with [Earshot](https://github.com/Leonxlnx/earshot), timed to each clip's hits, footsteps and comic words, plus real recordings from [Openverse](https://openverse.org) (crowds, laughter and a few animals). Phones only allow a video's sound right after a tap. So a clip starts with sound when the phone allows it, and otherwise plays muted with a **Tap for sound** button. The speaker button in the top corner turns sound on or off, and each phone remembers the choice. How the soundtracks are made is in [animations/README.md](animations/README.md#sound).
+
 To add another:
 
-1. Put `gym-11.mp4` (720×1566, H.264, muted) and a `gym-11.webp` poster (360×782) in `assets/celebrations/`. Videos are drawn to the iPhone 18 Pro's shape so they fill the screen; on wider screens the app shows the whole frame.
+1. Put `gym-11.mp4` (720×1566, H.264, with its soundtrack) and a `gym-11.webp` poster (360×782) in `assets/celebrations/`. Videos are drawn to the iPhone 18 Pro's shape so they fill the screen; on wider screens the app shows the whole frame. `animations/scripts/build_app_assets.sh` renders both and mixes the sound in from `animations/sound/cues.py`.
 2. Add `{ id: 'gym-11', name: 'Your Name' }` to the `gym` list in `CELEBRATIONS` in `js/config.js`.
 
 3. Publish the matching Site source and upload the new files to the private media bucket using `scripts/upload-media.mjs`. Set `MEDIA_UPLOAD_SECRET` in the shell that runs the uploader and as a Sites runtime secret. For example:
@@ -124,5 +126,7 @@ To add another:
    ```sh
    node scripts/upload-media.mjs https://winter-arc.osimmann.chatgpt.site celebrations/gym-11.mp4 celebrations/gym-11.webp
    ```
+
+   With no file names it uploads every clip in `assets/celebrations/` and `assets/intro/`. Do that after remixing the sound, because that changes every video.
 
 For a new inside joke, register the clip in `INSIDE_JOKES`, implement the trigger in `Logic.jokes`, and add the server event validation and a D1 migration when the event type is new. Keep the GitHub and Sites source histories in sync. A GitHub push alone does not publish the Site or upload clips to R2.

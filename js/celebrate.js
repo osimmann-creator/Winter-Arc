@@ -7,6 +7,16 @@ const Celebrate = (() => {
   const last = {}, prepared = {}, blobs = {}, pending = {};
   const reduced = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const wait = ms => new Promise(r => setTimeout(r, ms));
+
+  /* Sound: on unless the person turned it off with the speaker button (remembered on this device).
+     Phones only allow a video's sound right after a tap, so when sound is blocked the video plays
+     muted and the speaker button says "Tap for sound". */
+  const SOUND_KEY = 'wa.sound';
+  const soundOn = () => { try { return localStorage.getItem(SOUND_KEY) !== 'off'; } catch (e) { return true; } };
+  const setSound = on => { try { localStorage.setItem(SOUND_KEY, on ? 'on' : 'off'); } catch (e) { /* private mode */ } };
+  const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.6v12.8l-4.8-3.9H4z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>';
+  const ICON_ON = SPEAKER + '<path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const ICON_OFF = SPEAKER + '<path d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   const selectionKey = (cat, user) => `${cat}:${String(user || '').toLowerCase()}`;
 
   /** Download a celebration in the background so it starts instantly (and
@@ -48,7 +58,7 @@ const Celebrate = (() => {
     return id;
   }
 
-  /** Play one celebration video full screen. Tap anywhere to skip. */
+  /** Play one celebration video full screen. Tap anywhere to skip; the speaker button turns sound on or off. */
   async function play(id) {
     if (!id || reduced()) return;
     busy = true;
@@ -56,12 +66,27 @@ const Celebrate = (() => {
     const src = blobs[id] || Art.video(id);
     return new Promise(resolve => {
       const el = document.getElementById('celebrate');
-      el.innerHTML = `<video playsinline muted autoplay preload="auto" disablepictureinpicture poster="${Art.poster(id)}" src="${src}"></video>
+      el.innerHTML = `<video playsinline muted preload="auto" disablepictureinpicture poster="${Art.poster(id)}" src="${src}"></video>
+        <button class="snd" type="button"></button>
         <button class="skip" type="button">Tap to skip</button>`;
       el.hidden = false;
       requestAnimationFrame(() => el.classList.add('show'));
-      const v = el.querySelector('video'), btn = el.querySelector('.skip');
+      const v = el.querySelector('video'), btn = el.querySelector('.skip'), snd = el.querySelector('.snd');
       let done = false, safety = setTimeout(() => finish(), 9000);
+      const paint = () => {
+        snd.innerHTML = (v.muted ? ICON_OFF : ICON_ON) + (snd.classList.contains('hint') ? '<span>Tap for sound</span>' : '');
+        snd.setAttribute('aria-label', v.muted ? 'Turn sound on' : 'Turn sound off');
+        snd.classList.toggle('off', v.muted);
+      };
+      const tapToPlay = () => { el.classList.add('tap'); btn.textContent = 'Tap to play'; };
+      snd.onclick = e => {
+        e.stopPropagation();
+        v.muted = !v.muted;
+        setSound(!v.muted);
+        snd.classList.remove('hint');
+        paint();
+        if (el.classList.contains('tap')) el.onclick();
+      };
       const finish = () => {
         if (done) return;
         done = true;
@@ -72,17 +97,32 @@ const Celebrate = (() => {
       v.addEventListener('ended', finish);
       v.addEventListener('error', finish);
       el.onclick = () => {
-        // Autoplay was blocked (e.g. iPhone Low Power Mode): the first tap plays.
+        // Autoplay was blocked (e.g. iPhone Low Power Mode): the first tap plays, with sound if it's on.
         if (el.classList.contains('tap')) {
           el.classList.remove('tap'); btn.textContent = 'Tap to skip';
           clearTimeout(safety); safety = setTimeout(finish, 9000);
+          v.muted = !soundOn(); snd.classList.remove('hint'); paint();
           const q = v.play(); if (q && q.catch) q.catch(finish);
           return;
         }
         finish();
       };
+      // Try with sound first. If the phone won't allow it without a tap, play muted and offer the button.
+      const want = soundOn();
+      v.muted = !want;
+      paint();
       const p = v.play();
-      if (p && p.catch) p.catch(() => { el.classList.add('tap'); btn.textContent = 'Tap to play'; });
+      if (p && p.catch) {
+        p.catch(() => {
+          if (done) return;
+          if (!want) { tapToPlay(); return; }
+          v.muted = true;
+          snd.classList.add('hint');
+          paint();
+          const q = v.play();
+          if (q && q.catch) q.catch(() => { if (!done) tapToPlay(); });
+        });
+      }
     });
   }
 

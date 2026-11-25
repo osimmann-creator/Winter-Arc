@@ -5,3 +5,4 @@ animations/out/
 .env
 
 dist/
+__pycache__/

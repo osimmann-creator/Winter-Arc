@@ -90,6 +90,7 @@ for row in $MAP; do
   $R render "$comp" "out/videos/$id.mp4" --codec=h264 "${master[@]}" --browser-executable="$CHROME" --log=error $CONC
   ffmpeg -y -loglevel error -i "out/videos/$id.mp4" -vf "$downscale" -c:v libx264 "${mobile[@]}" \
     -pix_fmt yuv420p -movflags +faststart -an "$APP/celebrations/$id.mp4"
+  python3 scripts/sound.py mix "$id"   # soundtrack from sound/cues.py (Earshot + Openverse)
   ffmpeg -y -loglevel error -ss "$poster" -i "out/videos/$id.mp4" -frames:v 1 -vf scale=360:782 -c:v libwebp -quality "$poster_quality" "$APP/celebrations/$id.webp"
   if [ "$photo" = "1" ]; then
     # square "proof photo" for the sample feed (the 1080x1920 design frame starts 214px down)
@@ -101,6 +102,7 @@ done
 if [ -z "$ONLY" ] || want Intro; then
   $R render Intro out/videos/intro.mp4 --codec=h264 --crf=20 --x264-preset=veryfast --browser-executable="$CHROME" --log=error $CONC
   ffmpeg -y -loglevel error -i out/videos/intro.mp4 -vf scale=720:1566 -c:v libx264 -crf 27 -preset veryfast -pix_fmt yuv420p -movflags +faststart -an "$APP/intro/intro.mp4"
+  python3 scripts/sound.py mix intro
   ffmpeg -y -loglevel error -i out/videos/intro.mp4 -frames:v 1 -vf scale=720:1566 -c:v libwebp -quality 80 "$APP/intro/intro-first.webp"
   ffmpeg -y -loglevel error -sseof -0.05 -i out/videos/intro.mp4 -frames:v 1 -vf scale=720:1566 -c:v libwebp -quality 82 "$APP/intro/intro-last.webp"
   echo "done intro"

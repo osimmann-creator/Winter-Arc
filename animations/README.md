@@ -4,12 +4,13 @@ This is the source for the Winter Arc mascot, the 37 celebration videos, the 16 
 
 ## Setup
 
-Needs Node 20+ and ffmpeg.
+Needs Node 20+ and ffmpeg. The sound step also needs Python 3 with numpy, scipy and pyloudnorm.
 
 ```
 npm i
 npm run dev                      # Remotion Studio: preview every composition
 ./scripts/build_app_assets.sh    # renders every video + still the app uses into ../app/assets
+python3 scripts/sound.py mix     # (re)mixes every video's soundtrack (see Sound below)
 ONLY="GunShow TheCoin" ./scripts/build_app_assets.sh   # just those compositions
 CONCURRENCY=2 ./scripts/build_app_assets.sh            # render more frames in parallel
 ./scripts/export-parts.sh && python3 scripts/build_parts_kit.py   # body-part sheets for refining
@@ -56,9 +57,27 @@ npx remotion render Gym out/gym.mp4 --codec=h264 --crf=20
 ## Adding a new celebration
 
 1. Copy a scene in `src/scenes/`, for example `GunShow.tsx`. Change the poses and timing, then register it in `src/Root.tsx`.
-2. Add a row to `MAP` in `scripts/build_app_assets.sh` (composition : app id : poster second : 0), then run `ONLY="YourScene" ./scripts/build_app_assets.sh`. It writes `<id>.mp4` and `<id>.webp` into the app's `assets/celebrations/`.
-3. Add `{ id: 'gym-11', name: '…' }` to `CELEBRATIONS.gym` in the app's `js/config.js`.
+2. Give it sound: add an entry for its app id to `sound/cues.py`. Copy a similar video's entry and move the frames to your scene's beats; end with `*card(CARD)` (or `*joke_card(CARD)` for an inside joke) so it gets the crowd or the laugh.
+3. Add a row to `MAP` in `scripts/build_app_assets.sh` (composition : app id : poster second : 0), then run `ONLY="YourScene" ./scripts/build_app_assets.sh`. It writes `<id>.mp4` (with its soundtrack) and `<id>.webp` into the app's `assets/celebrations/`.
+4. Add `{ id: 'gym-11', name: '…' }` to `CELEBRATIONS.gym` in the app's `js/config.js`.
 
 The mascot's hair can turn blue: set `hairBlue` (0 to 1) in a pose.
+
+## Sound
+
+Each video's soundtrack is built from short sound effects placed on frames, then muxed into the finished mp4. The picture is copied, not re-encoded.
+
+| Path | What it is |
+|---|---|
+| `sound/cues.py` | What each video plays and when, in frames (30 fps). Helpers cover the shared parts: `card()` (ribbon, points coin, crowd cheer), `gym_card()` (the gym theatre banner), `joke_card()` (slam, ba-dum-tss, laughter), `impact()`, `steps()` and `word()` (a comic word popping in). |
+| `sound/bank/` | About 150 sound effects rendered with [Earshot](https://github.com/Leonxlnx/earshot), stored as Opus. `BANK` in `scripts/sound.py` lists the Earshot design behind each one. |
+| `sound/openverse/` | Real recordings from [Openverse](https://openverse.org), one per slot (`cheer`, `laugh`, `applause`, `goose`, `pigeon`, `bell`, `ooh`), with their credits. [Its README](sound/openverse/README.md) says how to add one. A slot with no file uses its Earshot stand-in. |
+| `scripts/sound.py` | `mix` (every video, or the ids you name), `check` (loudness and peaks), `openverse` (which slots are filled), `render-bank` (re-render the bank; needs Earshot). |
+
+- **Levels.** Mixing sets each video to −16 LUFS with peaks under −2 dBFS, so every clip plays at the same volume.
+- **Timing.** A hit lands on its attack, a whoosh on its loudest point, and a crowd or ambience starts on its frame.
+- **Footsteps.** These follow the run cycle: in `RunKit.makeRun` a foot touches down at every half stride, so the footstep frames in `cues.py` come from each scene's stride table. Recompute them if you change a run's speed or stride.
+- **Installing Earshot.** Install it from GitHub (`pip install "earshot @ git+https://github.com/Leonxlnx/earshot"`, Python 3.10+). The PyPI name `earshot` belongs to a different project. `earshot sounds` lists its catalogue.
+- **Licences.** Sounds Earshot makes are free for any use with no credit needed. Openverse recordings keep their own licences: use CC0, CC BY or CC BY-SA, never ND. Their credits are in `sound/openverse/credits.json`.
 
 Remotion is free for individuals and small teams. See its license for company use.
