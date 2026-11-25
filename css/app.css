@@ -874,7 +874,7 @@ body:has(.avatar-crop[open]) { overflow: hidden; }
 .xr-stage { position: fixed; inset: 0; z-index: 2; display: grid; place-items: center; pointer-events: none; }
 .xr-stage::before { content: ''; position: absolute; inset: 0; background: rgba(8, 28, 18, .6); opacity: 0; transition: opacity .25s ease; }
 .xr-stage.on::before { opacity: 1; }
-.xr-face { position: relative; display: grid; justify-items: center; gap: 4px; min-width: 250px; padding: 22px 28px 16px; background: #FFFDF5; border: 3px solid var(--ink); border-radius: 26px; box-shadow: 0 6px 0 var(--ink); }
+.xr-face { position: relative; display: grid; justify-items: center; gap: 4px; min-width: 250px; max-width: calc(100vw - 32px); padding: 22px 28px 16px; text-align: center; background: #FFFDF5; border: 3px solid var(--ink); border-radius: 26px; box-shadow: 0 6px 0 var(--ink); }
 .xr-kicker { margin: 0 0 6px; font-family: var(--font-d); font-size: 18px; line-height: 1.1; color: #C21F35; }
 .xr-av { position: relative; display: block; }
 .xr-stamp { position: absolute; left: 50%; top: 50%; width: 260px; opacity: 0; transform: translate(-50%, -50%) rotate(-8deg); filter: drop-shadow(0 4px 0 rgba(90, 10, 20, .14)); }
