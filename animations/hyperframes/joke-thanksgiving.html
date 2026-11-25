@@ -1,0 +1,342 @@
+<!doctype html>
+<!--
+  Thanksgiving (joke-thanksgiving): the week's lowest scorer is at Thanksgiving dinner, going for a
+  max-effort lift... of a dinner fork. Attempt 3, 0.09 lb, NEW PR, three white lights.
+  Holiday clip: anyone, so no name tag. Beats (30 fps): board 2-12, strain 4-58 (NNNGH 12, HNNNG 36,
+  sweat 14/26/38/50), halfway 58, PRESS 82, NEW PR + lights 86-94, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #tg-cam { position: absolute; inset: 0; transform-origin: 540px 1420px; }
+  #tg-shake { position: absolute; inset: 0; }
+  .tg-item { position: absolute; }
+  .tg-item svg { position: absolute; left: 0; top: 0; overflow: visible; }
+  #tg-flex { left: -164px; top: 660px; width: 1408px; height: 1584px; }
+  #tg-flex .squash { transform-origin: 704px 1474px; }
+  #tg-board { position: absolute; left: 110px; top: 262px; width: 860px; height: 300px; }
+  .tg-led { font-family: 'Luckiest Guy'; }
+  #tg-pr { position: absolute; left: 540px; top: 820px; width: 0; height: 0; opacity: 0; }
+  #tg-pr svg { position: absolute; left: -300px; top: -230px; overflow: visible; }
+  .tg-puff { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: #fff;
+    border: 6px solid #341720; opacity: 0; }
+  #tg-conf { position: absolute; inset: 0; }
+  .tg-drop { position: absolute; left: 0; top: 0; width: 40px; height: 58px; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-thanksgiving" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="tg-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#FBEBD0">
+  <div id="tg-cam"><div id="tg-shake">
+
+  <!-- ===== the dining room ===== -->
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs>
+      <pattern id="tg-stripes" width="96" height="40" patternUnits="userSpaceOnUse">
+        <rect width="96" height="40" fill="#FBEBD0"/><rect x="0" width="44" height="40" fill="#F5DDB6"/>
+        <circle cx="70" cy="20" r="4" fill="#EFCF9E"/>
+      </pattern>
+      <linearGradient id="tg-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFE3F5"/><stop offset="1" stop-color="#FFE0B0"/></linearGradient>
+      <radialGradient id="tg-glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFF4C2" stop-opacity=".75"/><stop offset="1" stop-color="#FFF4C2" stop-opacity="0"/></radialGradient>
+      <clipPath id="tg-glass"><rect x="86" y="626" width="278" height="428"/></clipPath>
+    </defs>
+    <rect width="1080" height="1740" fill="url(#tg-stripes)"/>
+    <!-- ceiling and crown -->
+    <rect width="1080" height="150" fill="#F1D6A8"/>
+    <rect x="-10" y="148" width="1100" height="34" fill="#E2B97F" class="ink" stroke-width="7"/>
+    <rect x="-10" y="182" width="1100" height="12" fill="#C99A5E" class="ink" stroke-width="5"/>
+    <!-- bunting of autumn leaves -->
+    <path d="M-10 214 Q270 300 540 230 Q810 300 1090 214" fill="none" class="ink" stroke-width="6"/>
+    <g class="ink" stroke-width="6">
+      <path d="M40 228 L96 236 L64 300 Z" fill="#E07B39"/><path d="M130 246 L186 254 L152 318 Z" fill="#C9442E"/>
+      <path d="M222 258 L278 262 L246 326 Z" fill="#F2B33D"/><path d="M314 260 L370 258 L340 324 Z" fill="#8FA84A"/>
+      <path d="M404 250 L460 244 L436 310 Z" fill="#E07B39"/><path d="M620 246 L676 252 L644 314 Z" fill="#C9442E"/>
+      <path d="M710 256 L766 260 L736 324 Z" fill="#F2B33D"/><path d="M802 260 L858 256 L828 322 Z" fill="#8FA84A"/>
+      <path d="M894 248 L950 240 L926 306 Z" fill="#E07B39"/><path d="M984 232 L1040 222 L1018 290 Z" fill="#C9442E"/>
+    </g>
+    <!-- pendant lamp -->
+    <ellipse cx="540" cy="190" rx="230" ry="120" fill="url(#tg-glow)"/>
+    <path d="M540 0 L540 74" class="ink" stroke-width="7"/>
+    <path d="M500 74 L580 74 L626 150 L454 150 Z" fill="#E07B39" class="ink" stroke-width="8"/>
+    <path d="M506 88 L574 88" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".45"/>
+    <circle cx="540" cy="160" r="17" fill="#FFF4C2" class="ink" stroke-width="6"/>
+    <!-- wainscoting -->
+    <rect x="-10" y="1392" width="1100" height="360" fill="#B97541" class="ink" stroke-width="7"/>
+    <g fill="#AA6634" stroke="#8C5226" stroke-width="6">
+      <rect x="24" y="1440" width="200" height="240" rx="14"/><rect x="284" y="1440" width="200" height="240" rx="14"/>
+      <rect x="596" y="1440" width="200" height="240" rx="14"/><rect x="856" y="1440" width="200" height="240" rx="14"/>
+    </g>
+    <rect x="-10" y="1370" width="1100" height="30" fill="#D9A066" class="ink" stroke-width="7"/>
+    <!-- window -->
+    <rect x="40" y="566" width="370" height="20" rx="10" fill="#7A4524" class="ink" stroke-width="6"/>
+    <rect x="62" y="602" width="326" height="476" rx="10" fill="#FFFDF7" class="ink" stroke-width="8"/>
+    <g clip-path="url(#tg-glass)">
+      <rect x="86" y="626" width="278" height="428" fill="url(#tg-sky)"/>
+      <path d="M60 1000 Q200 930 380 990 L380 1070 L60 1070 Z" fill="#B8A55A"/>
+      <rect x="226" y="860" width="30" height="170" fill="#7A4524"/>
+      <circle cx="240" cy="820" r="92" fill="#E07B39" class="ink" stroke-width="6"/>
+      <circle cx="176" cy="860" r="60" fill="#C9442E" class="ink" stroke-width="6"/>
+      <circle cx="306" cy="862" r="62" fill="#F2B33D" class="ink" stroke-width="6"/>
+      <g id="tg-leaves">
+        <path id="tg-lf0" d="M0 -14 Q14 0 0 14 Q-14 0 0 -14 Z" fill="#E07B39" class="ink" stroke-width="4"/>
+        <path id="tg-lf1" d="M0 -14 Q14 0 0 14 Q-14 0 0 -14 Z" fill="#C9442E" class="ink" stroke-width="4"/>
+        <path id="tg-lf2" d="M0 -14 Q14 0 0 14 Q-14 0 0 -14 Z" fill="#F2B33D" class="ink" stroke-width="4"/>
+        <path id="tg-lf3" d="M0 -14 Q14 0 0 14 Q-14 0 0 -14 Z" fill="#E07B39" class="ink" stroke-width="4"/>
+      </g>
+    </g>
+    <path d="M225 626 L225 1054 M86 840 L364 840" stroke="#FFFDF7" stroke-width="18"/>
+    <path d="M225 626 L225 1054 M86 840 L364 840" class="ink" stroke-width="5" opacity=".0"/>
+    <rect x="86" y="626" width="278" height="428" fill="none" class="ink" stroke-width="6"/>
+    <rect x="44" y="1074" width="362" height="30" rx="8" fill="#FFFDF7" class="ink" stroke-width="7"/>
+    <!-- curtains -->
+    <path d="M18 584 L118 584 Q96 760 128 880 Q100 1000 126 1130 L18 1130 Z" fill="#A63D40" class="ink" stroke-width="7"/>
+    <path d="M332 584 L432 584 L432 1130 L324 1130 Q350 1000 322 880 Q354 760 332 584 Z" fill="#A63D40" class="ink" stroke-width="7"/>
+    <path d="M48 610 Q40 860 58 1110 M396 610 Q404 860 390 1110" stroke="#C25A5C" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <rect x="98" y="864" width="40" height="26" rx="8" fill="#F2B33D" class="ink" stroke-width="5"/>
+    <rect x="312" y="864" width="40" height="26" rx="8" fill="#F2B33D" class="ink" stroke-width="5"/>
+    <!-- poster -->
+    <g transform="rotate(3 850 790)">
+      <path d="M850 600 L800 650 M850 600 L900 650" class="ink" stroke-width="5" fill="none"/>
+      <circle cx="850" cy="598" r="9" fill="#C99A5E" class="ink" stroke-width="4"/>
+      <rect x="702" y="646" width="296" height="330" rx="10" fill="#6B3A22" class="ink" stroke-width="8"/>
+      <rect x="726" y="670" width="248" height="282" rx="4" fill="#FFFDF5" class="ink" stroke-width="5"/>
+      <text x="850" y="742" text-anchor="middle" font-family="Luckiest Guy" font-size="64" fill="#E05A47" stroke="#341720" stroke-width="10" paint-order="stroke" stroke-linejoin="round">NO DAYS</text>
+      <text x="850" y="818" text-anchor="middle" font-family="Luckiest Guy" font-size="78" fill="#E05A47" stroke="#341720" stroke-width="10" paint-order="stroke" stroke-linejoin="round">OFF</text>
+      <g transform="translate(850 890)" class="ink" stroke-width="5">
+        <rect x="-60" y="-7" width="120" height="14" rx="5" fill="#9AA3B5"/>
+        <rect x="-82" y="-30" width="24" height="60" rx="6" fill="#341720"/><rect x="58" y="-30" width="24" height="60" rx="6" fill="#341720"/>
+      </g>
+    </g>
+    <!-- chair backs -->
+    <g class="ink" stroke-width="7" fill="#8E5229">
+      <path d="M-30 1500 Q60 1470 150 1500 L150 1560 Q60 1540 -30 1560 Z"/>
+      <rect x="20" y="1556" width="22" height="200"/><rect x="108" y="1556" width="22" height="200"/>
+      <path d="M930 1500 Q1020 1470 1110 1500 L1110 1560 Q1020 1540 930 1560 Z"/>
+      <rect x="950" y="1556" width="22" height="200"/><rect x="1038" y="1556" width="22" height="200"/>
+    </g>
+  </svg>
+
+  <!-- the scoreboard (powerlifting meet style) -->
+  <div id="tg-board">
+    <svg width="860" height="300" viewBox="0 0 860 300" style="position:absolute;left:0;top:0;overflow:visible">
+      <path d="M120 -300 L120 10 M740 -300 L740 10" class="ink" stroke-width="8"/>
+      <rect x="8" y="14" width="844" height="272" rx="26" fill="#341720"/>
+      <rect x="0" y="0" width="844" height="272" rx="26" fill="#2B2236" class="ink" stroke-width="9"/>
+      <rect x="22" y="20" width="800" height="62" rx="14" fill="#C9442E" class="ink" stroke-width="6"/>
+      <text x="422" y="64" text-anchor="middle" class="tg-led" font-size="44" fill="#fff" letter-spacing="4">ATTEMPT 3 OF 3</text>
+      <text x="44" y="168" class="tg-led" font-size="84" fill="#FFD064" letter-spacing="3">FORK</text>
+      <text x="800" y="168" text-anchor="end" class="tg-led" font-size="84" fill="#7CF2B0" letter-spacing="3">0.09 LB</text>
+      <path d="M44 190 L800 190" stroke="#4A3D5C" stroke-width="5" stroke-dasharray="4 14" stroke-linecap="round"/>
+      <g id="tg-lights">
+        <circle cx="230" cy="232" r="24" fill="#4A3D5C" class="ink" stroke-width="5"/>
+        <circle cx="306" cy="232" r="24" fill="#4A3D5C" class="ink" stroke-width="5"/>
+        <circle cx="382" cy="232" r="24" fill="#4A3D5C" class="ink" stroke-width="5"/>
+        <circle id="tg-l0" cx="230" cy="232" r="24" fill="#FFFFFF" class="ink" stroke-width="5" opacity="0"/>
+        <circle id="tg-l1" cx="306" cy="232" r="24" fill="#FFFFFF" class="ink" stroke-width="5" opacity="0"/>
+        <circle id="tg-l2" cx="382" cy="232" r="24" fill="#FFFFFF" class="ink" stroke-width="5" opacity="0"/>
+      </g>
+      <text x="44" y="246" class="tg-led" font-size="30" fill="#8C7FA3" letter-spacing="2">JUDGES</text>
+      <text x="800" y="246" text-anchor="end" class="tg-led" font-size="30" fill="#8C7FA3" letter-spacing="2">BODYWEIGHT: STUFFED</text>
+    </svg>
+  </div>
+
+  <!-- Flexander -->
+  <div id="tg-flex" class="actor"><div class="squash"><div class="jit" id="tg-fjit">
+    <img class="pose" data-pose="tg-strain" src="assets/cast/flex-tg-strain.svg" />
+    <img class="pose" data-pose="tg-mid" src="assets/cast/flex-tg-mid.svg" />
+    <img class="pose" data-pose="tg-press" src="assets/cast/flex-tg-press.svg" />
+  </div></div></div>
+
+  <!-- chalk puffs at the hands on the press -->
+  <div class="tg-puff" id="tg-p0" style="left:330px;top:1130px"></div><div class="tg-puff" id="tg-p1" style="left:290px;top:1180px"></div>
+  <div class="tg-puff" id="tg-p2" style="left:390px;top:1170px"></div><div class="tg-puff" id="tg-p3" style="left:770px;top:1112px"></div>
+  <div class="tg-puff" id="tg-p4" style="left:720px;top:1160px"></div><div class="tg-puff" id="tg-p5" style="left:826px;top:1160px"></div>
+
+  <!-- sweat -->
+  <svg class="tg-drop" id="tg-sw0" viewBox="-20 -30 40 58"><path d="M0 -26 Q18 2 14 12 Q10 24 0 24 Q-10 24 -14 12 Q-18 2 0 -26 Z" fill="#8FD3F5" class="ink" stroke-width="5"/><path d="M-6 6 Q-7 14 -2 17" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+  <svg class="tg-drop" id="tg-sw1" viewBox="-20 -30 40 58"><path d="M0 -26 Q18 2 14 12 Q10 24 0 24 Q-10 24 -14 12 Q-18 2 0 -26 Z" fill="#8FD3F5" class="ink" stroke-width="5"/><path d="M-6 6 Q-7 14 -2 17" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+  <svg class="tg-drop" id="tg-sw2" viewBox="-20 -30 40 58"><path d="M0 -26 Q18 2 14 12 Q10 24 0 24 Q-10 24 -14 12 Q-18 2 0 -26 Z" fill="#8FD3F5" class="ink" stroke-width="5"/><path d="M-6 6 Q-7 14 -2 17" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+  <svg class="tg-drop" id="tg-sw3" viewBox="-20 -30 40 58"><path d="M0 -26 Q18 2 14 12 Q10 24 0 24 Q-10 24 -14 12 Q-18 2 0 -26 Z" fill="#8FD3F5" class="ink" stroke-width="5"/><path d="M-6 6 Q-7 14 -2 17" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+
+  <!-- ===== the table ===== -->
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <rect x="0" y="2262" width="1080" height="90" fill="#9A5B34"/>
+    <path d="M0 2300 L1080 2300 M240 2262 L220 2348 M620 2262 L640 2348 M930 2300 L920 2348" stroke="#7A4524" stroke-width="6"/>
+    <path d="M-20 1852 L1100 1852 L1100 2250 Q1066 2290 1032 2250 Q998 2290 964 2250 Q930 2290 896 2250 Q862 2290 828 2250 Q794 2290 760 2250 Q726 2290 692 2250 Q658 2290 624 2250 Q590 2290 556 2250 Q522 2290 488 2250 Q454 2290 420 2250 Q386 2290 352 2250 Q318 2290 284 2250 Q250 2290 216 2250 Q182 2290 148 2250 Q114 2290 80 2250 Q46 2290 12 2250 L-20 2250 Z" fill="#FFF6E6" class="ink" stroke-width="8"/>
+    <g stroke="#EFDDBF" stroke-width="22" stroke-linecap="round"><path d="M110 1880 L110 2230 M300 1880 L300 2230 M490 1880 L490 2230 M680 1880 L680 2230 M870 1880 L870 2230 M1040 1880 L1040 2230"/></g>
+    <g><path transform="translate(60 1930) rotate(-10)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E9A06A" stroke="#E9A06A" stroke-width="3" opacity=".55"/><path transform="translate(240 1930) rotate(-2)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E7B45C" stroke="#E7B45C" stroke-width="3" opacity=".55"/><path transform="translate(420 1930) rotate(-27)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#D98068" stroke="#D98068" stroke-width="3" opacity=".55"/><path transform="translate(600 1930) rotate(10)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#B9C27A" stroke="#B9C27A" stroke-width="3" opacity=".55"/><path transform="translate(780 1930) rotate(21)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E9A06A" stroke="#E9A06A" stroke-width="3" opacity=".55"/><path transform="translate(960 1930) rotate(-21)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E7B45C" stroke="#E7B45C" stroke-width="3" opacity=".55"/><path transform="translate(150 2006) rotate(-29)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E7B45C" stroke="#E7B45C" stroke-width="3" opacity=".55"/><path transform="translate(330 2006) rotate(-32)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#D98068" stroke="#D98068" stroke-width="3" opacity=".55"/><path transform="translate(510 2006) rotate(-38)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#B9C27A" stroke="#B9C27A" stroke-width="3" opacity=".55"/><path transform="translate(690 2006) rotate(11)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E9A06A" stroke="#E9A06A" stroke-width="3" opacity=".55"/><path transform="translate(870 2006) rotate(30)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E7B45C" stroke="#E7B45C" stroke-width="3" opacity=".55"/><path transform="translate(1050 2006) rotate(-3)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#D98068" stroke="#D98068" stroke-width="3" opacity=".55"/><path transform="translate(60 2082) rotate(-33)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#D98068" stroke="#D98068" stroke-width="3" opacity=".55"/><path transform="translate(240 2082) rotate(-12)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#B9C27A" stroke="#B9C27A" stroke-width="3" opacity=".55"/><path transform="translate(420 2082) rotate(26)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E9A06A" stroke="#E9A06A" stroke-width="3" opacity=".55"/><path transform="translate(600 2082) rotate(28)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E7B45C" stroke="#E7B45C" stroke-width="3" opacity=".55"/><path transform="translate(780 2082) rotate(6)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#D98068" stroke="#D98068" stroke-width="3" opacity=".55"/><path transform="translate(960 2082) rotate(-5)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#B9C27A" stroke="#B9C27A" stroke-width="3" opacity=".55"/><path transform="translate(150 2158) rotate(-18)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#B9C27A" stroke="#B9C27A" stroke-width="3" opacity=".55"/><path transform="translate(330 2158) rotate(-27)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E9A06A" stroke="#E9A06A" stroke-width="3" opacity=".55"/><path transform="translate(510 2158) rotate(-7)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E7B45C" stroke="#E7B45C" stroke-width="3" opacity=".55"/><path transform="translate(690 2158) rotate(-13)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#D98068" stroke="#D98068" stroke-width="3" opacity=".55"/><path transform="translate(870 2158) rotate(-37)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#B9C27A" stroke="#B9C27A" stroke-width="3" opacity=".55"/><path transform="translate(1050 2158) rotate(-7)" d="M0 -18 Q16 -4 0 18 Q-16 -4 0 -18 Z M0 -14 L0 22" fill="#E9A06A" stroke="#E9A06A" stroke-width="3" opacity=".55"/></g>
+    <path d="M-20 2180 L1100 2180" stroke="#E07B39" stroke-width="18"/><path d="M-20 2206 L1100 2206" stroke="#C9442E" stroke-width="8"/>
+    <path d="M-20 1722 L1100 1722 L1100 1856 L-20 1856 Z" fill="#FFF6E6" class="ink" stroke-width="8"/>
+    <rect x="-20" y="1752" width="1120" height="70" fill="#E58B3A"/>
+    <path d="M-20 1762 L1100 1762 M-20 1812 L1100 1812" stroke="#C9662B" stroke-width="6"/>
+    <path d="M-20 1752 L1100 1752 M-20 1822 L1100 1822" stroke="#341720" stroke-width="5"/>
+  </svg>
+
+  <!-- candles -->
+  <div class="tg-item" id="tg-c0" style="left:70px;top:1560px"><svg width="10" height="10">
+    <path d="M-34 220 L34 220 L22 196 L-22 196 Z" fill="#E2B97F" class="ink" stroke-width="6"/>
+    <rect x="-16" y="60" width="32" height="140" rx="6" fill="#FFF3D6" class="ink" stroke-width="6"/>
+    <path d="M0 60 L0 44" class="ink" stroke-width="5"/>
+    <g class="tg-flame" style="transform-origin:0px 46px"><path d="M0 0 Q18 24 12 36 Q8 48 0 48 Q-8 48 -12 36 Q-18 24 0 0 Z" fill="#FFB43C" class="ink" stroke-width="5"/><path d="M0 22 Q7 32 4 40 Q0 44 -4 40 Q-7 32 0 22 Z" fill="#FFF1A8"/></g>
+  </svg></div>
+  <div class="tg-item" id="tg-c1" style="left:1010px;top:1560px"><svg width="10" height="10">
+    <path d="M-34 220 L34 220 L22 196 L-22 196 Z" fill="#E2B97F" class="ink" stroke-width="6"/>
+    <rect x="-16" y="60" width="32" height="140" rx="6" fill="#FFF3D6" class="ink" stroke-width="6"/>
+    <path d="M0 60 L0 44" class="ink" stroke-width="5"/>
+    <g class="tg-flame" style="transform-origin:0px 46px"><path d="M0 0 Q18 24 12 36 Q8 48 0 48 Q-8 48 -12 36 Q-18 24 0 0 Z" fill="#FFB43C" class="ink" stroke-width="5"/><path d="M0 22 Q7 32 4 40 Q0 44 -4 40 Q-7 32 0 22 Z" fill="#FFF1A8"/></g>
+  </svg></div>
+
+  <!-- turkey -->
+  <div class="tg-item" id="tg-turkey" style="left:220px;top:1806px"><svg width="10" height="10">
+    <ellipse cx="0" cy="8" rx="196" ry="44" fill="#341720"/>
+    <ellipse cx="0" cy="0" rx="196" ry="44" fill="#E9EEF5" class="ink" stroke-width="7"/>
+    <ellipse cx="0" cy="-4" rx="150" ry="26" fill="#D3DBE6"/>
+    <path d="M-120 -40 Q-150 -150 -40 -205 Q60 -240 132 -170 Q178 -120 140 -40 Q0 -8 -120 -40 Z" fill="#C46A2E" class="ink" stroke-width="8"/>
+    <path d="M-70 -160 Q0 -205 80 -170" stroke="#E89A55" stroke-width="18" fill="none" stroke-linecap="round"/>
+    <path d="M-90 -90 Q-60 -70 -30 -86 M20 -120 Q50 -100 80 -114" stroke="#9C4A1C" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <!-- drumsticks -->
+    <path d="M-150 -70 Q-205 -86 -214 -128 Q-210 -160 -176 -150 Q-140 -128 -118 -96 Z" fill="#B85E26" class="ink" stroke-width="7"/>
+    <path d="M150 -70 Q205 -86 214 -128 Q210 -160 176 -150 Q140 -128 118 -96 Z" fill="#B85E26" class="ink" stroke-width="7"/>
+    <g fill="#fff" class="ink" stroke-width="5">
+      <path d="M-216 -150 L-236 -176 L-222 -170 L-226 -190 L-210 -176 L-206 -196 L-196 -172 Z"/>
+      <path d="M216 -150 L236 -176 L222 -170 L226 -190 L210 -176 L206 -196 L196 -172 Z"/>
+    </g>
+    <circle cx="-40" cy="-28" r="12" fill="#8FA84A" class="ink" stroke-width="4"/><circle cx="40" cy="-26" r="12" fill="#8FA84A" class="ink" stroke-width="4"/>
+  </svg></div>
+
+  <!-- mashed potatoes -->
+  <div class="tg-item" id="tg-pot" style="left:440px;top:1820px"><svg width="10" height="10">
+    <path d="M-60 -76 Q-70 -120 -30 -126 Q-10 -150 20 -128 Q62 -126 58 -78 Z" fill="#FFF7E2" class="ink" stroke-width="6"/>
+    <rect x="-14" y="-140" width="30" height="20" rx="4" fill="#FFD064" class="ink" stroke-width="5" transform="rotate(-10 0 -130)"/>
+    <path d="M-84 -78 L84 -78 Q78 -10 0 -6 Q-78 -10 -84 -78 Z" fill="#7CA7D8" class="ink" stroke-width="7"/>
+    <path d="M-66 -56 Q0 -40 66 -56" stroke="#A9C8EC" stroke-width="8" fill="none" stroke-linecap="round"/>
+  </svg></div>
+
+  <!-- cranberry sauce (can-shaped, of course) -->
+  <div class="tg-item" id="tg-cran" style="left:664px;top:1826px"><svg width="10" height="10">
+    <ellipse cx="0" cy="-6" rx="86" ry="20" fill="#E9EEF5" class="ink" stroke-width="6"/>
+    <g id="tg-jelly" style="transform-origin:0px -14px">
+      <path d="M-46 -14 L-46 -116 Q0 -134 46 -116 L46 -14 Q0 -2 -46 -14 Z" fill="#B3243B" class="ink" stroke-width="7"/>
+      <path d="M-46 -46 Q0 -34 46 -46 M-46 -80 Q0 -68 46 -80" stroke="#7E1428" stroke-width="5" fill="none"/>
+      <ellipse cx="0" cy="-116" rx="46" ry="12" fill="#D23C55" class="ink" stroke-width="6"/>
+      <path d="M-30 -100 L-30 -30" stroke="#E46A80" stroke-width="8" stroke-linecap="round"/>
+    </g>
+  </svg></div>
+
+  <!-- pie -->
+  <div class="tg-item" id="tg-pie" style="left:870px;top:1818px"><svg width="10" height="10">
+    <path d="M-120 -40 L120 -40 L104 -2 L-104 -2 Z" fill="#E2B97F" class="ink" stroke-width="7"/>
+    <ellipse cx="0" cy="-42" rx="122" ry="30" fill="#D9792F" class="ink" stroke-width="7"/>
+    <path d="M-86 -50 L86 -36 M-90 -34 L80 -50 M-40 -66 L-30 -18 M30 -68 L40 -18" stroke="#F2B866" stroke-width="12" stroke-linecap="round"/>
+    <ellipse cx="0" cy="-42" rx="122" ry="30" fill="none" stroke="#F2B866" stroke-width="10"/>
+    <ellipse cx="0" cy="-42" rx="128" ry="34" fill="none" class="ink" stroke-width="6"/>
+  </svg></div>
+
+  <!-- plates at the front -->
+  <div class="tg-item" id="tg-pl0" style="left:250px;top:1846px"><svg width="10" height="10">
+    <ellipse cx="0" cy="6" rx="104" ry="26" fill="#341720"/><ellipse cx="0" cy="0" rx="104" ry="26" fill="#FFFFFF" class="ink" stroke-width="6"/>
+    <ellipse cx="0" cy="-2" rx="64" ry="14" fill="none" stroke="#E07B39" stroke-width="5"/>
+  </svg></div>
+  <div class="tg-item" id="tg-pl1" style="left:830px;top:1846px"><svg width="10" height="10">
+    <ellipse cx="0" cy="6" rx="104" ry="26" fill="#341720"/><ellipse cx="0" cy="0" rx="104" ry="26" fill="#FFFFFF" class="ink" stroke-width="6"/>
+    <ellipse cx="0" cy="-2" rx="64" ry="14" fill="none" stroke="#E07B39" stroke-width="5"/>
+  </svg></div>
+
+  <!-- words -->
+  <div class="word" id="tg-w1" style="left:830px;top:1150px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="118" style="fill:#FFD064">NNNGH!</text></svg></div></div>
+  <div class="word" id="tg-w2" style="left:250px;top:1120px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="132" style="fill:#FF9F6B">HNNNG!!</text></svg></div></div>
+
+  <!-- NEW PR! -->
+  <div id="tg-pr"><svg width="600" height="460" viewBox="-300 -230 600 460">
+    <path d="M0 -210 L52 -120 L156 -170 L132 -64 L262 -40 L160 30 L232 128 L104 112 L76 214 L0 140 L-76 214 L-104 112 L-232 128 L-160 30 L-262 -40 L-132 -64 L-156 -170 L-52 -120 Z" fill="#341720" transform="translate(10 14)"/>
+    <path d="M0 -210 L52 -120 L156 -170 L132 -64 L262 -40 L160 30 L232 128 L104 112 L76 214 L0 140 L-76 214 L-104 112 L-232 128 L-160 30 L-262 -40 L-132 -64 L-156 -170 L-52 -120 Z" fill="#FFD064" class="ink" stroke-width="10"/>
+    <path d="M0 -150 L36 -88 L110 -122 L94 -48 L184 -30 L112 20 L162 90 L74 80 L54 152 L0 100 L-54 152 L-74 80 L-162 90 L-112 20 L-184 -30 L-94 -48 L-110 -122 L-36 -88 Z" fill="#FFE9A0"/>
+    <text x="0" y="-12" text-anchor="middle" dominant-baseline="middle" font-family="Luckiest Guy" font-size="98" fill="#E05A47" stroke="#341720" stroke-width="16" paint-order="stroke" stroke-linejoin="round">NEW</text>
+    <text x="0" y="78" text-anchor="middle" dominant-baseline="middle" font-family="Luckiest Guy" font-size="118" fill="#E05A47" stroke="#341720" stroke-width="16" paint-order="stroke" stroke-linejoin="round">PR!</text>
+  </svg></div>
+
+  <!-- sparkle on the fork -->
+  <svg class="abs" id="tg-spark" style="left:990px;top:1102px;overflow:visible;opacity:0" width="1" height="1"><path d="M0 -52 Q8 -8 52 0 Q8 8 0 52 Q-8 8 -52 0 Q-8 -8 0 -52 Z" fill="#fff" class="ink" stroke-width="6"/></svg>
+
+  <div id="tg-conf"></div>
+  </div></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"HAPPY|THANKSGIVING","pts":"1","unit":"FORK","sub":"HEAVIEST THING HE LIFTED ALL WEEK","color":"#E07B39","dark":"#9C4A1C","light":"#FFE2C2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  // camera: slow push-in through the strain, punch back out on the press
+  tl.fromTo('#tg-cam', { scale: 1 }, { scale: 1.06, duration: 58 * F, ease: 'sine.inOut' }, 0);
+  tl.to('#tg-cam', { scale: 1, duration: 9 * F, ease: 'power3.out' }, 82 * F);
+  WA.shake(tl, '#tg-shake', 82 * F, 14 * F, 16, { decay: true, seed: 11, rot: 0.5 });
+
+  // the board drops in, then leaves before the card
+  tl.fromTo('#tg-board', { y: -620 }, { y: 0, duration: 11 * F, ease: 'back.out(1.5)' }, 2 * F);
+  WA.shake(tl, '#tg-board', 13 * F, 8 * F, 5, { decay: true, seed: 2, rot: 0.8 });
+  tl.to('#tg-board', { y: -620, duration: 9 * F, ease: 'back.in(1.3)' }, 104 * F);
+  // three white lights
+  ['#tg-l0', '#tg-l1', '#tg-l2'].forEach(function (id, i) {
+    tl.fromTo(id, { opacity: 0, scale: 0.4, transformOrigin: '50% 50%' }, { opacity: 1, scale: 1, duration: 5 * F, ease: 'back.out(3)' }, (88 + i * 3) * F);
+  });
+
+  // Flexander: strain, halfway, press
+  WA.pose(tl, '#tg-flex', 'tg-strain', 0);
+  WA.shake(tl, '#tg-fjit', 4 * F, 54 * F, 2.2, { grow: 2.4, seed: 3, rot: 0.35 });
+  WA.take(tl, '#tg-flex', 'tg-mid', 58 * F, 0.06);
+  WA.hop(tl, '#tg-flex', 58 * F, 36, 10);
+  WA.shake(tl, '#tg-fjit', 68 * F, 12 * F, 3.5, { grow: 1.5, seed: 9, rot: 0.4 });
+  WA.take(tl, '#tg-flex', 'tg-press', 82 * F, 0.1);
+  WA.hop(tl, '#tg-flex', 82 * F, 64, 12);
+  WA.hop(tl, '#tg-flex', 100 * F, 22, 8);
+  WA.hop(tl, '#tg-flex', 110 * F, 16, 8);
+  WA.bob(tl, '#tg-fjit', 120 * F, 1.4, 6, 0.7);
+
+  // the table rattles with him
+  var items = ['#tg-c0', '#tg-c1', '#tg-turkey', '#tg-pot', '#tg-cran', '#tg-pie', '#tg-pl0', '#tg-pl1'];
+  items.forEach(function (id, i) {
+    WA.shake(tl, id, 10 * F, 48 * F, 1.2, { grow: 2.2, seed: 20 + i, rot: 0.8, step: 2 });
+    WA.shake(tl, id, 68 * F, 12 * F, 2.5, { seed: 40 + i, rot: 1, step: 2 });
+    WA.hop(tl, id, (84 + (i % 3)) * F, 14 + (i % 2) * 8, 8);
+  });
+  tl.fromTo('#tg-jelly', { scaleY: 1, scaleX: 1 }, { scaleY: 0.9, scaleX: 1.08, duration: 3 * F, yoyo: true, repeat: 17, ease: 'sine.inOut' }, 8 * F);
+  tl.fromTo('#tg-jelly', { scaleY: 1.18, scaleX: 0.9 }, { scaleY: 1, scaleX: 1, duration: 16 * F, ease: 'elastic.out(1.2, 0.3)', immediateRender: false }, 85 * F);
+  tl.fromTo('.tg-flame', { scaleY: 1, scaleX: 1, rotation: -3 }, { scaleY: 1.16, scaleX: 0.9, rotation: 3, duration: 4 * F, yoyo: true, repeat: 40, ease: 'sine.inOut' }, 0);
+
+  // leaves drifting past the window
+  [[120, -660, 0], [260, -600, 1.2], [180, -640, 2.3], [320, -620, 3.4]].forEach(function (l, i) {
+    tl.fromTo('#tg-lf' + i, { x: l[0], y: 600 + l[1] + 640, rotation: 0 }, { x: l[0] + 70 - i * 30, y: 1090, rotation: 300, duration: 2.6, ease: 'none' }, l[2] - 0.6 < 0 ? 0 : l[2] - 0.6);
+  });
+
+  // words and sweat
+  WA.word(tl, '#tg-w1', 12 * F, 28, { rot: 8, rot0: 24, seed: 4, amp: 5 });
+  WA.word(tl, '#tg-w2', 36 * F, 24, { rot: -8, rot0: -26, seed: 6, amp: 6 });
+  [[420, 1150, -8, -15], [650, 1140, 8, -16], [400, 1190, -10, -11], [670, 1180, 10, -13]].forEach(function (d, i) {
+    WA.toss(tl, '#tg-sw' + i, [14, 26, 38, 50][i] * F, { x0: d[0], y0: d[1], vx: d[2], vy: d[3], g: 1.4, frames: 24, spin: d[2] * 0.8 });
+  });
+
+  // the press: chalk, NEW PR, confetti, sparkle
+  for (var i = 0; i < 6; i++) {
+    tl.fromTo('#tg-p' + i, { scale: 0.2, opacity: 0.95, x: 0, y: 0 }, { scale: 1.5 + (i % 3) * 0.25, opacity: 0, x: (i % 3 - 1) * 40, y: -30 - (i % 2) * 30, duration: 16 * F, ease: 'power2.out', immediateRender: false }, (82 + (i % 3)) * F);
+  }
+  tl.set('#tg-pr', { opacity: 0 }, 0);
+  WA.popIn(tl, '#tg-pr', 86 * F, 11, { rot0: -30, rot: -6 });
+  WA.bob(tl, '#tg-pr', 98 * F, 0.45, 10, 0.5);
+  WA.popOut(tl, '#tg-pr', 112 * F, 7);
+  WA.confetti(tl, '#tg-conf', 86 * F, 60, 1700, { seed: 3, n: 34, angle: -1.15, spread: 0.45, speed: 40, g: 1.3, frames: 44 });
+  WA.confetti(tl, '#tg-conf', 86 * F, 1020, 1700, { seed: 8, n: 34, angle: -1.99, spread: 0.45, speed: 40, g: 1.3, frames: 44 });
+  tl.fromTo('#tg-spark', { opacity: 1, scale: 0, rotation: 0 }, { scale: 1.1, rotation: 90, duration: 6 * F, ease: 'back.out(3)' }, 95 * F);
+  tl.to('#tg-spark', { scale: 0, rotation: 180, duration: 6 * F, ease: 'power2.in' }, 102 * F);
+
+  window.__timelines['joke-thanksgiving'] = tl;
+})();
+</script>
+</body>
+</html>

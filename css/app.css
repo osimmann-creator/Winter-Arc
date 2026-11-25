@@ -782,6 +782,7 @@ body:has(.avatar-crop[open]) { overflow: hidden; }
 .joke-phil { --jk-bg: linear-gradient(135deg, #F7EFE6 0%, #E5CFB5 100%); --jk: #7A4A22; }
 .joke-scared { --jk-bg: linear-gradient(135deg, #FFF0F5 0%, #FFD0E0 100%); --jk: #C2185B; }
 .joke-timesheet { --jk-bg: linear-gradient(135deg, #FFF4E0 0%, #FFD9A0 100%); --jk: #A8661A; }
+.joke-thanksgiving { --jk-bg: linear-gradient(135deg, #FFF3E6 0%, #FFD3A8 100%); --jk: #9C4A1C; }
 .jk-body h3.long { font-size: 24px; }
 .powered { text-align: center; color: var(--ink2); font-weight: 800; font-size: 13px; letter-spacing: .3px; margin: 4px 0 2px; }
 .jk-vid.jk-stamp { aspect-ratio: 1; display: grid; place-items: center; background: #FFFDF8; }

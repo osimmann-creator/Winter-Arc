@@ -11,6 +11,7 @@ const POST_ID = '[a-zA-Z0-9_-]{1,80}';
 const WEEK = '(?:0|[1-9][0-9]?)';
 const POINTS = '(?:0|[1-9][0-9]*)(?:\\.5)?';
 const COUNT = '[1-9][0-9]*';
+const YEAR = '20[0-9]{2}';
 const EVENT_KEYS = {
   coin: `${WEEK}:${POINTS}`, bluehair: WEEK, iron: WEEK, liquor: WEEK,
   bag: `${WEEK}:${POINTS}`, fight: `${WEEK}(?::${POINTS})?`,
@@ -18,6 +19,7 @@ const EVENT_KEYS = {
   radiator: POST_ID, mom: WEEK, nets: WEEK, phil: POST_ID,
   scared: `[0-9]{4}-[0-9]{2}-[0-9]{2}:${COUNT}`, timesheet: WEEK, hoat: WEEK,
   roast: '[0-9]{4}-[0-9]{2}-[0-9]{2}',
+  thanksgiving: YEAR,
 };
 
 function fail(message, status = 400) {
@@ -620,7 +622,17 @@ export async function runEvents(env, now = new Date()) {
   // The roast stands alone: if it can't be picked, the inside jokes still run.
   try { await saveRoast(env, now); } catch { console.warn('Winter Arc couldn’t pick the roast of the day.'); }
   const { events, timezone } = await findEvents(env, now);
-  if (events.length) await env.DB.batch(events.map(input => eventInsert(env, validatedEvent(input, now), timezone)));
+  if (!events.length) return;
+  const rows = events.map(input => validatedEvent(input, now));
+  try {
+    await env.DB.batch(rows.map(event => eventInsert(env, event, timezone)));
+  } catch (err) {
+    // A batch is all or nothing: one row the database refuses (say a joke type whose migration hasn't been
+    // applied yet) mustn't hold back the others, so record them one at a time.
+    for (const event of rows) {
+      try { await eventInsert(env, event, timezone).run(); } catch (e) { console.warn('Winter Arc couldn’t record', event.key, e?.message || e); }
+    }
+  }
 }
 
 export async function sweepPhotos(env) {

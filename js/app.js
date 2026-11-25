@@ -895,6 +895,8 @@ const App = (() => {
     if (e.type === 'scared') return `No date posts for ${d.days ?? d.n * 30} days. The fellas are scared of girls.`;
     if (e.type === 'timesheet') return `${realName(d.who)} reached his weekly goal with ${fmtPts(d.pts)} points on ${d.day === 6 ? 'Saturday' : 'Sunday'}. Big night out, so the work time sheet gets filed from the club at 11:59.`;
     if (e.type === 'hoat') return `${realName(d.who)} hit ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week. Stamped and guaranteed.`;
+    const they = (ids = []) => ids.length > 1;
+    if (e.type === 'thanksgiving') return `Happy Thanksgiving. ${names(d.who)} ${they(d.who) ? 'have' : 'has'} ${fmtPts(d.pts)} ${ptsWord(d.pts)} this week, the fewest of anyone, so the heaviest thing ${they(d.who) ? 'they' : 'he'} lifted all week is a fork.`;
     return '';
   }
   const JOKE_EYEBROW = {
@@ -902,6 +904,7 @@ const App = (() => {
     bag: 'Three-way tie', crashout: 'Cap called', satellite: 'Beers with the boys',
     puke: 'Last place', mma: 'Fight night', radiator: 'Missing person', mom: 'Sunday', nets: 'Strike',
     phil: 'Sighting', scared: 'Date drought', timesheet: 'Last minute', hoat: 'Every week, as promised',
+    thanksgiving: 'Holiday special',
   };
   /** Every inside joke that has happened goes in the feed (config: feed). */
   const inFeed = e => (e.type === 'hoat' ? HOAT.feed !== false : !!(INSIDE_JOKES[e.type] && INSIDE_JOKES[e.type].feed));

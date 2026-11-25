@@ -100,6 +100,8 @@ const INSIDE_JOKES = {
   phil: { video: 'joke-phil', title: 'Punxsutawney Phil', users: ['phil'], feed: true, playFor: 48, days: 3 }, // Philip logs after 3+ days without logging
   scared: { video: 'joke-scared', title: 'Scared of Girls', users: [], feed: true, playFor: 72, days: 30 },
   timesheet: { video: 'joke-timesheet', title: 'The Time Sheet', users: ['jake'], feed: true, playFor: 48, days: [6, 0] }, // Jake's post that gets him to the weekly minimum lands on a Saturday or Sunday
+  /* Round 2 (animations/hyperframes). Holidays play for everyone on the day, in the group timezone. */
+  thanksgiving: { video: 'joke-thanksgiving', title: 'Thanksgiving', users: [], feed: true, playFor: 24 }, // 4th Thursday of November; names the week's lowest scorer
 };
 /* Osim's own stamp every week he reaches the minimum: it slams onto his screen,
    sits on his ring card, and a card goes to the feed for everyone. */

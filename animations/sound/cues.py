@@ -538,3 +538,22 @@ CUES['joke-timesheet'] = [  # Time Sheet: last call at the club, BUZZ 16, !!! 31
     C(92, 'click', -2), word(93, -10), C(102, 'triad', -4), cheer(102, -7, d=2.2), word(103, -10),
     *joke_card(122),
 ]
+
+# ---------------------------------------------------------------- round 2 (HyperFrames: animations/hyperframes/<id>.html)
+# Frame numbers are the beats listed at the top of each clip's html file.
+CUES['joke-thanksgiving'] = [  # Thanksgiving: board drops 2-13, strain 4-58 (NNNGH 12, HNNNG 36, sweat 14/26/38/50),
+    # halfway hop 58, PRESS 82, NEW PR! + confetti 86, three white lights 88/91/94, sparkle 95, card 120
+    bed('bed_warm', -24, n=118, fo=0.8), C(0, 'bar', -27, d=3.6, fi=0.4, fo=1.2),
+    C(6, 'whoosh', -10), C(13, 'clank', -9), C(14, 'notify', -13),
+    C(4, 'heartbeat', -9, d=1.85, fo=0.3), C(8, 'rumble', -17, d=1.7, fi=0.4, fo=0.3),
+    word(12, -10), C(12, 'squeak', -17, r=0.7),
+    C(14, 'bubble', -15), C(18, 'clink', -18), C(24, 'clink', -17, r=1.1), C(26, 'bubble', -15, r=1.1),
+    C(31, 'clink', -16), word(36, -9), C(38, 'bubble', -14, r=0.95), C(40, 'clink', -15, r=0.95),
+    C(46, 'bottle_clink', -16), C(50, 'bubble', -14, r=1.15), C(53, 'clink', -14, r=1.05),
+    C(56, 'whoosh_heavy', -12), C(58, 'jump', -12), ooh(60, -13), C(70, 'clink', -15), C(76, 'bottle_clink', -15, r=1.1),
+    C(80, 'whoosh_heavy', -7), C(82, 'slam', -5), C(82, 'boom_short', -8), C(83, 'powder', -9), C(85, 'clank', -12),
+    C(86, 'stamp', -6), C(86, 'fanfare', -8), C(87, 'party_pop', -8), word(86, -11), applause(88, -9, d=2.6),
+    C(88, 'ding', -9), C(91, 'ding', -9, r=1.06), C(94, 'ding', -8, r=1.12), cheer(92, -13, d=2.0),
+    C(96, 'sparkle', -12), C(105, 'whoosh_out', -12),
+    *joke_card(120),
+]

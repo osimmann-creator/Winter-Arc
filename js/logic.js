@@ -241,6 +241,16 @@ const Logic = (() => {
     }
     if (S.status !== 'live') return out;
 
+    /* Holidays: everyone sees them on the day (group timezone), once a year. */
+    const [year, month, date] = dayKey(now, tz).split('-').map(Number), weekday = zoned(now, tz).day;
+    const lowest = () => {
+      const pool = members.filter(m => alive(m)), lo = Math.min(...pool.map(pts));
+      return { who: pool.filter(m => pts(m) === lo).map(m => m.id), pts: lo };
+    };
+    if (J.thanksgiving && month === 11 && weekday === 4 && date >= 22 && date <= 28 && calc.alive.length) {
+      add('thanksgiving', year, lowest());
+    }
+
     const [dean, jake] = people('coin');
     if (dean && jake && pts(dean) > 0 && pts(dean) === pts(jake)) {
       add('coin', `${w}:${pts(dean)}`, { pts: pts(dean), a: dean.id, b: jake.id });

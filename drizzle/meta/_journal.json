@@ -78,6 +78,13 @@
       "when": 1795327200000,
       "tag": "0010_roasts",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1795330800000,
+      "tag": "0011_round2_jokes",
+      "breakpoints": true
     }
   ]
 }

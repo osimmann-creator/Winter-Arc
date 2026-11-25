@@ -1,0 +1,179 @@
+<!--
+  The inside-joke end card, the same one the Remotion jokes use (animations/src/fx/EndCard.tsx):
+  a ribbon banner whose title pops in letter by letter, a caption plate, and a spinning gold coin
+  with a number and a small word. Mount it over the last ~1.5 s of a clip:
+
+    <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html"
+         data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+         data-variable-values='{"title":"THE CROSSING","pts":"3","unit":"MEN","sub":"IN LOVING MEMORY (THEY’RE FINE)",
+                                "color":"#7254DC","dark":"#4F35B0","light":"#E2D9FF"}'></div>
+
+  title: "|" starts a new line. unit "" hides the small word. The card sits 80 px into the 1080×1920
+  design frame (the canvas is 2348 tall: 214 px of spare sky above and below it).
+-->
+<html
+  lang="en"
+  data-composition-id="endcard"
+  data-composition-variables='[
+    { "id": "title", "type": "string", "label": "Title (| = new line)", "default": "THE TITLE" },
+    { "id": "pts", "type": "string", "label": "Coin number", "default": "7" },
+    { "id": "unit", "type": "string", "label": "Coin word", "default": "PTS" },
+    { "id": "sub", "type": "string", "label": "Caption", "default": "THE CAPTION" },
+    { "id": "color", "type": "color", "label": "Ribbon", "default": "#7254DC" },
+    { "id": "dark", "type": "color", "label": "Ribbon shade", "default": "#4F35B0" },
+    { "id": "light", "type": "color", "label": "Letter shade", "default": "#FFF0B7" },
+    { "id": "top", "type": "number", "label": "Top (px into the design frame)", "default": 80 }
+  ]'
+>
+  <body>
+    <template>
+      <div id="root" data-composition-id="endcard" data-duration="1.5" data-width="1080" data-height="2348">
+        <style>
+          #root { position: absolute; inset: 0; pointer-events: none; }
+          .ec-col { position: absolute; left: 0; right: 0; top: 294px; display: flex; flex-direction: column; align-items: center; }
+          .ec-rib { position: relative; transform-origin: 50% 60%; }
+          .ec-tail { position: absolute; top: 34px; width: 150px; height: 130px; overflow: visible; z-index: -1; }
+          .ec-tail.l { left: -96px; }
+          .ec-tail.r { right: -96px; transform: scaleX(-1); }
+          .ec-plate { position: relative; border: 10px solid #341720; border-radius: 34px; box-shadow: 0 16px 0 #341720;
+            display: flex; flex-direction: column; align-items: center; }
+          .ec-shine { position: absolute; left: 22px; right: 22px; top: 12px; height: 14px; border-radius: 10px; background: #fff; opacity: .35; }
+          .ec-line { display: flex; line-height: 1; }
+          .ec-ch { display: inline-block; position: relative; transform-origin: 50% 80%; font-family: 'Luckiest Guy'; line-height: 1; white-space: pre; }
+          .ec-ch .bk { position: absolute; left: 0; top: 0; color: #341720; }
+          .ec-ch .fr { position: relative; color: transparent; -webkit-background-clip: text; background-clip: text; }
+          .ec-sub { margin-top: 30px; background: #fff; border: 8px solid #341720; border-radius: 999px; box-shadow: 0 10px 0 #341720;
+            padding: 10px 34px 4px; font-family: 'Luckiest Guy'; line-height: 1.1; letter-spacing: 2px; white-space: nowrap; }
+          .ec-coin { margin-top: 36px; position: relative; width: 256px; height: 256px; }
+          .ec-coin svg { position: absolute; left: 0; top: 0; overflow: visible; }
+          .ec-pop, .ec-spin { position: absolute; left: 0; top: 0; width: 256px; height: 256px; transform-origin: 50% 50%; }
+        </style>
+        <div class="ec-col" id="ec-col">
+          <div class="ec-rib" id="ec-rib">
+            <svg class="ec-tail l" viewBox="0 0 150 130"><path class="tc" d="M150 10 L20 10 L52 62 L20 114 L150 114 Z" stroke="#341720" stroke-width="9" stroke-linejoin="round"/><path class="td" d="M150 10 L102 10 L102 -22 Z" stroke="#341720" stroke-width="8" stroke-linejoin="round"/><path d="M118 30 L60 30" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".35"/></svg>
+            <svg class="ec-tail r" viewBox="0 0 150 130"><path class="tc" d="M150 10 L20 10 L52 62 L20 114 L150 114 Z" stroke="#341720" stroke-width="9" stroke-linejoin="round"/><path class="td" d="M150 10 L102 10 L102 -22 Z" stroke="#341720" stroke-width="8" stroke-linejoin="round"/><path d="M118 30 L60 30" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".35"/></svg>
+            <div class="ec-plate" id="ec-plate"><div class="ec-shine"></div></div>
+          </div>
+          <div class="ec-sub" id="ec-sub"></div>
+          <div class="ec-coin" id="ec-coin">
+            <div class="ec-pop" id="ec-pop">
+              <div class="ec-spin" id="ec-spin">
+                <svg width="256" height="256" viewBox="-128 -128 256 256">
+                  <circle r="114" fill="#341720" transform="translate(0 12)"/>
+                  <path id="ec-rim" fill="#C77928" stroke="#341720" stroke-width="9" stroke-linejoin="round"/>
+                  <circle r="94" fill="#FFD064" stroke="#341720" stroke-width="7"/>
+                  <clipPath id="ec-clip"><circle r="94"/></clipPath>
+                  <g clip-path="url(#ec-clip)">
+                    <circle r="94" cx="10" cy="14" fill="#C77928" opacity=".5"/>
+                    <circle r="94" fill="#FFD064" transform="translate(-8 -10)"/>
+                    <g transform="rotate(25)"><rect id="ec-glint" x="-30" y="-200" width="36" height="400" fill="#fff" opacity=".55"/></g>
+                  </g>
+                  <circle r="78" fill="none" stroke="#C77928" stroke-width="5" stroke-dasharray="2 14" stroke-linecap="round"/>
+                  <text id="ec-pts" text-anchor="middle" dominant-baseline="middle" font-family="Luckiest Guy" fill="#fff" stroke="#341720" stroke-width="14" paint-order="stroke" stroke-linejoin="round"></text>
+                  <text id="ec-unit" y="56" text-anchor="middle" dominant-baseline="middle" font-family="Luckiest Guy" font-size="32" fill="#341720" letter-spacing="3"></text>
+                </svg>
+              </div>
+            </div>
+            <svg class="ec-spk" width="256" height="256" viewBox="-128 -128 256 256">
+              <path id="ec-spk0" fill="#fff" stroke="#341720" stroke-width="4"/>
+              <path id="ec-spk1" fill="#fff" stroke="#341720" stroke-width="4"/>
+              <path id="ec-spk2" fill="#fff" stroke="#341720" stroke-width="4"/>
+            </svg>
+          </div>
+        </div>
+        <script>
+          (function () {
+            var root = document.getElementById('ec-col');
+            var V = (window.__hyperframes && window.__hyperframes.getVariables) ? window.__hyperframes.getVariables() : {};
+            var F = 1 / 30;
+            var INK = '#341720';
+            var title = String(V.title || 'THE TITLE');
+            var pts = String(V.pts == null ? '7' : V.pts);
+            var unit = String(V.unit == null ? 'PTS' : V.unit);
+            var sub = String(V.sub == null ? '' : V.sub);
+            var color = V.color || '#7254DC', dark = V.dark || '#4F35B0', light = V.light || '#FFF0B7';
+            var q = function (s) { return root.querySelector(s); };
+
+            root.style.top = (214 + Number(V.top == null ? 80 : V.top)) + 'px';
+            root.querySelectorAll('.tc').forEach(function (p) { p.setAttribute('fill', color); });
+            root.querySelectorAll('.td').forEach(function (p) { p.setAttribute('fill', dark); });
+
+            // ribbon + letters
+            var lines = title.split('|');
+            var maxLen = Math.max.apply(null, lines.map(function (l) { return l.length; }));
+            var fs = Math.min(132, 800 / (maxLen * 0.64));
+            var plate = q('#ec-plate');
+            plate.style.background = 'linear-gradient(180deg, ' + color + ' 0%, ' + color + ' 60%, ' + dark + ' 100%)';
+            plate.style.padding = (fs * 0.22) + 'px ' + (fs * 0.42) + 'px ' + (fs * 0.12) + 'px';
+            var letters = [];
+            lines.forEach(function (line, li) {
+              var row = document.createElement('div');
+              row.className = 'ec-line';
+              if (li) row.style.marginTop = (fs * 0.06) + 'px';
+              line.split('').forEach(function (ch) {
+                var s = document.createElement('span'); s.className = 'ec-ch'; s.style.fontSize = fs + 'px';
+                var bk = document.createElement('span'); bk.className = 'bk'; bk.textContent = ch;
+                bk.style.webkitTextStroke = (fs * 0.2) + 'px ' + INK; bk.style.filter = 'drop-shadow(0 ' + (fs * 0.07) + 'px 0 ' + INK + ')';
+                var fr = document.createElement('span'); fr.className = 'fr'; fr.textContent = ch;
+                fr.style.backgroundImage = 'linear-gradient(180deg, #FFFFFF 0%, #FFFFFF 48%, ' + light + ' 52%, ' + light + ' 100%)';
+                s.appendChild(bk); s.appendChild(fr); row.appendChild(s); letters.push(s);
+              });
+              plate.appendChild(row);
+            });
+
+            // caption plate
+            var subEl = q('#ec-sub');
+            if (sub) {
+              subEl.textContent = sub;
+              subEl.style.color = dark;
+              subEl.style.fontSize = Math.min(52, Math.floor(930 / (sub.length * 0.64))) + 'px';
+            } else subEl.style.display = 'none';
+
+            // coin
+            var star = function (cx, cy, ro, ri, n, rot) {
+              var d = '';
+              for (var i = 0; i < n * 2; i++) {
+                var a = (rot || 0) * Math.PI / 180 + Math.PI * i / n - Math.PI / 2, r = i % 2 ? ri : ro;
+                d += (i ? 'L' : 'M') + (cx + Math.cos(a) * r).toFixed(1) + ' ' + (cy + Math.sin(a) * r).toFixed(1) + ' ';
+              }
+              return d + 'Z';
+            };
+            q('#ec-rim').setAttribute('d', star(0, 0, 116, 102, 24, 0));
+            var ptsEl = q('#ec-pts');
+            ptsEl.textContent = pts;
+            ptsEl.setAttribute('font-size', pts.length > 3 ? 70 : unit ? 84 : 100);
+            ptsEl.setAttribute('y', unit ? -2 : 8);
+            q('#ec-unit').textContent = unit;
+            [[-40, 0], [200, 1], [120, 2]].forEach(function (a) {
+              var ang = a[0] * Math.PI / 180, x = Math.cos(ang) * 138, y = Math.sin(ang) * 138;
+              var p = q('#ec-spk' + a[1]);
+              p.setAttribute('d', star(x, y, 30, 7, 4, 0));
+              p.style.transformOrigin = x + 'px ' + y + 'px';
+              p.style.transformBox = 'view-box';
+            });
+
+            // ---- timeline (frames → seconds) ----
+            var tl = gsap.timeline({ paused: true });
+            tl.fromTo('#ec-rib', { scale: 0, rotation: -14 }, { scale: 1, rotation: -4, duration: 16 * F, ease: 'back.out(2.2)' }, 0);
+            tl.to('#ec-rib', { rotation: -3.2, duration: 22 * F, ease: 'sine.inOut', yoyo: true, repeat: 3 }, 16 * F);
+            letters.forEach(function (s, i) {
+              var t0 = (5 + i * 1.6) * F;
+              tl.fromTo(s, { y: -50, scale: 0, rotation: i % 2 ? 14 : -14 }, { y: 0, scale: 1, rotation: 0, duration: 12 * F, ease: 'back.out(2.6)' }, t0);
+              tl.to(s, { y: (i % 2 ? 3.5 : -3.5), duration: 17 * F, ease: 'sine.inOut', yoyo: true, repeat: 3 }, t0 + 12 * F);
+            });
+            if (sub) tl.fromTo('#ec-sub', { scale: 0, rotation: 8 }, { scale: 1, rotation: 2, duration: 13 * F, ease: 'back.out(2.4)' }, 8 * F);
+            tl.fromTo('#ec-pop', { scale: 0, rotation: 40 }, { scale: 1, rotation: 0, duration: 15 * F, ease: 'back.out(2.2)' }, 10 * F);
+            tl.fromTo('#ec-spin', { rotationY: 540 }, { rotationY: 0, duration: 26 * F, ease: 'power3.out', transformPerspective: 900 }, 10 * F);
+            tl.fromTo('#ec-glint', { x: -180 }, { x: 180, duration: 14 * F, ease: 'none' }, 36 * F);
+            [0, 1, 2].forEach(function (i) {
+              var at = (26 + i * 7) * F;
+              tl.fromTo('#ec-spk' + i, { scale: 0, rotation: 0 }, { scale: 1, rotation: 22, duration: 8 * F, ease: 'sine.out' }, at);
+              tl.to('#ec-spk' + i, { scale: 0, rotation: 45, duration: 8 * F, ease: 'sine.in' }, at + 8 * F);
+            });
+            window.__timelines['endcard'] = tl;
+          })();
+        </script>
+      </div>
+    </template>
+  </body>
+</html>

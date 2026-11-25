@@ -1,0 +1,16 @@
+{
+  "name": "winter-arc-hyperframes",
+  "private": true,
+  "type": "module",
+  "description": "Winter Arc inside-joke clips made with HyperFrames (HTML + GSAP rendered to video).",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "cast": "node cast/build-cast.mjs",
+    "render": "node render.mjs",
+    "preview": "hyperframes preview"
+  },
+  "devDependencies": {
+    "gsap": "3.15.1",
+    "hyperframes": "0.9.93"
+  }
+}

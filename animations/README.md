@@ -1,6 +1,6 @@
-# Winter Arc animations (Remotion)
+# Winter Arc animations (Remotion + HyperFrames)
 
-This is the source for the Winter Arc mascot, the 37 celebration videos, the 16 inside-joke videos, the opening animation and the app art. Everything is drawn in code (React + SVG) with [Remotion](https://www.remotion.dev), so poses, timing and colors can all be edited.
+This is the source for the Winter Arc mascot, the 37 celebration videos, the inside-joke videos, the opening animation and the app art. Everything is drawn in code, so poses, timing and colors can all be edited: the mascot, the celebrations and the first 16 inside jokes in React + SVG with [Remotion](https://www.remotion.dev), and the round 2 inside jokes in HTML + GSAP with [HyperFrames](#hyperframes).
 
 ## Setup
 
@@ -62,6 +62,29 @@ npx remotion render Gym out/gym.mp4 --codec=h264 --crf=20
 4. Add `{ id: 'gym-11', name: '…' }` to `CELEBRATIONS.gym` in the app's `js/config.js`.
 
 The mascot's hair can turn blue: set `hairBlue` (0 to 1) in a pose.
+
+## HyperFrames
+
+The round 2 inside jokes are made with [HyperFrames](https://github.com/heygen-com/hyperframes) (HTML + GSAP rendered to video) in `hyperframes/`, in the same look: flat shapes, espresso outlines, Luckiest Guy titles and Bangers sound words, 1080×2348 at 30 fps, about 5.5 s, the same ribbon end card.
+
+```
+cd hyperframes && npm i
+node render.mjs joke-thanksgiving        # master -> app copy (720x1566) -> soundtrack -> poster, into ../../assets/celebrations
+DRAFT=1 node render.mjs joke-thanksgiving  # quick draft master only, in ../out/videos
+npx hyperframes preview                  # live preview in the browser
+```
+
+HyperFrames needs a Chrome. If it can't find one, point `PUPPETEER_EXECUTABLE_PATH` at Chrome or chrome-headless-shell; the headless shell renders much faster.
+
+| Path | What it is |
+|---|---|
+| `hyperframes/joke-<name>.html` | One file per clip: the scene, its GSAP timeline and the end card. The beats (in frames) are listed at the top. |
+| `hyperframes/compositions/endcard.html` | The ribbon end card (TITLE · COIN · CAPTION), mounted over the last 1.5 s with its words and colours as variables. |
+| `hyperframes/assets/kit.js`, `kit.css` | Shared helpers: shake, hop, squash, pose swaps, pop-ins, sound words, tosses, confetti, name tags. `kit.js` also lists the two GSAP rules every clip follows so it survives HyperFrames seeking back and forth. |
+| `hyperframes/assets/cast/` | Flexander's poses as SVG, exported from the Remotion rig by `scripts/export-cast.sh` (poses in `src/export/cast-poses.tsx`, member colourways and hand/head anchors in `cast.tsx`). The clips swap whole poses rather than animating limbs. |
+| `hyperframes/render.mjs` | The build: `CLIPS` lists each clip and its poster second. |
+
+Sound works exactly as for the Remotion videos: each clip has an entry in `sound/cues.py`, under "round 2", and `render.mjs` runs `scripts/sound.py mix` on it.
 
 ## Sound
 

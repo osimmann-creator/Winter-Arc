@@ -64,6 +64,7 @@ Inside-joke videos can pop up once per member when the trigger fires. Members ca
 | **Punxsutawney Phil** | Phil logs something after 3+ days without a log. He sees his shadow. Once per post. | Yes |
 | **Scared of Girls** | Nobody has logged a date in 30 days. Again every 30 days it goes on. | Yes |
 | **The Time Sheet** | Jake's post that gets him to his weekly goal lands on a Saturday or Sunday. Big night out, so he files his work time sheet from the club at 11:59. | Yes |
+| **Thanksgiving** | Thanksgiving Day (the 4th Thursday of November). A guy at the dinner table maxes out on a fork: NEW PR! No name in the video. | Yes, naming the week's lowest scorer |
 
 The same joke can be triggered again after one full intervening game week (Monday through Sunday).
 
@@ -129,4 +130,4 @@ To add another:
 
    With no file names it uploads every clip in `assets/celebrations/` and `assets/intro/`. Do that after remixing the sound, because that changes every video.
 
-For a new inside joke, register the clip in `INSIDE_JOKES`, implement the trigger in `Logic.jokes`, and add the server event validation and a D1 migration when the event type is new. Keep the GitHub and Sites source histories in sync. A GitHub push alone does not publish the Site or upload clips to R2.
+For a new inside joke, register the clip in `INSIDE_JOKES`, implement the trigger in `Logic.jokes`, and add the server event validation and a D1 migration when the event type is new. The round 2 clips are made with HyperFrames in `animations/hyperframes` (see [animations/README.md](animations/README.md#hyperframes)), and their event types arrive with D1 migration `drizzle/0011_round2_jokes.sql`. **Apply 0011 before publishing the code that records them**: until then the database refuses those event types (the other jokes still get recorded). 0011 rebuilds the events table, so it first copies every table that points at it (seen marks, comments, comment hearts, reactions) and drops the old ones leaves-first. Nothing is lost, even though D1 runs ON DELETE CASCADE during a migration. It also adds the `xmas_votes` table for the Christmas vote. Keep the GitHub and Sites source histories in sync. A GitHub push alone does not publish the Site or upload clips to R2.
