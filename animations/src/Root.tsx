@@ -24,6 +24,7 @@ import { PullUpScene } from './scenes/PullUp';
 import { ModelSheet, HeroBig, FaceSheet, StyleSheet } from './sheets/ModelSheet';
 import { CharacterSheet, CrewLineup } from './sheets/CharacterSheet';
 import { GymScene } from './scenes/Gym';
+import { BeastMode3D } from './three/BeastMode3D';
 import { RunScene } from './scenes/Run';
 import { JickleScene } from './scenes/Jickle';
 import { VoloScene } from './scenes/Volo';
@@ -77,8 +78,10 @@ export const RemotionRoot: React.FC = () => {
         <Still id="AppIconMaskable" component={AppIconMaskable} width={1024} height={1024} />
         <Composition id="Intro" component={IntroScene} durationInFrames={84} fps={30} width={1080} height={FULL_H} />
       </Folder>
+      <Composition id="Gym3DSmall" component={BeastMode3D} durationInFrames={135} fps={30} width={540} height={1174} />
       <Folder name="Celebrations">
         <Composition id="Gym" component={GymScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
+        <Composition id="Gym3D" component={BeastMode3D} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
         <Composition id="Run" component={RunScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
         <Composition id="Jickle" component={JickleScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />
         <Composition id="Volo" component={VoloScene} durationInFrames={135} fps={30} width={1080} height={FULL_H} />

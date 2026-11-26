@@ -137,6 +137,20 @@ CUES['gym-1'] = [  # Beast Mode: clean and jerk in the gym theatre (BeastMode.ts
     C(74, 'whoosh_fast', -7), C(76, 'clank', -3), C(76, 'boom', -4), C(77, 'growl', -15, d=1.2, fo=0.4), ooh(78),
     *gym_card(88),
 ]
+CUES['gym-1-3d'] = [  # Beast Mode 3D (src/three/BeastMode3D.tsx): plates leave the floor 23, rack 50.5, LOCK 76 then slow motion to 98, plaque 92, wink 120
+    C(0, 'wind_soft', -25, d=4.6, fi=0.4, fo=1.2), C(0, 'bed_warm', -24, d=2.4, fi=0.6, fo=0.9), C(2, 'heartbeat', -19, d=2.3, fo=0.6),
+    C(3, 'whoosh_big', -15, a='st'),
+    C(21, 'db_grab', -8), C(23, 'chain', -18, d=0.5), C(23, 'powder', -13),
+    C(43, 'whoosh_heavy', -9), C(50, 'stamp', -8), C(50, 'powder', -15),
+    C(50, 'clank', -5), C(51, 'boom_short', -9), C(51, 'thud', -11), C(51, 'chain', -17, d=0.45), C(52, 'gasp', -17),
+    C(58, 'whoosh', -17), C(67, 'swish', -16), C(73, 'whoosh_fast', -7), C(75, 'stamp', -7),
+    C(76, 'clank', -3), C(76, 'clang', -9), C(76, 'boom', -4), C(76, 'sub', -6),
+    C(76, 'braam', -9, d=2.7, fo=1.3), C(76, 'rumble', -17, d=1.7, fo=0.9),
+    C(77, 'growl', -15, r=0.82, d=1.1, fo=0.5), C(77, 'chain', -15, r=0.6, d=0.9, fo=0.4), C(78, 'powder', -10, r=0.5), ooh(79, -12),
+    C(82, 'sparkle', -15), C(96, 'whoosh', -11),
+    *gym_card(92), applause(104, -15, d=1.9),
+    C(120, 'twinkle', -10),
+]
 CUES['gym-2'] = [  # Gun Show: curls, POW flex at 61, CLONK dumbbells, MWAH, card 98
     opening(), C(20, 'swish', -15), C(32, 'swish', -15), word(44, -13),
     C(50, 'whoosh', -8), *impact(61), word(62, -10), ooh(61),

@@ -137,6 +137,20 @@ The soundtrack skill's sync checker works on our videos too. Give it the moments
 node ../.claude/skills/soundtrack/scripts/sync-check.mjs ../assets/celebrations/gym-7.mp4 --cues-file times.json
 ```
 
+## 3D (Three.js)
+
+`gym-1-3d` is Beast Mode (`gym-1`) rebuilt in 3D with [Three.js](https://threejs.org) through `@remotion/three` (React Three Fiber). It keeps the 2D clip's beats — the pull from frame 22, the catch at 50, the dip at 68, the lockout at 76 — then slows to a third of real speed for the bar whip and the chalk cloud while the camera arcs around, and lands on the same BEAST MODE plaque. It is not in the app's celebration list yet.
+
+| Path | What it is |
+|---|---|
+| `src/three/BeastMode3D.tsx` | The composition (`Gym3D`, 1080×2348; `Gym3DSmall` is a half-size preview). |
+| `src/three/gym3d/pose.ts` | The lift: the 2D clip's bar and leg keys mapped onto a 3D rig, two-bone IK for arms and legs, the expressions, and the slow-motion time remap (`math.ts`). |
+| `src/three/gym3d/Flexander.tsx` | Flexander in 3D. Torso and head are sculpted as smooth unions of ellipsoids (`sdf.ts`, meshed once with surface nets); the arms and legs are tubes swept through the joints every frame; the skirt is skinned to the thighs. |
+| `src/three/gym3d/Hall.tsx` | The temple gym from `gym/beast.webp`: reflective plank floor, sunlit windows, arches onto the painted Acropolis, vaulted ceiling, columns, lights. |
+| `src/three/gym3d/Atmosphere.tsx`, `Plaque.tsx`, `Post.tsx`, `CameraRig.tsx` | Light shafts, dust and chalk; the 3D plaque; bloom, vignette and tone mapping; the camera move. |
+
+Rendering needs WebGL in headless Chrome: `npx remotion render Gym3D out/videos/gym-1-3d.mp4 --gl=swangle` (or `--gl=angle` on a machine with a GPU), or `ONLY=Gym3D ./scripts/build_app_assets.sh`. The `debug` prop (`noreflect`, `noair`, `noplatform`, `nocols`, `flatfloor`) switches parts of the scene off when chasing a lighting problem.
+
 ## Sound
 
 Each video's soundtrack is built from short sound effects placed on frames, then muxed into the finished mp4. The picture is copied, not re-encoded.
