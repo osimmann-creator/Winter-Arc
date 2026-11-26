@@ -1,8 +1,9 @@
 <!doctype html>
 <!--
-  Operation Basement (joke-basement): a townhouse at night. The upstairs light goes out, the tiny basement
-  window creaks open and Dean squeezes out... and gets stuck halfway. Then he POPS out and tiptoes off into the dark.
-  Beats (30 fps): lights out 6, window creaks 12-24, Dean rises 24-36, stuck 36-66 (HNNG 42), POP 68, lands 82,
+  Operation Basement (joke-basement): the back of a suburban townhouse at night (vinyl siding, shutters, a deck).
+  The upstairs light goes out, the sliding glass door on the walk-out basement slides open just a crack, and Dean
+  squeezes into the gap... and gets stuck. Then he POPS out onto the deck and tiptoes off into the dark.
+  Beats (30 fps): lights out 6, door slides 12-26, Dean squeezes in 24-36, stuck 36-66 (HNNG 42), POP 68, lands 82,
   tiptoe 84-118, the cat looks away 104, card 120.
 -->
 <html lang="en">
@@ -14,8 +15,11 @@
 <link rel="stylesheet" href="assets/kit.css" />
 <style>
   #ob-cam { position: absolute; inset: 0; transform-origin: 620px 1700px; }
-  #ob-well { position: absolute; left: 0; top: 0; width: 1080px; height: 1736px; overflow: hidden; }
-  #ob-pane { position: absolute; left: 532px; top: 1640px; width: 176px; height: 92px; transform-origin: 88px 0; }
+  /* the door opening: stuck Dean only shows inside it */
+  #ob-well { position: absolute; inset: 0; clip-path: inset(1148px 288px 604px 448px); }
+  .ob-panel { position: absolute; top: 1148px; width: 182px; height: 596px; }
+  #ob-slide { left: 610px; }
+  #ob-fixed { left: 448px; }
   #ob-dark { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(11,10,26,0) 0%, rgba(11,10,26,0) 62%, rgba(11,10,26,.92) 92%, #0B0A1A 100%); pointer-events: none; }
   .ob-puff { position: absolute; width: 110px; height: 110px; margin: -55px 0 0 -55px; border-radius: 50%; background: #E9EEF5; border: 6px solid #341720; opacity: 0; }
   .ob-star { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #FFF6C8; }
@@ -26,62 +30,125 @@
  <div id="ob-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#141633">
   <div id="ob-cam">
   <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
-    <defs><linearGradient id="ob-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0F1130"/><stop offset="1" stop-color="#2C2F5E"/></linearGradient>
-      <pattern id="ob-brick" width="120" height="60" patternUnits="userSpaceOnUse"><rect width="120" height="60" fill="#7E3B33"/>
-        <path d="M0 30 L120 30 M0 60 L120 60 M60 0 L60 30 M0 30 L0 60 M120 30 L120 60" stroke="#5E2A25" stroke-width="5"/></pattern></defs>
-    <rect width="1080" height="1740" fill="url(#ob-sky)"/>
-    <circle cx="860" cy="330" r="96" fill="#FFF3C4" stroke="#341720" stroke-width="8"/>
-    <circle cx="830" cy="300" r="20" fill="#EDDDA6"/><circle cx="890" cy="360" r="14" fill="#EDDDA6"/>
-    <!-- the townhouse -->
-    <rect x="80" y="620" width="900" height="1120" fill="url(#ob-brick)" stroke="#341720" stroke-width="10"/>
-    <rect x="60" y="590" width="940" height="50" fill="#5E2A25" stroke="#341720" stroke-width="9"/>
-    <g stroke="#341720" stroke-width="9">
-      <rect x="170" y="720" width="200" height="260" fill="#1E2142"/><rect x="460" y="720" width="200" height="260" fill="#1E2142"/>
-      <rect x="750" y="720" width="160" height="260" fill="#1E2142"/>
-      <rect x="170" y="1080" width="200" height="260" fill="#1E2142"/><rect x="460" y="1080" width="200" height="260" fill="#1E2142"/>
-    </g>
-    <rect id="ob-lit" x="464" y="724" width="192" height="252" fill="#FFD776"/>
-    <path id="ob-sil" d="M520 976 L520 880 Q520 830 560 830 Q600 830 600 880 L600 976 Z M560 820 m-34 0 a34 34 0 1 0 68 0 a34 34 0 1 0 -68 0" fill="#B98A3A"/>
-    <g stroke="#341720" stroke-width="7"><path d="M270 720 L270 980 M170 850 L370 850 M560 720 L560 980 M460 850 L660 850 M830 720 L830 980 M750 850 L910 850 M270 1080 L270 1340 M170 1210 L370 1210 M560 1080 L560 1340 M460 1210 L660 1210" fill="none"/></g>
-    <g stroke="#341720" stroke-width="8"><rect x="150" y="980" width="240" height="22" fill="#B5714A"/><rect x="440" y="980" width="240" height="22" fill="#B5714A"/><rect x="730" y="980" width="200" height="22" fill="#B5714A"/>
-      <rect x="150" y="1340" width="240" height="22" fill="#B5714A"/><rect x="440" y="1340" width="240" height="22" fill="#B5714A"/></g>
-    <!-- the door and the stoop -->
+    <defs>
+      <linearGradient id="ob-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0F1130"/><stop offset="1" stop-color="#2C2F5E"/></linearGradient>
+      <!-- vinyl lap siding: a shadow line under each board and a soft highlight on top -->
+      <pattern id="ob-siding" width="60" height="32" patternUnits="userSpaceOnUse"><rect width="60" height="32" fill="#5D7398"/>
+        <path d="M0 29 L60 29" stroke="#4A5E82" stroke-width="6"/><path d="M0 5 L60 5" stroke="#6F86AC" stroke-width="3"/></pattern>
+      <pattern id="ob-siding-l" width="60" height="32" patternUnits="userSpaceOnUse"><rect width="60" height="32" fill="#557066"/>
+        <path d="M0 29 L60 29" stroke="#425A51" stroke-width="6"/><path d="M0 5 L60 5" stroke="#668377" stroke-width="3"/></pattern>
+      <pattern id="ob-siding-r" width="60" height="32" patternUnits="userSpaceOnUse"><rect width="60" height="32" fill="#7C6E5E"/>
+        <path d="M0 29 L60 29" stroke="#64574A" stroke-width="6"/><path d="M0 5 L60 5" stroke="#8E8070" stroke-width="3"/></pattern>
+      <pattern id="ob-shingle" width="56" height="28" patternUnits="userSpaceOnUse"><rect width="56" height="28" fill="#2B2E4A"/>
+        <path d="M0 26 L56 26 M28 0 L28 13 M0 13 L56 13 M14 13 L14 26 M42 13 L42 26" stroke="#1F2238" stroke-width="4"/></pattern>
+      <pattern id="ob-deck" width="120" height="36" patternUnits="userSpaceOnUse"><rect width="120" height="36" fill="#6B4E3A"/>
+        <path d="M0 34 L120 34" stroke="#523A2A" stroke-width="5"/><path d="M80 0 L80 34" stroke="#523A2A" stroke-width="4"/></pattern>
+      <linearGradient id="ob-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2A3B70" stop-opacity=".86"/><stop offset="1" stop-color="#151C3C" stop-opacity=".86"/></linearGradient>
+    </defs>
+    <rect width="1080" height="1760" fill="url(#ob-sky)"/>
+    <circle cx="860" cy="250" r="96" fill="#FFF3C4" stroke="#341720" stroke-width="8"/>
+    <circle cx="830" cy="220" r="20" fill="#EDDDA6"/><circle cx="890" cy="280" r="14" fill="#EDDDA6"/>
+
+    <!-- the neighbours on either side (the row of townhouses carries on) -->
     <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
-      <rect x="760" y="1080" width="170" height="380" fill="#2B3F7A"/>
-      <circle cx="900" cy="1280" r="10" fill="#FFD064"/>
-      <rect x="720" y="1460" width="250" height="40" fill="#9AA0AE"/><rect x="700" y="1500" width="290" height="40" fill="#8E95A3"/>
-      <rect x="680" y="1540" width="330" height="40" fill="#828999"/><rect x="660" y="1580" width="370" height="40" fill="#767D8C"/>
+      <rect x="-20" y="690" width="180" height="1060" fill="url(#ob-siding-l)"/>
+      <path d="M-40 716 L150 602 L150 652 L-40 760 Z" fill="url(#ob-shingle)"/>
+      <rect x="920" y="690" width="180" height="1060" fill="url(#ob-siding-r)"/>
+      <path d="M930 602 L1120 716 L1120 760 L930 652 Z" fill="url(#ob-shingle)"/>
+      <rect x="20" y="820" width="100" height="160" fill="#1E2142"/><rect x="960" y="820" width="100" height="160" fill="#1E2142"/>
     </g>
-    <!-- the basement window (its dark opening) -->
-    <rect x="520" y="1628" width="200" height="112" fill="#5E2A25" stroke="#341720" stroke-width="9"/>
-    <rect x="532" y="1640" width="176" height="92" fill="#0B0A12"/>
-    <!-- sidewalk and street -->
-    <rect x="0" y="1736" width="1080" height="200" fill="#5A5E72"/>
-    <path d="M0 1736 L1080 1736" stroke="#341720" stroke-width="9"/>
-    <path d="M260 1736 L220 1936 M600 1736 L600 1936 M940 1736 L980 1936" stroke="#474A5C" stroke-width="6"/>
-    <rect x="0" y="1936" width="1080" height="420" fill="#2B2D3E"/>
-    <path d="M0 1936 L1080 1936" stroke="#341720" stroke-width="9"/>
-    <path d="M60 2140 L240 2140 M420 2140 L600 2140 M780 2140 L960 2140" stroke="#5A5E72" stroke-width="16" stroke-linecap="round"/>
-    <!-- the streetlight (broken, of course) -->
-    <g stroke="#341720" stroke-width="9"><rect x="60" y="1090" width="26" height="650" fill="#3A3F52"/><path d="M73 1090 Q73 1020 150 1020 L200 1020" fill="none"/>
-      <path d="M170 1010 L240 1010 L226 1046 L184 1046 Z" fill="#3A3F52"/></g>
-    <!-- the cat on the stoop -->
-    <g id="ob-cat" stroke="#341720" stroke-width="6" stroke-linejoin="round" transform="translate(-740 -240)">
+    <!-- Dean's place: a front-facing gable over two floors -->
+    <g stroke="#341720" stroke-width="10" stroke-linejoin="round">
+      <path d="M96 676 L540 394 L984 676 Z" fill="url(#ob-shingle)"/>
+      <rect x="150" y="640" width="780" height="1110" fill="url(#ob-siding)"/>
+      <path d="M150 650 L540 446 L930 650 Z" fill="url(#ob-siding)"/>
+    </g>
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round" fill="#C9D2E3">
+      <path d="M498 590 L540 548 L582 590 Z"/>
+      <rect x="150" y="640" width="780" height="22"/>
+      <rect x="140" y="650" width="22" height="1100"/><rect x="918" y="650" width="22" height="1100"/>
+      <rect x="162" y="1062" width="756" height="20"/>
+    </g>
+    <path d="M512 578 L568 578 M520 566 L560 566" stroke="#7E8AA3" stroke-width="5"/>
+
+    <!-- upstairs: three windows with shutters; the middle one is lit at first -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="168" y="724" width="30" height="236" fill="#2B3B60"/><rect x="362" y="724" width="30" height="236" fill="#2B3B60"/>
+      <rect x="688" y="724" width="30" height="236" fill="#2B3B60"/><rect x="882" y="724" width="30" height="236" fill="#2B3B60"/>
+      <rect x="196" y="716" width="168" height="248" fill="#C9D2E3"/><rect x="452" y="716" width="176" height="248" fill="#C9D2E3"/><rect x="716" y="716" width="168" height="248" fill="#C9D2E3"/>
+      <rect x="212" y="732" width="136" height="216" fill="#1E2142"/><rect x="468" y="732" width="144" height="216" fill="#1E2142"/><rect x="732" y="732" width="136" height="216" fill="#1E2142"/>
+    </g>
+    <g stroke="#1F2C4A" stroke-width="4"><path d="M172 760 L194 760 M172 790 L194 790 M172 820 L194 820 M172 850 L194 850 M172 880 L194 880 M172 910 L194 910 M366 760 L388 760 M366 790 L388 790 M366 820 L388 820 M366 850 L388 850 M366 880 L388 880 M366 910 L388 910
+      M692 760 L714 760 M692 790 L714 790 M692 820 L714 820 M692 850 L714 850 M692 880 L714 880 M692 910 L714 910 M886 760 L908 760 M886 790 L908 790 M886 820 L908 820 M886 850 L908 850 M886 880 L908 880 M886 910 L908 910"/></g>
+    <rect id="ob-lit" x="472" y="736" width="136" height="208" fill="#FFD776"/>
+    <path id="ob-sil" d="M510 944 L510 868 Q510 826 540 826 Q570 826 570 868 L570 944 Z M540 808 m-30 0 a30 30 0 1 0 60 0 a30 30 0 1 0 -60 0" fill="#B98A3A"/>
+    <g stroke="#341720" stroke-width="7"><path d="M280 732 L280 948 M212 840 L348 840 M540 732 L540 948 M468 840 L612 840 M800 732 L800 948 M732 840 L868 840" fill="none"/></g>
+    <g stroke="#341720" stroke-width="8" fill="#C9D2E3"><rect x="184" y="958" width="192" height="20"/><rect x="440" y="958" width="200" height="20"/><rect x="704" y="958" width="192" height="20"/></g>
+
+    <!-- downstairs: the patio lights (off), the lamp by the door (off), the hose -->
+    <path d="M170 1112 Q540 1176 910 1112" fill="none" stroke="#1C1E33" stroke-width="5"/>
+    <g fill="#E8D9A6" opacity=".55" stroke="#341720" stroke-width="3">
+      <circle cx="230" cy="1130" r="9"/><circle cx="310" cy="1144" r="9"/><circle cx="390" cy="1154" r="9"/><circle cx="690" cy="1154" r="9"/><circle cx="770" cy="1144" r="9"/><circle cx="850" cy="1130" r="9"/>
+    </g>
+    <g stroke="#341720" stroke-width="7" stroke-linejoin="round">
+      <rect x="840" y="1232" width="40" height="64" rx="8" fill="#3B4466"/><path d="M846 1232 L874 1232 L860 1214 Z" fill="#23263C"/>
+      <circle cx="340" cy="1560" r="44" fill="#2F7A55"/><circle cx="340" cy="1560" r="18" fill="#1F5C40"/>
+    </g>
+    <!-- the sliding glass door: aluminium frame and the dark basement behind it -->
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <rect x="412" y="1108" width="416" height="26" fill="#C9D2E3"/>
+      <rect x="430" y="1130" width="380" height="620" fill="#A7AFC0"/>
+      <rect x="448" y="1148" width="344" height="600" fill="#0B0A12"/>
+    </g>
+
+    <!-- the deck and the lawn -->
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <rect x="-20" y="1744" width="1120" height="150" fill="url(#ob-deck)"/>
+      <rect x="-20" y="1890" width="1120" height="34" fill="#4E3828"/>
+      <rect x="-20" y="1924" width="1120" height="440" fill="#1E3A2B"/>
+    </g>
+    <g fill="#2C4E3A"><ellipse cx="200" cy="2030" rx="70" ry="22"/><ellipse cx="420" cy="2120" rx="70" ry="22"/><ellipse cx="660" cy="2210" rx="70" ry="22"/></g>
+    <path d="M90 1990 l10 -26 l10 26 M780 2050 l10 -26 l10 26 M940 2180 l10 -26 l10 26 M330 2260 l10 -26 l10 26" fill="none" stroke="#2F5A41" stroke-width="6" stroke-linecap="round"/>
+    <!-- bushes along the neighbours' walls -->
+    <g stroke="#341720" stroke-width="8" fill="#26503A"><path d="M-30 1750 Q-20 1650 50 1660 Q90 1610 140 1670 Q170 1690 160 1750 Z"/><path d="M920 1750 Q915 1680 960 1670 Q1010 1610 1060 1660 Q1110 1660 1110 1750 Z"/></g>
+    <!-- the AC unit with the cat on it (the only witness) -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="160" y="1626" width="140" height="124" rx="10" fill="#B9C0CC"/>
+      <circle cx="230" cy="1690" r="44" fill="#8A93A3"/><path d="M230 1646 L230 1734 M186 1690 L274 1690 M199 1659 L261 1721 M261 1659 L199 1721" stroke="#6E7788" stroke-width="5"/>
+    </g>
+    <g id="ob-cat" stroke="#341720" stroke-width="6" stroke-linejoin="round" transform="translate(-810 46)">
       <path d="M1010 1580 Q1000 1500 1020 1470 L1014 1430 L1036 1452 L1052 1452 L1068 1430 L1066 1474 Q1086 1510 1070 1580 Z" fill="#141220"/>
       <path d="M1070 1570 Q1110 1560 1104 1520" fill="none" stroke="#141220" stroke-width="10" stroke-linecap="round"/>
     </g>
-    <g id="ob-eyes" transform="translate(-740 -240)"><ellipse cx="1032" cy="1480" rx="9" ry="8" fill="#FFE04A"/><ellipse cx="1056" cy="1480" rx="9" ry="8" fill="#FFE04A"/></g>
+    <g id="ob-eyes" transform="translate(-810 46)"><ellipse cx="1032" cy="1480" rx="9" ry="8" fill="#FFE04A"/><ellipse cx="1056" cy="1480" rx="9" ry="8" fill="#FFE04A"/></g>
+    <!-- the grill, in the dark corner -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <path d="M858 1880 L872 1760 M962 1880 L948 1760" fill="none"/>
+      <path d="M846 1700 Q910 1630 974 1700 Z" fill="#2E2F3A"/><rect x="842" y="1700" width="136" height="60" rx="8" fill="#2E2F3A"/>
+      <circle cx="858" cy="1882" r="12" fill="#1C1C24"/><circle cx="962" cy="1882" r="12" fill="#1C1C24"/>
+    </g>
   </svg>
   <div id="ob-stars"></div>
-  <div id="ob-pane"><svg width="176" height="92" viewBox="0 0 176 92"><rect x="4" y="4" width="168" height="84" fill="#3B4A78" stroke="#341720" stroke-width="8"/><path d="M88 4 L88 88" stroke="#341720" stroke-width="7"/><path d="M20 70 L56 20 M104 70 L140 20" stroke="#8FA6D8" stroke-width="8" stroke-linecap="round" opacity=".7"/></svg></div>
-  <!-- stuck Dean, clipped by the window sill -->
+  <!-- Dean squeezing through the gap: only what's inside the door frame shows, dimmed where the glass covers him -->
   <div id="ob-well"><div id="ob-stuck"></div></div>
+  <!-- the two glass panels: the right one slides left behind the fixed one -->
+  <div class="ob-panel" id="ob-slide"><div id="ob-rattle"><svg width="182" height="596" viewBox="0 0 182 596">
+    <rect x="5" y="5" width="172" height="586" fill="url(#ob-glass)" stroke="#8E97AA" stroke-width="10"/>
+    <rect x="5" y="5" width="172" height="586" fill="none" stroke="#341720" stroke-width="5"/>
+    <path d="M40 200 L120 70 M70 260 L150 130" stroke="#9FB4E2" stroke-width="10" stroke-linecap="round" opacity=".45"/>
+    <rect x="16" y="270" width="14" height="70" rx="6" fill="#C9D2E3" stroke="#341720" stroke-width="4"/>
+  </svg></div></div>
+  <div class="ob-panel" id="ob-fixed"><svg width="182" height="596" viewBox="0 0 182 596">
+    <rect x="5" y="5" width="172" height="586" fill="url(#ob-glass)" stroke="#8E97AA" stroke-width="10"/>
+    <rect x="5" y="5" width="172" height="586" fill="none" stroke="#341720" stroke-width="5"/>
+    <path d="M30 240 L120 92 M60 300 L150 152" stroke="#9FB4E2" stroke-width="10" stroke-linecap="round" opacity=".45"/>
+  </svg></div>
   <div id="ob-free"></div>
   <div id="ob-puffs"></div>
   <div id="ob-dark"></div>
-  <div class="word" id="ob-creak" style="left:420px;top:1560px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="90" style="fill:#C9D6F2">CREAK...</text></svg></div></div>
-  <div class="word" id="ob-hnng" style="left:860px;top:1310px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#FFD064">HNNG!</text></svg></div></div>
-  <div class="word" id="ob-pop" style="left:620px;top:1260px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="170" style="fill:#EE5982">POP!</text></svg></div></div>
+  <div class="word" id="ob-creak" style="left:300px;top:1460px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="90" style="fill:#C9D6F2">SHHHK...</text></svg></div></div>
+  <div class="word" id="ob-hnng" style="left:880px;top:1360px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#FFD064">HNNG!</text></svg></div></div>
+  <div class="word" id="ob-pop" style="left:660px;top:1200px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="170" style="fill:#EE5982">POP!</text></svg></div></div>
   </div>
  </div>
 
@@ -92,49 +159,50 @@
 (function () {
   var F = WA.F, tl = gsap.timeline({ paused: true }), r = WA.rng(11);
   WA.spawn('#ob-stars', 26, function () { return '<i class="ob-star"></i>'; }).forEach(function (st, i) {
-    gsap.set(st, { x: r() * 1080, y: 60 + r() * 520, scale: 0.5 + r() });
+    gsap.set(st, { x: r() * 1080, y: 40 + r() * 420, scale: 0.5 + r() });
     tl.fromTo(st, { opacity: 0.35 }, { opacity: 1, duration: (8 + (i % 5) * 3) * F, yoyo: true, repeat: 9, ease: 'sine.inOut' }, (i % 7) * F);
   });
-  // Dean, stuck in the window (only what's above the sill shows), and Dean free
-  WA.actor('ob-stuck', ['stuck'], { x: 620, y: 1945, s: 0.52, member: 'dean', tag: 'DEAN', color: '#EE5982', tagY: 40 });
-  WA.actor('ob-free', ['stuck', 'tiptoe-a', 'tiptoe-b'], { x: 620, y: 1880, s: 0.5, member: 'dean', tag: 'DEAN', color: '#EE5982', tagY: 40 });
+  // Dean wedged in the door (only what's inside the frame shows), and Dean free
+  WA.actor('ob-stuck', ['stuck'], { x: 740, y: 1744, s: 0.5, member: 'dean', tag: 'DEAN', color: '#EE5982', tagY: 96 });
+  WA.actor('ob-free', ['stuck', 'tiptoe-a', 'tiptoe-b'], { x: 740, y: 1880, s: 0.5, member: 'dean', tag: 'DEAN', color: '#EE5982', tagY: 40 });
   WA.pose(tl, '#ob-stuck', 'stuck', 0);
   gsap.set('#ob-free', { opacity: 0 });
-  gsap.set('#ob-stuck', { y: 330 });
+  gsap.set('#ob-stuck', { x: -170, opacity: 0 });
   gsap.set('#ob-stuck .tag', { opacity: 0 });
   tl.to('#ob-stuck .tag', { opacity: 1, duration: 6 * F }, 30 * F);
   tl.set('#ob-free .tag', { opacity: 0 }, 68 * F);
   tl.to('#ob-free .tag', { opacity: 1, duration: 4 * F }, 82 * F);
   tl.fromTo('#ob-cam', { scale: 1.12 }, { scale: 1.0, duration: 5.5, ease: 'sine.inOut' }, 0);
 
-  // lights out upstairs, then the window creaks open
+  // lights out upstairs, then the door slides open... just a crack
   tl.set(['#ob-lit', '#ob-sil'], { opacity: 0 }, 6 * F);
-  tl.fromTo('#ob-pane', { scaleY: 1, skewX: 0 }, { scaleY: -0.55, skewX: -8, duration: 14 * F, ease: 'power2.inOut', immediateRender: false }, 12 * F);
+  tl.to('#ob-slide', { x: -105, duration: 14 * F, ease: 'power2.inOut' }, 12 * F);
   WA.word(tl, '#ob-creak', 12 * F, 26, { rot: -4, rot0: 6, seed: 3, amp: 3 });
-  // he rises out... and sticks
-  tl.to('#ob-stuck', { y: 0, duration: 12 * F, ease: 'back.out(1.6)' }, 24 * F);
+  // he slides into the gap from behind the glass... and sticks
+  tl.to('#ob-stuck', { opacity: 1, duration: 4 * F }, 22 * F);
+  tl.to('#ob-stuck', { x: 0, duration: 12 * F, ease: 'back.out(1.6)' }, 24 * F);
   WA.shake(tl, '#ob-stuck .jit', 36 * F, 30 * F, 4, { grow: 1.5, seed: 4, rot: 2 });
-  WA.shake(tl, '#ob-pane', 40 * F, 24 * F, 2, { seed: 6 });
+  WA.shake(tl, '#ob-rattle', 40 * F, 24 * F, 3, { seed: 6 });
   WA.word(tl, '#ob-hnng', 42 * F, 24, { rot: 8, rot0: -10, seed: 5, amp: 6 });
-  tl.to('#ob-stuck', { y: 40, duration: 4 * F, ease: 'power2.in' }, 62 * F);
+  tl.to('#ob-stuck', { x: -16, duration: 4 * F, ease: 'power2.in' }, 62 * F);
 
-  // POP!
+  // POP! out onto the deck
   tl.set('#ob-stuck', { opacity: 0 }, 68 * F);
-  tl.set('#ob-free', { opacity: 1, x: 0, y: -60 }, 68 * F);
+  tl.set('#ob-free', { opacity: 1, x: 0, y: -120 }, 68 * F);
   WA.pose(tl, '#ob-free', 'stuck', 68 * F);
-  tl.to('#ob-free', { y: -380, rotation: 200, duration: 7 * F, ease: 'power2.out' }, 68 * F);
+  tl.to('#ob-free', { y: -420, rotation: 200, duration: 7 * F, ease: 'power2.out' }, 68 * F);
   tl.to('#ob-free', { y: 0, x: 70, rotation: 360, duration: 7 * F, ease: 'power2.in' }, 75 * F);
   tl.set('#ob-free', { rotation: 0 }, 82 * F);
   WA.word(tl, '#ob-pop', 68 * F, 24, { rot: -8, rot0: 16, seed: 7, amp: 7 });
   WA.spawn('#ob-puffs', 7, function () { return ''; }).forEach(function (p, i) {
-    p.className = 'ob-puff'; p.style.left = (560 + i * 20) + 'px'; p.style.top = '1690px';
+    p.className = 'ob-puff'; p.style.left = (718 + (i % 3) * 22) + 'px'; p.style.top = (1380 + i * 40) + 'px';
     var a = -Math.PI * (0.1 + 0.8 * i / 6);
     tl.fromTo(p, { scale: 0.3, opacity: 1, x: 0, y: 0 }, { scale: 1.3, opacity: 0, x: Math.cos(a) * 140, y: Math.sin(a) * 110, duration: 18 * F, ease: 'power2.out', immediateRender: false }, 68 * F);
   });
   WA.squash(tl, '#ob-free', 82 * F, 0.12, 10);
   // tiptoe off into the dark
   WA.cycle(tl, '#ob-free', ['tiptoe-a', 'tiptoe-b'], 84 * F, 5.5, 6, 14);
-  tl.to('#ob-free', { x: 560, duration: 36 * F, ease: 'none' }, 84 * F);
+  tl.to('#ob-free', { x: 460, duration: 36 * F, ease: 'none' }, 84 * F);
   // the only witness looks away
   tl.to('#ob-eyes', { scaleY: 0.1, transformOrigin: '50% 50%', duration: 3 * F, yoyo: true, repeat: 1 }, 60 * F);
   tl.to('#ob-eyes', { scaleY: 0.05, transformOrigin: '50% 50%', duration: 4 * F }, 104 * F);

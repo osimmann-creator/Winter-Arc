@@ -592,8 +592,8 @@ CUES['joke-worthit'] = [  # #worthit: chewing 2-36, MMM 8, hearts 6-20, plane 26
     *[C(f, 'pop_pluck', -19, r=0.8) for f in (92, 99, 106, 113)], C(96, 'sting_soft', -13),
     *joke_card(120),
 ]
-CUES['joke-basement'] = [  # Operation Basement: lights out 6, CREAK 12-26, rises 24, stuck 36-66 (HNNG 42), POP 68, lands 82, tiptoe 84+ (every 6), cat blinks 60, looks away 104, card 120
-    C(0, 'night', -18, d=4.0, fi=0.3, fo=1.0), C(6, 'switch', -10), C(12, 'squeak', -10, r=0.55, d=0.9, fo=0.3), word(12, -16),
+CUES['joke-basement'] = [  # Operation Basement: lights out 6, sliding door 12-26, squeezes in 24, stuck 36-66 (HNNG 42), POP 68, lands 82, tiptoe 84+ (every 6), cat blinks 60, looks away 104, card 120
+    C(0, 'night', -18, d=4.0, fi=0.3, fo=1.0), C(6, 'switch', -10), C(12, 'door_slide', -8, d=0.9, fo=0.25), C(15, 'squeak', -19, r=0.8, d=0.45, fo=0.2), word(12, -16),
     C(26, 'cloth', -14), C(30, 'pop_pluck', -14), C(36, 'cloth_tear', -16, d=0.5),
     *[C(f, 'squeak', -16, r=1.3 + 0.1 * (i % 3)) for i, f in enumerate(range(38, 66, 7))], word(42, -12), C(44, 'heartbeat', -15, d=0.8),
     C(62, 'whoosh', -12), C(68, 'pop', -2), C(68, 'cork', -6), word(68, -12), C(69, 'powder', -12), C(70, 'spin', -12),
