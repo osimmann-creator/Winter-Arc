@@ -17,7 +17,7 @@ const INK = C.ink;
 /** Who's who: the signature face and what to keep when drawing him. */
 export const CREW: Record<string, { notes: string[]; signature: [string, Partial<Pose>] }> = {
   osim: {
-    notes: ['Rectangular glasses, thin dark frames', 'Short beard trimmed to the jaw', 'Short sides, messy top pushed up', 'Light olive skin, dark brown hair'],
+    notes: ['Rectangular glasses, thin dark frames', 'Thin, short beard along the jaw', 'Short sides, messy top pushed up', 'Light olive skin, dark brown hair'],
     signature: ['HOAT MODE', { wink: 1, turn: 0.2, lookX: 0.3, mouthSkew: 0.5, brow: 0.5 }],
   },
   phil: {
@@ -33,7 +33,7 @@ export const CREW: Record<string, { notes: string[]; signature: [string, Partial
     signature: ['BLUE HAIR', { hairBlue: 1, smile: 1.2, mouthOpen: 0.4, brow: 0.6 }],
   },
   gaurav: {
-    notes: ['Messy black hair over the forehead', 'Full black beard', 'Heavy-lidded, unimpressed eyes', 'Deadpan mouth'],
+    notes: ['Messy black hair over the forehead', 'Trimmed beard, skin shows through', 'Heavy-lidded, unimpressed eyes', 'Deadpan mouth'],
     signature: ['UNIMPRESSED', { lid: 0.2, lookX: 0.5, smile: 0.1, mouthSkew: -0.4, browTilt: 0.2 }],
   },
   dean: {
@@ -41,7 +41,7 @@ export const CREW: Record<string, { notes: string[]; signature: [string, Partial
     signature: ['SAYS WHO?', { mouthOpen: 0.32, mouthSkew: 0.9, smile: 0.2, brow: 0.3, turn: 0.15, lookX: 0.2 }],
   },
   amaan: {
-    notes: ['Black curls piled on top, short sides', 'Full black beard', 'Thick brows, long face', 'Calm, closed-lip smile'],
+    notes: ['Black curls piled on top, short sides', 'Trimmed beard, skin shows through', 'Thick brows, long face', 'Calm, closed-lip smile'],
     signature: ['FIGHT NIGHT', { mouthMode: 'grit', browTilt: -1, lid: 0.15, brow: -0.2 }],
   },
   jake: {
@@ -49,7 +49,7 @@ export const CREW: Record<string, { notes: string[]; signature: [string, Partial
     signature: ['RADIATOR NAP', { eyes: 1, mouthMode: 'o', mouthOpen: 0.15, head: 8, blush: 0.6 }],
   },
   ayaad: {
-    notes: ['Black hair with volume, swept back', 'Falls over the tops of his ears', 'Thin moustache, light stubble', 'Slim face, easy smile'],
+    notes: ['Black hair parted down the middle', 'Full at the sides, over the tops of his ears', 'Thin moustache, light stubble', 'Slim face, easy smile'],
     signature: ['THE IRON', { mouthMode: 'grit', sweat: 1, browTilt: 1, brow: 0.4 }],
   },
 };
