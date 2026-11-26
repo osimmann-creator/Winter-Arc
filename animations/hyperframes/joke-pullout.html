@@ -1,0 +1,189 @@
+<!doctype html>
+<!--
+  The Pull-Out (joke-pullout): 6:00 AM at Jake's. A guest (not in the app: no tag) sleeps on the pull-out. BOING:
+  the bar comes up through the mattress. BOING: he bounces and rolls. Then the whole bed SNAPs shut like a taco,
+  just his feet sticking out. A review pops up: JAKE'S PLACE, one star.
+  Beats (30 fps): Zzz 0-20, boing 20/34, fold 46, snap 50, review 66, star 72, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/buddy.js"></script>
+<script src="assets/props.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #po-cam { position: absolute; inset: 0; transform: scale(1.1); transform-origin: 520px 1900px; }
+  #po-open, #po-taco { position: absolute; inset: 0; }
+  #po-taco { opacity: 0; }
+  #po-guest { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  .po-z { position: absolute; width: 0; height: 0; opacity: 0; }
+  .po-z span { position: absolute; left: -30px; top: -40px; font-family: 'Luckiest Guy'; font-size: 64px; color: #FFFFFF;
+    -webkit-text-stroke: 8px #341720; paint-order: stroke fill; }
+  #po-review { position: absolute; left: 540px; top: 1120px; width: 0; height: 0; opacity: 0; }
+  #po-review svg { position: absolute; left: -380px; top: -230px; overflow: visible; }
+  #po-feet { transform-origin: 900px 1680px; }
+  .po-dust { position: absolute; width: 0; height: 0; opacity: 0; }
+  .po-dust svg { position: absolute; left: -60px; top: -40px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-pullout" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="po-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#E6DDF2">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <rect width="1080" height="2348" fill="#E6DDF2"/>
+    <!-- the morning window -->
+    <rect x="560" y="560" width="400" height="480" rx="16" fill="#FFFFFF" stroke="#341720" stroke-width="10"/>
+    <rect x="580" y="580" width="360" height="440" rx="8" fill="#FFD9A8"/>
+    <circle cx="760" cy="900" r="80" fill="#FFE08A" stroke="#341720" stroke-width="7"/>
+    <path d="M580 940 Q680 900 760 930 Q860 890 940 930 L940 1020 L580 1020 Z" fill="#C9B6D8"/>
+    <path d="M760 580 L760 1020 M580 800 L940 800" stroke="#FFFFFF" stroke-width="14"/>
+    <!-- a framed photo and a lamp -->
+    <rect x="130" y="640" width="260" height="200" rx="10" fill="#FFFFFF" stroke="#341720" stroke-width="9" transform="rotate(4 260 740)"/>
+    <rect x="152" y="660" width="216" height="160" rx="4" fill="#9DD3F5" transform="rotate(4 260 740)"/>
+    <path d="M170 800 L230 730 L270 770 L310 720 L360 800 Z" fill="#45B87A" transform="rotate(4 260 740)"/>
+    <!-- floor -->
+    <path d="M-20 1900 L1100 1900 L1100 2360 L-20 2360 Z" fill="#B9A3C4" stroke="#341720" stroke-width="10"/>
+    <path d="M-20 2030 L1100 2030 M-20 2170 L1100 2170" stroke="#A890B5" stroke-width="8"/>
+    <ellipse cx="540" cy="2150" rx="420" ry="70" fill="#D8C8E0" stroke="#341720" stroke-width="8"/>
+    <!-- the wall clock: 6:00 -->
+    <circle cx="300" cy="1130" r="76" fill="#FFFFFF" stroke="#341720" stroke-width="10"/>
+    <g stroke="#341720" stroke-width="7" stroke-linecap="round"><path d="M300 1066 L300 1080 M364 1130 L350 1130 M300 1194 L300 1180 M236 1130 L250 1130"/></g>
+    <path d="M300 1130 L300 1078 M300 1130 L300 1170" stroke="#341720" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="300" cy="1130" r="9" fill="#341720"/>
+    <text x="300" y="1250" text-anchor="middle" font-family="Luckiest Guy" font-size="40" fill="#7A6A8A">AM</text>
+  </svg>
+  <div id="po-cam">
+  <!-- the open bed with the guest on it -->
+  <div id="po-open">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <g stroke="#341720" stroke-width="10" stroke-linejoin="round">
+      <path d="M60 1500 Q60 1440 120 1440 L300 1440 Q340 1440 340 1480 L340 1900 L60 1900 Z" fill="#7A5A8A"/>
+      <rect x="40" y="1620" width="80" height="280" rx="30" fill="#8A6A9A"/>
+      <path d="M380 1800 L360 1900 M860 1800 L880 1900" stroke-width="12" fill="none"/>
+      <path d="M340 1800 L900 1800" stroke-width="14" fill="none"/>
+    </g>
+    <rect x="110" y="1720" width="800" height="76" rx="22" fill="#FFFFFF" stroke="#341720" stroke-width="10"/>
+    <path id="po-bump" d="M520 1724 Q600 1650 680 1724 Z" fill="#FFFFFF" stroke="#341720" stroke-width="10" stroke-linejoin="round"/>
+    <path id="po-bump2" d="M360 1724 Q440 1650 520 1724 Z" fill="#FFFFFF" stroke="#341720" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M600 1796 L600 1730 M440 1796 L440 1730" stroke="#7D8494" stroke-width="12" stroke-linecap="round"/>
+    <path d="M140 1738 L880 1738" stroke="#E6DDF2" stroke-width="10" stroke-linecap="round"/>
+    <!-- pillow -->
+    <rect x="130" y="1650" width="200" height="80" rx="34" fill="#F4F0FA" stroke="#341720" stroke-width="9"/>
+  </svg>
+  <div id="po-guest"><div id="po-g0"></div><div id="po-g1"></div></div>
+  <svg class="abs" style="left:0;top:0;pointer-events:none" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <path id="po-blanket" d="M400 1640 Q410 1596 460 1596 L720 1596 Q770 1596 770 1640 L770 1730 L400 1730 Z" fill="#5C7CF0" stroke="#341720" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M440 1640 L740 1640 M440 1690 L740 1690" stroke="#7D97F5" stroke-width="10" stroke-dasharray="26 22" opacity=".9"/>
+  </svg>
+  </div>
+  <!-- the taco -->
+  <div id="po-taco">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <g stroke="#341720" stroke-width="10" stroke-linejoin="round">
+      <path d="M60 1500 Q60 1440 120 1440 L300 1440 Q340 1440 340 1480 L340 1900 L60 1900 Z" fill="#7A5A8A"/>
+      <rect x="40" y="1620" width="80" height="280" rx="30" fill="#8A6A9A"/>
+      <path d="M380 1800 L360 1900 M860 1800 L880 1900" stroke-width="12" fill="none"/>
+      <path d="M340 1800 L900 1800" stroke-width="14" fill="none"/>
+    </g>
+    <g id="po-feet" stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <rect x="860" y="1644" width="100" height="34" rx="14" fill="#3E5A8C"/>
+      <rect x="860" y="1682" width="100" height="34" rx="14" fill="#3E5A8C"/>
+      <path d="M950 1612 Q1006 1612 1008 1660 L1008 1672 L950 1672 Z" fill="#2B2236"/>
+      <path d="M950 1680 Q1006 1680 1008 1728 L1008 1740 L950 1740 Z" fill="#2B2236"/>
+    </g>
+    <path d="M430 1636 L900 1636 L900 1720 L430 1720 Q330 1720 330 1678 Q330 1636 430 1636 Z" fill="#5C7CF0" stroke="#341720" stroke-width="8"/>
+    <path d="M900 1560 L420 1560 Q250 1560 250 1678 Q250 1796 420 1796 L900 1796 L900 1720 L430 1720 Q330 1720 330 1678 Q330 1636 430 1636 L900 1636 Z" fill="#FFFFFF" stroke="#341720" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M440 1580 L880 1580 M440 1776 L880 1776" stroke="#E6DDF2" stroke-width="10" stroke-linecap="round"/>
+  </svg>
+  </div>
+  <div class="po-z" id="po-z0" style="left:250px;top:1500px"><span>Z</span></div>
+  <div class="po-z" id="po-z1" style="left:300px;top:1440px"><span style="font-size:52px">z</span></div>
+  <div class="po-dust" id="po-d0" style="left:300px;top:1880px"><svg width="120" height="80" viewBox="-60 -40 120 80"><g fill="#FFFFFF" stroke="#341720" stroke-width="7"><circle cx="-24" cy="6" r="26"/><circle cx="18" cy="-4" r="32"/></g></svg></div>
+  <div class="po-dust" id="po-d1" style="left:900px;top:1880px"><svg width="120" height="80" viewBox="-60 -40 120 80"><g fill="#FFFFFF" stroke="#341720" stroke-width="7"><circle cx="-24" cy="6" r="26"/><circle cx="18" cy="-4" r="32"/></g></svg></div>
+  </div>
+  <div class="word" id="po-boing0" style="left:640px;top:1480px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="110" style="fill:#FFD064">BOING</text></svg></div></div>
+  <div class="word" id="po-boing1" style="left:420px;top:1420px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#FFD064">BOING!</text></svg></div></div>
+  <div class="word" id="po-snap" style="left:600px;top:1380px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="190" style="fill:#FF8FB1">SNAP!</text></svg></div></div>
+  <div id="po-review"><svg width="760" height="460" viewBox="-380 -230 760 460">
+    <rect x="-360" y="-210" width="720" height="420" rx="34" fill="#341720" transform="translate(10 14)"/>
+    <rect x="-360" y="-210" width="720" height="420" rx="34" fill="#FFFFFF" stroke="#341720" stroke-width="10"/>
+    <text x="0" y="-110" text-anchor="middle" font-family="Luckiest Guy" font-size="84" fill="#E39A2E">JAKE'S PLACE</text>
+    <g id="po-stars"></g>
+    <text x="0" y="168" text-anchor="middle" font-family="Luckiest Guy" font-size="54" fill="#7A6A8A">"MY BACK..."</text>
+  </svg></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"THE PULL-OUT","pts":"1","unit":"STAR","sub":"WOULD NOT RECOMMEND","color":"#7A5A8A","dark":"#523A60","light":"#EADCF4"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  // the guest, lying down: a Buddy turned on his back (feet right), asleep then startled
+  var g = { skin: '#F2C6A0', hair: 'curly', hairColor: '#8E5229', top: '#E9E4F2', pants: '#3E5A8C', face: 'bliss', arms: 'down', legs: 'stand' };
+  WA.buddyIn('po-g0', g, 800, 1630, 0.56);
+  WA.buddyIn('po-g1', Object.assign({}, g, { face: 'scared' }), 800, 1630, 0.56);
+  gsap.set(['#po-g0', '#po-g1'], { rotation: -90 });
+  gsap.set('#po-g1', { opacity: 0 });
+  gsap.set('#po-bump', { scaleY: 0, svgOrigin: '600 1724' });
+
+  // the stars on the review: one gold, four empty
+  var st = '';
+  for (var i = 0; i < 5; i++) st += '<g transform="translate(' + (-240 + i * 120) + ' 20)" id="po-st' + i + '">' + WA.star(50, i === 0 ? '#FFD064' : '#E6E1EE', 8) + '</g>';
+  document.getElementById('po-stars').innerHTML = st;
+
+  // Zzz
+  ['#po-z0', '#po-z1'].forEach(function (z, i) {
+    [0, 14].forEach(function (t0) {
+      var t = t0 + i * 6;
+      tl.fromTo(z, { opacity: 0, y: 20 }, { opacity: 1, y: -30, duration: 8 * F, ease: 'sine.out', immediateRender: t === 0 }, t * F);
+      tl.to(z, { opacity: 0, y: -60, duration: 6 * F, ease: 'sine.in' }, (t + 8) * F);
+    });
+  });
+
+  // BOING: the bar comes up through the mattress
+  gsap.set('#po-bump2', { scaleY: 0, svgOrigin: '440 1724' });
+  function boing(at, h, word, rot, bump) {
+    tl.to(bump, { scaleY: 1, duration: 3 * F, ease: 'back.out(3)' }, at * F);
+    tl.to(bump, { scaleY: 0, duration: 6 * F, ease: 'power2.in' }, (at + 6) * F);
+    tl.to('#po-guest', { y: -h, rotation: rot, duration: 5 * F, ease: 'power2.out' }, at * F);
+    tl.to('#po-guest', { y: 0, rotation: rot / 2, duration: 6 * F, ease: 'bounce.out' }, (at + 5) * F);
+    WA.word(tl, word, (at + 1) * F, 22, { rot: -8, rot0: 12, seed: at });
+  }
+  gsap.set('#po-guest', { transformOrigin: '600px 1680px' });
+  tl.set('#po-g0', { opacity: 0 }, 20 * F);
+  tl.set('#po-g1', { opacity: 1 }, 20 * F);
+  boing(20, 60, '#po-boing0', -4, '#po-bump');
+  // he rolls over... onto the other bar
+  tl.to('#po-guest', { x: -40, duration: 6 * F, ease: 'power1.inOut' }, 28 * F);
+  boing(34, 110, '#po-boing1', 10, '#po-bump2');
+
+  // SNAP: the bed folds up like a taco
+  tl.to('#po-open', { scaleY: 0.7, duration: 4 * F, ease: 'power2.in' }, 46 * F);
+  gsap.set('#po-open', { transformOrigin: '540px 1900px' });
+  tl.set('#po-open', { opacity: 0 }, 50 * F);
+  tl.set('#po-taco', { opacity: 1 }, 50 * F);
+  WA.squash(tl, '#po-taco', 50 * F, 0.12, 12);
+  gsap.set('#po-taco', { transformOrigin: '540px 1900px' });
+  WA.shake(tl, '#po-scene', 50 * F, 10 * F, 14, { seed: 3, decay: true });
+  WA.word(tl, '#po-snap', 51 * F, 28, { rot: 6, rot0: -14, seed: 5, amp: 8 });
+  ['#po-d0', '#po-d1'].forEach(function (d, i) {
+    tl.fromTo(d, { opacity: 1, scale: 0.4, x: 0 }, { opacity: 0, scale: 1.5, x: i ? 60 : -60, duration: 14 * F, ease: 'power2.out', immediateRender: false }, 50 * F);
+  });
+  // the feet wiggle
+  [60, 76, 92, 106].forEach(function (f) { WA.shake(tl, '#po-feet', f * F, 8 * F, 6, { seed: f, rot: 6 }); });
+
+  // the review
+  WA.popIn(tl, '#po-review', 66 * F, 10, { rot0: -8, rot: -2 });
+  WA.popIn(tl, '#po-st0', 72 * F, 8, { rot0: -40, rot: 0, from: 0 });
+  gsap.set('#po-st0', { transformOrigin: '50% 50%', scale: 0 });
+  [1, 2, 3, 4].forEach(function (k) { WA.squash(tl, '#po-st' + k, (74 + k * 2) * F, 0.2, 6); });
+
+  window.__timelines['joke-pullout'] = tl;
+})();
+</script>
+</body>
+</html>

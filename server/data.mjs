@@ -24,6 +24,10 @@ const EVENT_KEYS = {
   grandtheft: WEEK, wanted: POST_ID, busted: POST_ID, wasted: POST_ID, parole: POST_ID,
   partners: `${WEEK}:${POST_ID}:${POST_ID}`,
   thanksgiving: YEAR, xmas: YEAR, nye: YEAR, groundhog: YEAR, valentine: YEAR,
+  // round 3 (animations/hyperframes, NEW-ANIMATIONS-3)
+  signal: POST_ID, besties: POST_ID, lockedout: WEEK, volcano: `${WEEK}:${POINTS}`, bestof40: WEEK, la4: WEEK,
+  diet: POST_ID, pullout: POST_ID, jailbreak: POST_ID, fridge: WEEK, cleared: 'injury_[a-zA-Z0-9_-]{1,80}', spring: WEEK,
+  warhero: `[0-9]{4}-[0-9]{2}-[0-9]{2}:${COUNT}`,
 };
 
 function fail(message, status = 400) {
@@ -519,7 +523,7 @@ function validatedEvent(input, now = new Date()) {
   if (typeof key !== 'string' || key.length > 100 || !new RegExp(`^${type}:${EVENT_KEYS[type]}$`).test(key)) {
     fail('Invalid event key.');
   }
-  if ((type === 'scared' || type === 'roast') && !dateKeyValid(key.split(':')[1])) fail('Invalid event day.');
+  if ((type === 'scared' || type === 'warhero' || type === 'roast') && !dateKeyValid(key.split(':')[1])) fail('Invalid event day.');
   const data = input.data ?? {};
   if (typeof data !== 'object' || Array.isArray(data)) fail('Invalid event details.');
   const json = JSON.stringify(data);

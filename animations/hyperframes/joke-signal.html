@@ -1,0 +1,199 @@
+<!doctype html>
+<!--
+  Signal Lost (joke-signal): mission control. The big screen tracks Connor's Satellite House on its orbit while the
+  LAST CONTACT counter ticks DAY 1, 2, 3 and the signal bars drop one by one. Static, a red SIGNAL LOST, the
+  operator (an anon, no tag) panics, then leans on his headset mic: CONNOR, COME IN. No answer.
+  Beats (30 fps): orbit 0-62, days 0/22/44, bars out 16/30/44/58, lost 62, panic 64, call 84, bubble 88, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #sl-cam { position: absolute; inset: 0; transform-origin: 540px 1300px; }
+  #sl-blip { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  #sl-blip svg { position: absolute; left: -60px; top: -40px; overflow: visible; }
+  #sl-q { position: absolute; width: 0; height: 0; opacity: 0; }
+  #sl-q svg { position: absolute; left: -40px; top: -60px; overflow: visible; }
+  .sl-day { position: absolute; left: 150px; top: 652px; font-family: 'Luckiest Guy'; font-size: 66px; color: #7CF0A9; opacity: 0; transform-origin: 0 50%; }
+  #sl-portrait { position: absolute; left: 124px; top: 1060px; width: 190px; height: 190px; overflow: hidden; border-radius: 22px;
+    border: 8px solid #341720; background: #C7E7FB; }
+  #sl-portrait img { position: absolute; width: 608px; height: 684px; left: -209px; top: -96px; }
+  #sl-ptag { position: absolute; left: 227px; top: 1232px; font-size: 34px; padding: 9px 18px 4px; border-width: 6px; }
+  #sl-ptag::after { display: none; }
+  #sl-pstatic { position: absolute; inset: 0; opacity: 0; }
+  .sl-static { position: absolute; left: 100px; top: 570px; width: 880px; height: 720px; opacity: 0; border-radius: 22px; overflow: hidden; }
+  #sl-lost { position: absolute; left: 540px; top: 930px; width: 0; height: 0; opacity: 0; }
+  #sl-lost svg { position: absolute; left: -380px; top: -90px; overflow: visible; }
+  #sl-bubble { position: absolute; left: 340px; top: 1500px; width: 0; height: 0; opacity: 0; transform-origin: 0 0; }
+  #sl-bubble svg { position: absolute; left: -300px; top: -130px; overflow: visible; }
+  #sl-op { }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-signal" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="sl-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#2A3150">
+  <div id="sl-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <!-- the wall -->
+    <rect width="1080" height="2348" fill="#2A3150"/>
+    <path d="M0 300 L1080 300 M0 1420 L1080 1420" stroke="#232944" stroke-width="16"/>
+    <g fill="#323A5E"><rect x="40" y="340" width="120" height="1040" rx="10"/><rect x="920" y="340" width="120" height="1040" rx="10"/></g>
+    <!-- the alarm light -->
+    <rect x="490" y="470" width="100" height="40" rx="8" fill="#1B1F33" stroke="#341720" stroke-width="8"/>
+    <path d="M500 476 Q500 400 540 398 Q580 400 580 476 Z" fill="#5A2A33" stroke="#341720" stroke-width="8" stroke-linejoin="round"/>
+    <path id="sl-alarm" d="M500 476 Q500 400 540 398 Q580 400 580 476 Z" fill="#FF3B4A" stroke="#341720" stroke-width="8" stroke-linejoin="round" opacity="0"/>
+    <g id="sl-rays" opacity="0" stroke="#FF5A66" stroke-width="12" stroke-linecap="round"><path d="M470 420 L430 400 M610 420 L650 400 M540 380 L540 340 M486 384 L458 356 M594 384 L622 356"/></g>
+    <!-- the big screen -->
+    <rect x="80" y="550" width="920" height="760" rx="30" fill="#1B1F33" stroke="#341720" stroke-width="12"/>
+    <rect x="100" y="570" width="880" height="720" rx="20" fill="#0E1A2E"/>
+    <g stroke="#17304C" stroke-width="3"><path d="M100 690 L980 690 M100 810 L980 810 M100 930 L980 930 M100 1050 L980 1050 M100 1170 L980 1170"/>
+      <path d="M220 570 L220 1290 M380 570 L380 1290 M540 570 L540 1290 M700 570 L700 1290 M860 570 L860 1290"/></g>
+    <text x="150" y="632" font-family="Luckiest Guy" font-size="34" fill="#4F8F6F" letter-spacing="2">LAST CONTACT</text>
+    <!-- Earth and the orbit -->
+    <g transform="rotate(-12 540 980)"><ellipse cx="540" cy="980" rx="350" ry="140" fill="none" stroke="#3E6E9E" stroke-width="6" stroke-dasharray="18 16"/></g>
+    <g transform="translate(110 -30)"><circle cx="430" cy="1010" r="110" fill="#3F7FD9" stroke="#9FD0FF" stroke-width="6"/>
+    <path d="M360 950 Q390 920 430 940 Q460 960 440 990 Q410 1010 380 990 Z M450 1050 Q490 1030 520 1060 Q510 1100 470 1100 Q440 1080 450 1050 Z M330 1040 Q350 1030 360 1050 Q350 1070 330 1060 Z" fill="#4FB06D"/>
+    <path d="M340 960 Q370 910 430 902" fill="none" stroke="#BFE3FF" stroke-width="10" stroke-linecap="round" opacity=".5"/></g>
+    <!-- signal bars -->
+    <g stroke="#341720" stroke-width="5">
+      <rect id="sl-b1" x="820" y="640" width="26" height="30" rx="4" fill="#45E08A"/>
+      <rect id="sl-b2" x="856" y="620" width="26" height="50" rx="4" fill="#45E08A"/>
+      <rect id="sl-b3" x="892" y="600" width="26" height="70" rx="4" fill="#45E08A"/>
+      <rect id="sl-b4" x="928" y="580" width="26" height="90" rx="4" fill="#45E08A"/>
+    </g>
+  </svg>
+  <!-- the satellite house on its orbit -->
+  <div id="sl-blip"><svg width="120" height="80" viewBox="-60 -40 120 80">
+    <g stroke="#9FD0FF" stroke-width="4" stroke-linejoin="round">
+      <rect x="-58" y="-12" width="30" height="24" fill="#2F66E6"/><rect x="28" y="-12" width="30" height="24" fill="#2F66E6"/>
+      <path d="M-28 0 L-18 0 M18 0 L28 0"/>
+      <rect x="-18" y="-6" width="36" height="28" fill="#F4EEDF"/><path d="M-24 -6 L0 -28 L24 -6 Z" fill="#E05A47"/>
+      <rect x="-5" y="8" width="10" height="14" fill="#7A4524"/>
+    </g>
+    <circle r="54" fill="none" stroke="#7CF0A9" stroke-width="4" opacity=".5"/>
+  </svg></div>
+  <div class="sl-day" id="sl-d1">DAY 1</div><div class="sl-day" id="sl-d2">DAY 2</div><div class="sl-day" id="sl-d3" style="color:#FF7A85">DAY 3</div>
+  <div class="sl-static" id="sl-st0"></div><div class="sl-static" id="sl-st1"></div><div class="sl-static" id="sl-st2"></div>
+  <!-- Connor's photo on the screen -->
+  <div id="sl-portrait"><img src="assets/cast/flex-grin-connor.svg" /><div id="sl-pstatic"></div></div>
+  <div class="tag" id="sl-ptag" style="--c:#2F66E6">CONNOR</div>
+  <div id="sl-q"><svg width="80" height="120" viewBox="-40 -60 80 120"><text class="wt" font-size="110" style="fill:#FFD064">?</text></svg></div>
+  <div id="sl-lost"><svg width="760" height="180" viewBox="-380 -90 760 180">
+    <rect x="-360" y="-74" width="720" height="148" rx="20" fill="#341720" transform="translate(8 12)"/>
+    <rect x="-360" y="-74" width="720" height="148" rx="20" fill="#E0303F" stroke="#341720" stroke-width="10"/>
+    <text x="0" y="30" text-anchor="middle" font-family="Luckiest Guy" font-size="104" fill="#FFFFFF" letter-spacing="4">SIGNAL LOST</text>
+  </svg></div>
+  <div id="sl-op"></div>
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <!-- the console desk -->
+    <g transform="translate(0 80)">
+    <path d="M-20 1880 L1100 1880 L1100 2360 L-20 2360 Z" fill="#3A4466" stroke="#341720" stroke-width="10"/>
+    <path d="M-20 1880 L1100 1880 L1100 1930 L-20 1930 Z" fill="#4C5880" stroke="#341720" stroke-width="10"/>
+    <rect x="90" y="1990" width="300" height="190" rx="18" fill="#0E1A2E" stroke="#341720" stroke-width="9"/>
+    <path id="sl-pulse" d="M110 2090 L180 2090 L200 2040 L225 2140 L250 2070 L270 2090 L370 2090" fill="none" stroke="#45E08A" stroke-width="8" stroke-linejoin="round"/>
+    <path id="sl-flat" d="M110 2090 L370 2090" fill="none" stroke="#FF3B4A" stroke-width="8" opacity="0"/>
+    <g stroke="#341720" stroke-width="7">
+      <circle cx="480" cy="2030" r="26" fill="#FF5A66"/><circle cx="560" cy="2030" r="26" fill="#FFD064"/><circle cx="640" cy="2030" r="26" fill="#45B87A"/>
+      <rect x="460" y="2100" width="40" height="70" rx="10" fill="#C9CED8"/><rect x="530" y="2100" width="40" height="70" rx="10" fill="#C9CED8"/><rect x="600" y="2100" width="40" height="70" rx="10" fill="#C9CED8"/>
+      <rect x="740" y="2000" width="250" height="170" rx="16" fill="#2B3352"/>
+    </g>
+    <g fill="#7D8494"><rect x="770" y="2030" width="190" height="16" rx="8"/><rect x="770" y="2066" width="150" height="16" rx="8"/><rect x="770" y="2102" width="170" height="16" rx="8"/></g>
+    </g>
+  </svg>
+  <div class="word" id="sl-ksh" style="left:300px;top:1380px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#C9CED8">KSSHHH</text></svg></div></div>
+  <div id="sl-bubble"><svg width="600" height="300" viewBox="-300 -130 600 300">
+    <path d="M-270 -110 L270 -110 Q300 -110 300 -80 L300 60 Q300 90 270 90 L170 90 L300 190 L70 90 L-270 90 Q-300 90 -300 60 L-300 -80 Q-300 -110 -270 -110 Z" fill="#341720" transform="translate(8 12)"/>
+    <path d="M-270 -110 L270 -110 Q300 -110 300 -80 L300 60 Q300 90 270 90 L170 90 L300 190 L70 90 L-270 90 Q-300 90 -300 60 L-300 -80 Q-300 -110 -270 -110 Z" fill="#FFFFFF" stroke="#341720" stroke-width="10" stroke-linejoin="round"/>
+    <text x="0" y="-22" text-anchor="middle" font-family="Luckiest Guy" font-size="78" fill="#2F66E6">CONNOR,</text>
+    <text x="0" y="62" text-anchor="middle" font-family="Luckiest Guy" font-size="78" fill="#341720">COME IN!</text>
+  </svg></div>
+  </div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"SIGNAL LOST","pts":"3","unit":"DAYS","sub":"CONNOR, COME IN","color":"#2F66E6","dark":"#1C46A8","light":"#D6E2FF"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), r = WA.rng(11);
+  WA.actor('sl-op', ['console', 'console-panic', 'console-call'], { x: 770, y: 2263, s: 0.72, member: 'anon' });
+  WA.pose(tl, '#sl-op', 'console', 0);
+
+  // static: three random layers flicked in turn
+  ['sl-st0', 'sl-st1', 'sl-st2', 'sl-pstatic'].forEach(function (id, k) {
+    var h = '', w = id === 'sl-pstatic' ? 190 : 880, hh = id === 'sl-pstatic' ? 190 : 720, n = id === 'sl-pstatic' ? 90 : 420;
+    h += '<svg width="' + w + '" height="' + hh + '" style="position:absolute;left:0;top:0"><rect width="' + w + '" height="' + hh + '" fill="#2B3040" opacity=".78"/>';
+    for (var i = 0; i < n; i++) {
+      var g = Math.round(120 + r() * 135);
+      h += '<rect x="' + Math.round(r() * w) + '" y="' + Math.round(r() * hh) + '" width="' + Math.round(6 + r() * 40) + '" height="' + Math.round(3 + r() * 7) + '" fill="rgb(' + g + ',' + g + ',' + g + ')"/>';
+    }
+    document.getElementById(id).innerHTML = h + '</svg>';
+  });
+
+  // the orbit: the house rides the ellipse (rotated -12 deg about 540,980), 2-frame linear steps
+  var cr = Math.cos(-12 * Math.PI / 180), sr = Math.sin(-12 * Math.PI / 180);
+  function orbit(a) {
+    var t = a * Math.PI * 2, x = 350 * Math.cos(t), y = 140 * Math.sin(t);
+    return [540 + x * cr - y * sr, 980 + x * sr + y * cr];
+  }
+  var a0 = 0.6, a1 = 1.18, N = 31, p0 = orbit(a0);
+  gsap.set('#sl-blip', { x: p0[0], y: p0[1] });
+  for (var i = 0; i < N; i++) {
+    var p = orbit(a0 + (a1 - a0) * (i + 1) / N);
+    tl.to('#sl-blip', { x: p[0], y: p[1], duration: 2 * F, ease: 'none' }, i * 2 * F);
+  }
+  // it blinks out where it was
+  [56, 58, 60].forEach(function (f, k) { tl.set('#sl-blip', { opacity: k % 2 ? 1 : 0.2 }, f * F); });
+  tl.set('#sl-blip', { opacity: 0 }, 62 * F);
+  var pe = orbit(a1);
+  gsap.set('#sl-q', { left: pe[0], top: pe[1] });
+  WA.popIn(tl, '#sl-q', 66 * F, 9, { rot0: -30, rot: 8 });
+  WA.bob(tl, '#sl-q', 76 * F, 1.3, 10, 0.6);
+
+  // LAST CONTACT: DAY 1, 2, 3
+  gsap.set('.sl-day', { opacity: 0 });
+  [[1, 0], [2, 22], [3, 44]].forEach(function (d) {
+    if (d[1] === 0) gsap.set('#sl-d1', { opacity: 1 });
+    else { tl.set('#sl-d' + (d[0] - 1), { opacity: 0 }, d[1] * F); tl.set('#sl-d' + d[0], { opacity: 1 }, d[1] * F); }
+    if (d[1]) tl.fromTo('#sl-d' + d[0], { scale: 1.35 }, { scale: 1, duration: 6 * F, ease: 'back.out(3)', immediateRender: false }, d[1] * F);
+  });
+  // the bars drop
+  [['#sl-b4', 16], ['#sl-b3', 30], ['#sl-b2', 44], ['#sl-b1', 58]].forEach(function (b) {
+    tl.to(b[0], { opacity: 0.15, duration: 3 * F, ease: 'none' }, b[1] * F);
+  });
+
+  // lost: static, banner, alarm, flatline
+  var flick = ['#sl-st0', '#sl-st1', '#sl-st2'];
+  for (var f = 62, k = 0; f < 165; f += 2, k++) {
+    flick.forEach(function (s, j) { tl.set(s, { opacity: j === k % 3 ? 1 : 0 }, f * F); });
+  }
+  tl.set('#sl-pstatic', { opacity: 1 }, 62 * F);
+  tl.set('#sl-portrait img', { filter: 'grayscale(1)' }, 62 * F);
+  WA.shake(tl, '#sl-cam', 62 * F, 10 * F, 12, { seed: 3, decay: true });
+  WA.popIn(tl, '#sl-lost', 64 * F, 10, { rot0: -8, rot: -3 });
+  for (var g = 76; g < 165; g += 8) { tl.set('#sl-lost', { opacity: 0.25 }, g * F); tl.set('#sl-lost', { opacity: 1 }, (g + 4) * F); }
+  for (var h = 62; h < 165; h += 8) {
+    tl.set(['#sl-alarm', '#sl-rays'], { opacity: 1 }, h * F);
+    tl.set(['#sl-alarm', '#sl-rays'], { opacity: 0 }, (h + 4) * F);
+  }
+  tl.set('#sl-pulse', { opacity: 0 }, 62 * F);
+  tl.set('#sl-flat', { opacity: 1 }, 62 * F);
+  WA.word(tl, '#sl-ksh', 63 * F, 26, { rot: -8, rot0: 10, seed: 5, amp: 6 });
+
+  // the operator: panic, then the mic
+  WA.take(tl, '#sl-op', 'console-panic', 66 * F, 0.1);
+  WA.shake(tl, '#sl-op .jit', 68 * F, 14 * F, 6, { seed: 8, decay: true });
+  WA.take(tl, '#sl-op', 'console-call', 86 * F, 0.08);
+  WA.popIn(tl, '#sl-bubble', 90 * F, 10, { rot0: -10, rot: -2 });
+  WA.squash(tl, '#sl-bubble', 104 * F, 0.08, 10);
+  tl.fromTo('#sl-cam', { scale: 1 }, { scale: 1.06, duration: 5.5, ease: 'sine.inOut' }, 0);
+
+  window.__timelines['joke-signal'] = tl;
+})();
+</script>
+</body>
+</html>

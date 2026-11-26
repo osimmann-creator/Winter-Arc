@@ -1,0 +1,126 @@
+<!doctype html>
+<!--
+  Retire the Number (joke-retire): a dark arena. The spotlights clunk on. Dylan salutes as his teal LA4 jersey (a
+  big 4) rises slowly to the rafters on its wires. It locks in next to the other banners: confetti, flashes, the
+  crowd goes up, and Dylan throws both arms up.
+  Beats (30 fps): lights 6, salute 14, rise 18-74, lock 76, champ 80, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #rt-jersey { position: absolute; left: 540px; top: 0; width: 0; height: 0; }
+  #rt-jersey svg { position: absolute; left: -200px; top: -1400px; overflow: visible; }
+  .rt-beam { opacity: 0; mix-blend-mode: screen; }
+  #rt-conf { position: absolute; inset: 0; }
+  .rt-flash { position: absolute; width: 0; height: 0; opacity: 0; }
+  .rt-flash i { position: absolute; left: -40px; top: -40px; width: 80px; height: 80px; border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, rgba(255,255,255,.8) 25%, rgba(255,255,255,0) 70%); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-retire" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="rt-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#151229">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <rect width="1080" height="2348" fill="#151229"/>
+    <!-- rafters -->
+    <g stroke="#3A355A" stroke-width="14" fill="none">
+      <path d="M0 470 L1080 470 M0 560 L1080 560"/>
+      <path d="M0 470 L60 560 L120 470 L180 560 L240 470 L300 560 L360 470 L420 560 L480 470 L540 560 L600 470 L660 560 L720 470 L780 560 L840 470 L900 560 L960 470 L1020 560 L1080 470"/>
+    </g>
+    <!-- the banners already up there -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <path d="M120 570 L280 570 L280 820 L200 780 L120 820 Z" fill="#5A4E8A"/>
+      <path d="M800 570 L960 570 L960 820 L880 780 L800 820 Z" fill="#8A4E5A"/>
+    </g>
+    <path d="M200 610 L212 646 L250 646 L219 668 L231 704 L200 682 L169 704 L181 668 L150 646 L188 646 Z M880 610 L892 646 L930 646 L899 668 L911 704 L880 682 L849 704 L861 668 L830 646 L868 646 Z" fill="#FFD064" stroke="#341720" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M200 570 L200 470 M880 570 L880 470" stroke="#7D7898" stroke-width="5"/>
+    <!-- the stands -->
+    <path d="M-20 1300 L1100 1300 L1100 1960 L-20 1960 Z" fill="#241F40"/>
+    <g id="rt-crowd"></g>
+    <!-- the court -->
+    <path d="M-20 1960 L1100 1960 L1100 2360 L-20 2360 Z" fill="#D8A866" stroke="#341720" stroke-width="10"/>
+    <path d="M-20 2100 L1100 2100 M-20 2240 L1100 2240" stroke="#C4904E" stroke-width="8"/>
+    <ellipse cx="540" cy="2170" rx="300" ry="70" fill="none" stroke="#FFFFFF" stroke-width="10" opacity=".8"/>
+    <!-- spotlights -->
+    <path class="rt-beam" id="rt-b0" d="M60 300 L130 300 L700 2200 L360 2200 Z" fill="#FFF3C8" opacity=".0"/>
+    <path class="rt-beam" id="rt-b1" d="M950 300 L1020 300 L720 2200 L380 2200 Z" fill="#FFF3C8" opacity=".0"/>
+    <g stroke="#341720" stroke-width="8"><rect x="50" y="280" width="90" height="56" rx="10" fill="#3A355A"/><rect x="940" y="280" width="90" height="56" rx="10" fill="#3A355A"/></g>
+    <ellipse id="rt-pool" cx="540" cy="2170" rx="260" ry="60" fill="#FFF3C8" opacity="0"/>
+  </svg>
+  <div id="rt-jersey"><svg width="400" height="1460" viewBox="-200 -1400 400 1460">
+    <path d="M-120 -1400 L-120 -150 M120 -1400 L120 -150" stroke="#9A95B8" stroke-width="6"/>
+    <rect x="-150" y="-160" width="300" height="30" rx="8" fill="#7A4524" stroke="#341720" stroke-width="7"/>
+    <path d="M-110 -140 L-150 -110 L-190 -20 L-130 10 L-118 -10 L-118 210 L118 210 L118 -10 L130 10 L190 -20 L150 -110 L110 -140 Q60 -110 0 -110 Q-60 -110 -110 -140 Z" fill="#1FA3A0" stroke="#341720" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M-110 -140 Q-60 -110 0 -110 Q60 -110 110 -140" fill="none" stroke="#FFFFFF" stroke-width="14"/>
+    <path d="M-118 196 L118 196" stroke="#FFFFFF" stroke-width="12"/>
+    <path d="M-150 -110 L-190 -20 M150 -110 L190 -20" stroke="#FFFFFF" stroke-width="10"/>
+    <text x="0" y="-48" text-anchor="middle" font-family="Luckiest Guy" font-size="62" fill="#FFFFFF" stroke="#341720" stroke-width="8" paint-order="stroke" letter-spacing="6">LA4</text>
+    <text x="0" y="170" text-anchor="middle" font-family="Luckiest Guy" font-size="230" fill="#FFFFFF" stroke="#341720" stroke-width="12" paint-order="stroke">4</text>
+  </svg></div>
+  <div id="rt-dylan"></div>
+  <div id="rt-conf"></div>
+  <div class="rt-flash" id="rt-f0" style="left:140px;top:1420px"><i></i></div>
+  <div class="rt-flash" id="rt-f1" style="left:930px;top:1500px"><i></i></div>
+  <div class="rt-flash" id="rt-f2" style="left:300px;top:1640px"><i></i></div>
+  <div class="rt-flash" id="rt-f3" style="left:790px;top:1720px"><i></i></div>
+  <div class="rt-flash" id="rt-f4" style="left:520px;top:1380px"><i></i></div>
+  <div class="word" id="rt-clunk" style="left:540px;top:930px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="110" style="fill:#FFF3C8">CLUNK</text></svg></div></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"RETIRE THE|NUMBER","pts":"4","unit":"PTS","sub":"LA4 FOREVER","color":"#1FA3A0","dark":"#136E6C","light":"#C9F2F0"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), r = WA.rng(4);
+  // the crowd: rows of heads and shoulders
+  var cols = ['#5A4E8A', '#8A4E5A', '#3E6E8A', '#6E8A4E', '#8A6E3E', '#4E8A7A'], skins = ['#F0B98F', '#C98B5E', '#8D5A3B', '#F2C6A0'], h = '';
+  for (var row = 0; row < 5; row++) {
+    for (var c = 0; c < 9; c++) {
+      var x = 30 + c * 128 + (row % 2) * 64 + (r() - 0.5) * 20, y = 1380 + row * 120;
+      h += '<path d="M' + (x - 50) + ' ' + (y + 90) + ' Q' + (x - 50) + ' ' + (y + 30) + ' ' + x + ' ' + (y + 30) + ' Q' + (x + 50) + ' ' + (y + 30) + ' ' + (x + 50) + ' ' + (y + 90) + ' Z" fill="' + cols[(row * 9 + c) % 6] + '" stroke="#341720" stroke-width="6" opacity=".85"/>' +
+           '<circle cx="' + x + '" cy="' + y + '" r="30" fill="' + skins[(row + c) % 4] + '" stroke="#341720" stroke-width="6" opacity=".85"/>';
+    }
+  }
+  document.getElementById('rt-crowd').innerHTML = h;
+
+  WA.actor('rt-dylan', ['grin', 'salute', 'champ'], { x: 540, y: 2170, s: 0.62, member: 'dylan', tag: 'DYLAN', color: '#1FA3A0' });
+  WA.pose(tl, '#rt-dylan', 'grin', 0);
+  gsap.set('#rt-dylan', { filter: 'brightness(0.55)' });
+
+  // lights on
+  tl.set(['#rt-b0', '#rt-b1'], { opacity: 0.22 }, 6 * F);
+  tl.set('#rt-pool', { opacity: 0.35 }, 6 * F);
+  tl.set('#rt-dylan', { filter: 'brightness(1)' }, 6 * F);
+  WA.word(tl, '#rt-clunk', 6 * F, 20, { rot: -4, rot0: 8, seed: 1, amp: 3 });
+  WA.take(tl, '#rt-dylan', 'salute', 14 * F, 0.08);
+
+  // up it goes, slowly, on its wires
+  gsap.set('#rt-jersey', { y: 1300 });
+  tl.to('#rt-jersey', { y: 760, duration: 60 * F, ease: 'power1.inOut' }, 14 * F);
+  tl.fromTo('#rt-jersey svg', { rotation: -2 }, { rotation: 2, duration: 14 * F, ease: 'sine.inOut', yoyo: true, repeat: 3, immediateRender: false }, 18 * F);
+  // locked in
+  WA.squash(tl, '#rt-jersey svg', 76 * F, 0.12, 12);
+  gsap.set('#rt-jersey svg', { transformOrigin: '200px 1400px' });
+  WA.shake(tl, '#rt-scene', 76 * F, 8 * F, 8, { seed: 4, decay: true });
+  WA.confetti(tl, '#rt-conf', 76 * F, 540, 760, { n: 46, seed: 3, speed: 30, spread: 1.4, frames: 44, colors: ['#1FA3A0', '#FFFFFF', '#FFD064', '#C9F2F0'] });
+  WA.confetti(tl, '#rt-conf', 82 * F, 200, 1300, { n: 24, seed: 8, speed: 28, angle: -1.2, spread: 0.6, frames: 40, colors: ['#1FA3A0', '#FFFFFF', '#FFD064'] });
+  WA.confetti(tl, '#rt-conf', 82 * F, 880, 1300, { n: 24, seed: 9, speed: 28, angle: -1.9, spread: 0.6, frames: 40, colors: ['#1FA3A0', '#FFFFFF', '#FFD064'] });
+  WA.take(tl, '#rt-dylan', 'champ', 80 * F, 0.12);
+  WA.hop(tl, '#rt-dylan', 82 * F, 40, 10);
+  // the crowd: flashes, a bounce
+  [[78, 0], [84, 2], [88, 1], [93, 4], [98, 3], [104, 0], [108, 2], [112, 1]].forEach(function (k) {
+    tl.fromTo('#rt-f' + k[1], { opacity: 1, scale: 0.4 }, { opacity: 0, scale: 1.4, duration: 6 * F, ease: 'power2.out', immediateRender: false }, k[0] * F);
+  });
+  tl.fromTo('#rt-crowd', { y: 0 }, { y: -14, duration: 5 * F, ease: 'sine.inOut', yoyo: true, repeat: 7, immediateRender: false }, 78 * F);
+
+  window.__timelines['joke-retire'] = tl;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!doctype html>
+<!--
+  Cleared to Play (joke-cleared): the groundhog hole in the snow. An arm in a cast pokes out and waves. CRACK: the
+  cast splits and falls away, Phil pops up grinning, arms up, then jumps all the way out and lands in front of the
+  hole. The snow stops, the field goes green and flowers pop up everywhere.
+  Beats (30 fps): arm up 6-14, wave 14-30, crack 30, shatter 38, pops up 40, jumps 52, lands 64, spring 62-96, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #cp-holeclip { position: absolute; left: 240px; top: 700px; width: 600px; height: 1122px; overflow: hidden; }
+  #cp-arm { position: absolute; left: 300px; top: 1122px; width: 0; height: 0; }
+  #cp-arm svg { position: absolute; left: -90px; top: -420px; overflow: visible; }
+  #cp-cam { position: absolute; inset: 0; transform-origin: 540px 1760px; }
+  #cp-snow { position: absolute; inset: 0; }
+  #cp-flowers { position: absolute; inset: 0; }
+  .cp-fl { position: absolute; width: 0; height: 0; }
+  .cp-fl svg { position: absolute; left: -40px; top: -90px; overflow: visible; }
+  .cp-bit { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
+  .cp-bit svg { position: absolute; left: -40px; top: -40px; overflow: visible; }
+  #cp-crackl { opacity: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-cleared" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="cp-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#DCEBF6">
+  <div id="cp-cam">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs>
+      <linearGradient id="cp-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B9D8EE"/><stop offset="1" stop-color="#F2F7FB"/></linearGradient>
+      <linearGradient id="cp-sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7CC4F2"/><stop offset="1" stop-color="#E4F6FF"/></linearGradient>
+    </defs>
+    <rect width="1080" height="1500" fill="url(#cp-sky)"/>
+    <rect id="cp-sky-b" width="1080" height="1500" fill="url(#cp-sky2)" opacity="0"/>
+    <circle cx="820" cy="420" r="80" fill="#FFF6D6" stroke="#341720" stroke-width="7"/>
+    <!-- trees: bare, then in blossom -->
+    <g stroke="#5E4030" stroke-width="16" stroke-linecap="round" fill="none">
+      <path d="M120 1500 L120 900 M120 1100 L40 980 M120 1040 L210 920 M120 1220 L200 1150 M210 920 L240 860 M40 980 L20 930"/>
+      <path d="M960 1500 L960 980 M960 1160 L1040 1060 M960 1100 L880 1000 M880 1000 L860 950 M1040 1060 L1070 1010"/>
+    </g>
+    <g id="cp-bloom" opacity="0" stroke="#341720" stroke-width="8">
+      <circle cx="120" cy="930" r="110" fill="#FFB3CF"/><circle cx="40" cy="980" r="70" fill="#FFB3CF"/><circle cx="210" cy="900" r="80" fill="#FFC9DD"/>
+      <circle cx="960" cy="1010" r="100" fill="#FFB3CF"/><circle cx="1040" cy="1060" r="70" fill="#FFC9DD"/><circle cx="880" cy="990" r="70" fill="#FFB3CF"/>
+    </g>
+    <path d="M-20 1480 Q270 1420 540 1470 Q810 1420 1100 1480 L1100 2360 L-20 2360 Z" fill="#F7FBFF" stroke="#341720" stroke-width="8"/>
+    <path id="cp-grass" d="M-20 1480 Q270 1420 540 1470 Q810 1420 1100 1480 L1100 2360 L-20 2360 Z" fill="#9ED67A" stroke="#341720" stroke-width="8" opacity="0"/>
+    <path d="M80 2000 Q260 1970 440 2006 M620 2160 Q800 2130 980 2166" stroke="#DCEBF6" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <!-- the hole -->
+    <path d="M300 1830 Q300 1740 540 1736 Q780 1740 780 1830 Q780 1900 540 1904 Q300 1900 300 1830 Z" fill="#FFFFFF" stroke="#341720" stroke-width="9"/>
+    <path id="cp-mound" d="M300 1830 Q300 1740 540 1736 Q780 1740 780 1830 Q780 1900 540 1904 Q300 1900 300 1830 Z" fill="#8E6A4A" stroke="#341720" stroke-width="9" opacity="0"/>
+    <ellipse cx="540" cy="1814" rx="170" ry="52" fill="#3A2A22" stroke="#341720" stroke-width="8"/>
+    <ellipse cx="540" cy="1822" rx="140" ry="36" fill="#22160F"/>
+  </svg>
+  <div id="cp-flowers"></div>
+  <div id="cp-holeclip">
+    <div id="cp-arm"><svg width="180" height="440" viewBox="-90 -420 180 440">
+      <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+        <path d="M-40 20 L-44 -200 L44 -200 L40 20 Z" fill="#D9A07F"/>
+        <g id="cp-cast">
+          <path d="M-54 10 L-58 -250 Q-58 -270 -40 -272 L40 -272 Q58 -270 58 -250 L54 10 Z" fill="#FFFFFF"/>
+          <path d="M-40 -60 L40 -70 M-40 -150 L40 -160" stroke="#E6E1EE" stroke-width="10"/>
+          <text x="0" y="-108" text-anchor="middle" font-family="Luckiest Guy" font-size="30" fill="#E05A47" stroke="none" transform="rotate(-80 0 -112)">GET WELL</text>
+        </g>
+        <path d="M-46 -268 Q-60 -330 -40 -380 Q-30 -398 -18 -380 L-14 -330 L-10 -396 Q0 -414 12 -396 L12 -330 L22 -386 Q34 -400 42 -382 L36 -320 Q50 -340 60 -320 Q56 -280 40 -262 Z" fill="#D9A07F"/>
+        <path id="cp-crackl" d="M-50 -240 L-10 -200 L-30 -150 L20 -110 L0 -60 L40 -20" fill="none" stroke="#341720" stroke-width="7"/>
+      </g>
+    </svg></div>
+    <div id="cp-phil"></div>
+  </div>
+  <svg class="abs" style="left:0;top:0;pointer-events:none" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <path id="cp-lip" d="M370 1836 Q540 1880 710 1836" fill="none" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round"/>
+  </svg>
+  <div id="cp-out"></div>
+  <div class="cp-bit" id="cp-b0"></div><div class="cp-bit" id="cp-b1"></div><div class="cp-bit" id="cp-b2"></div><div class="cp-bit" id="cp-b3"></div>
+  <div id="cp-snow"></div>
+  </div>
+  <div class="word" id="cp-crack" style="left:250px;top:1180px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#FFFFFF">CRACK!</text></svg></div></div>
+  <div class="word" id="cp-pop" style="left:830px;top:1120px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="150" style="fill:#FFD064">POP!</text></svg></div></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"CLEARED|TO PLAY","pts":"1","unit":"WRIST","sub":"OFF THE INJURY REPORT","color":"#D9644F","dark":"#963B2C","light":"#FFE0D8"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), r = WA.rng(13);
+  // Phil lives in the hole: the clip box hides everything below the hole line (y 1822)
+  WA.actor('cp-phil', ['champ', 'grin'], { x: 300, y: 2035 - 700, s: 0.62, member: 'phil', tag: 'PHIL', color: '#D9644F' });
+  WA.pose(tl, '#cp-phil', 'champ', 0);
+  gsap.set('#cp-phil', { y: 900 });
+  WA.snow(tl, '#cp-snow', { n: 34, seed: 5, speed: 150, drift: -20, size: [8, 14] });
+  tl.fromTo('#cp-cam', { scale: 1.22 }, { scale: 1.32, duration: 5.5, ease: 'sine.inOut' }, 0);
+
+  // the arm in a cast: up, a wave
+  gsap.set('#cp-arm', { y: 460 });
+  tl.to('#cp-arm', { y: 0, duration: 8 * F, ease: 'back.out(1.6)' }, 6 * F);
+  gsap.set('#cp-arm svg', { transformOrigin: '90px 420px' });
+  tl.to('#cp-arm svg', { rotation: 12, duration: 4 * F, ease: 'sine.inOut', yoyo: true, repeat: 3 }, 14 * F);
+  // CRACK
+  tl.set('#cp-crackl', { opacity: 1 }, 30 * F);
+  WA.shake(tl, '#cp-arm svg', 30 * F, 8 * F, 8, { seed: 3, rot: 4 });
+  WA.word(tl, '#cp-crack', 30 * F, 22, { rot: -10, rot0: 14, seed: 2, amp: 6 });
+  // shatter: the cast comes off in pieces, Phil pops out
+  tl.set(['#cp-cast', '#cp-crackl'], { opacity: 0 }, 38 * F);
+  var piece = function (w, h, rot) {
+    return '<svg width="80" height="80" viewBox="-40 -40 80 80"><rect x="' + (-w / 2) + '" y="' + (-h / 2) + '" width="' + w + '" height="' + h + '" rx="8" fill="#FFFFFF" stroke="#341720" stroke-width="7" transform="rotate(' + rot + ')"/></svg>';
+  };
+  [['#cp-b0', 60, 46, -20, -14, -30], ['#cp-b1', 50, 60, 15, 12, -34], ['#cp-b2', 56, 40, 40, -20, -24], ['#cp-b3', 44, 54, -30, 18, -28]].forEach(function (b, i) {
+    document.querySelector(b[0]).innerHTML = piece(b[1], b[2], b[3]);
+    WA.toss(tl, b[0], 38 * F, { x0: 540 + (i - 1.5) * 30, y0: 1600 - i * 40, vx: b[4], vy: b[5], g: 1.6, frames: 28, spin: (i % 2 ? 1 : -1) * 20 });
+  });
+  tl.to('#cp-arm', { y: 460, duration: 3 * F, ease: 'power2.in' }, 38 * F);
+  tl.to('#cp-phil', { y: 0, duration: 7 * F, ease: 'back.out(1.7)' }, 40 * F);
+  WA.word(tl, '#cp-pop', 42 * F, 24, { rot: 8, rot0: -12, seed: 7 });
+  WA.squash(tl, '#cp-phil', 47 * F, 0.08, 10);
+  // ... and all the way out: a jump, and he lands in front of the hole (a second Phil, outside the hole's clip box)
+  WA.actor('cp-out', ['champ', 'grin'], { x: 540, y: 2070, s: 0.62, member: 'phil', tag: 'PHIL', color: '#D9644F' });
+  WA.pose(tl, '#cp-out', 'champ', 0);
+  gsap.set('#cp-out', { opacity: 0 });
+  tl.to('#cp-phil', { y: -380, duration: 6 * F, ease: 'power2.out' }, 52 * F);
+  tl.set('#cp-phil', { opacity: 0 }, 58 * F);
+  tl.set('#cp-out', { opacity: 1, y: -415 }, 58 * F);
+  tl.to('#cp-out', { y: 0, duration: 7 * F, ease: 'power2.in' }, 58 * F);
+  WA.squash(tl, '#cp-out', 65 * F, 0.12, 12);
+
+  // spring: the snow stops, the field greens, flowers everywhere
+  tl.to('#cp-snow', { opacity: 0, duration: 10 * F }, 58 * F);
+  tl.to(['#cp-grass', '#cp-sky-b', '#cp-mound'], { opacity: 1, duration: 16 * F, ease: 'sine.inOut' }, 62 * F);
+  tl.to('#cp-lip', { opacity: 0, duration: 10 * F }, 64 * F);
+  tl.fromTo('#cp-bloom', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 10 * F, ease: 'back.out(2)', immediateRender: false }, 74 * F);
+  gsap.set('#cp-bloom', { transformOrigin: '50% 100%' });
+  var cols = ['#FF5FA2', '#FFD064', '#B47CF2', '#FFFFFF', '#F2853A'];
+  var spots = [[90, 1620], [230, 1560], [400, 1600], [700, 1590], [860, 1560], [1000, 1640], [150, 1800], [880, 1780], [60, 2000], [300, 2050], [520, 2120], [760, 2060], [980, 1960], [180, 2260], [420, 2290], [660, 2270], [900, 2240]];
+  var fl = WA.spawn('#cp-flowers', spots.length, function (i) {
+    var c = cols[i % cols.length], h = '<svg width="80" height="100" viewBox="-40 -90 80 100"><path d="M0 0 L0 -50" stroke="#3E8E4E" stroke-width="8"/><path d="M0 -24 Q16 -40 26 -28 Q14 -18 0 -24 Z" fill="#45B87A" stroke="#341720" stroke-width="4"/><g stroke="#341720" stroke-width="5" fill="' + c + '">';
+    for (var k = 0; k < 5; k++) { var a = k * Math.PI * 2 / 5 - Math.PI / 2; h += '<circle cx="' + (Math.cos(a) * 16).toFixed(1) + '" cy="' + (-60 + Math.sin(a) * 16).toFixed(1) + '" r="13"/>'; }
+    return h + '</g><circle cx="0" cy="-60" r="10" fill="#FFD064" stroke="#341720" stroke-width="5"/></svg>';
+  });
+  fl.forEach(function (f, i) {
+    f.className = 'cp-fl';
+    gsap.set(f, { x: spots[i][0], y: spots[i][1], scale: 0 });
+    tl.to(f, { scale: 0.8 + r() * 0.5, duration: 7 * F, ease: 'back.out(3)' }, (66 + i * 2) * F);
+  });
+  WA.take(tl, '#cp-out', 'grin', 90 * F, 0.08);
+  WA.hop(tl, '#cp-out', 100 * F, 40, 10);
+
+  window.__timelines['joke-cleared'] = tl;
+})();
+</script>
+</body>
+</html>

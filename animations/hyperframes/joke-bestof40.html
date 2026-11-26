@@ -1,0 +1,178 @@
+<!doctype html>
+<!--
+  Best of 40 (joke-bestof40): the ref (Flexander, no tag) holds up the coin, thinks better of it and throws it away.
+  Dean and Jake settle it with rock paper scissors instead: rock, rock. TIE. Paper, paper. TIE. Then a blur of
+  rounds while the TIES board counts all the way to 40, every single one the same sign. Both, annoyed.
+  Beats (30 fps): coin away 8, ref out 18, round 1 shoot 38, round 2 shoot 54, montage 58-97 (board to 40), annoyed 98, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #b4-coin { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  #b4-coin svg { position: absolute; left: -44px; top: -44px; overflow: visible; }
+  #b4-board { position: absolute; left: 540px; top: 800px; width: 0; height: 0; }
+  #b4-board > svg { position: absolute; left: -250px; top: -190px; overflow: visible; }
+  .b4-dig { position: absolute; top: -96px; width: 150px; height: 210px; overflow: hidden; }
+  .b4-strip { position: absolute; left: 0; top: 0; width: 150px; }
+  .b4-strip div { height: 210px; line-height: 236px; text-align: center; font-family: 'Luckiest Guy'; font-size: 210px; color: #FFD064;
+    -webkit-text-stroke: 10px #341720; paint-order: stroke fill; }
+  .b4-bub { position: absolute; width: 0; height: 0; opacity: 0; }
+  .b4-bub > svg { position: absolute; left: -110px; top: -110px; overflow: visible; }
+  .b4-ic { opacity: 0; }
+  #b4-tie { position: absolute; left: 540px; top: 1150px; width: 0; height: 0; opacity: 0; }
+  #b4-tie svg { position: absolute; left: -170px; top: -80px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-bestof40" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="b4-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#C7E7FB">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="b4-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9DD3F5"/><stop offset="1" stop-color="#E4F4FF"/></linearGradient></defs>
+    <rect width="1080" height="2000" fill="url(#b4-sky)"/>
+    <path d="M0 1560 Q180 1500 360 1540 Q560 1470 760 1530 Q920 1490 1080 1540 L1080 2000 L0 2000 Z" fill="#B9E2C8" stroke="#341720" stroke-width="8"/>
+    <g fill="#FFFFFF" stroke="#341720" stroke-width="7"><path d="M120 520 Q150 470 210 490 Q250 450 300 490 Q350 490 340 540 L110 540 Q90 520 120 520 Z"/><path d="M760 640 Q790 590 850 610 Q890 570 940 610 Q990 610 980 660 L750 660 Q730 640 760 640 Z"/></g>
+    <!-- the stage -->
+    <path d="M-20 1980 L1100 1980 L1100 2360 L-20 2360 Z" fill="#C99A5E" stroke="#341720" stroke-width="10"/>
+    <path d="M-20 2060 L1100 2060 M-20 2160 L1100 2160 M-20 2260 L1100 2260" stroke="#A8743D" stroke-width="8"/>
+    <path d="M300 1980 L280 2360 M780 1980 L800 2360" stroke="#A8743D" stroke-width="8"/>
+    <ellipse cx="250" cy="2004" rx="150" ry="22" fill="#A8743D" opacity=".55"/><ellipse cx="830" cy="2004" rx="150" ry="22" fill="#A8743D" opacity=".55"/>
+  </svg>
+  <div id="b4-board"><svg width="500" height="380" viewBox="-250 -190 500 380">
+    <rect x="-236" y="-170" width="480" height="360" rx="30" fill="#341720" transform="translate(8 12)"/>
+    <rect x="-236" y="-170" width="480" height="360" rx="30" fill="#2B2236" stroke="#341720" stroke-width="10"/>
+    <rect x="-236" y="-170" width="480" height="76" rx="30" fill="#E05A47" stroke="#341720" stroke-width="10"/>
+    <rect x="-226" y="-120" width="460" height="26" fill="#E05A47"/>
+    <text x="4" y="-112" text-anchor="middle" font-family="Luckiest Guy" font-size="58" fill="#FFFFFF" letter-spacing="6">TIES</text>
+    <rect x="-190" y="-80" width="180" height="230" rx="16" fill="#1B1726"/><rect x="10" y="-80" width="180" height="230" rx="16" fill="#1B1726"/>
+    <path d="M-182 35 L-18 35 M18 35 L182 35" stroke="#2B2236" stroke-width="5"/>
+  </svg>
+    <div class="b4-dig" style="left:-175px"><div class="b4-strip" id="b4-tens"></div></div>
+    <div class="b4-dig" style="left:25px"><div class="b4-strip" id="b4-units"></div></div>
+  </div>
+  <div id="b4-dean"></div>
+  <div id="b4-jake"></div>
+  <div id="b4-flex"></div>
+  <div id="b4-coin"><svg width="88" height="88" viewBox="-44 -44 88 88">
+    <circle r="38" fill="#C77928" stroke="#341720" stroke-width="7"/><circle r="28" fill="#FFD064" stroke="#341720" stroke-width="5"/>
+    <text y="13" text-anchor="middle" font-family="Luckiest Guy" font-size="36" fill="#C77928">$</text>
+  </svg></div>
+  <div class="b4-bub" id="b4-bd" style="left:250px;top:1095px"></div>
+  <div class="b4-bub" id="b4-bj" style="left:830px;top:1095px"></div>
+  <div id="b4-tie"><svg width="340" height="160" viewBox="-170 -80 340 160">
+    <g transform="rotate(-8)"><rect x="-150" y="-66" width="300" height="132" rx="18" fill="#FFFFFF" stroke="#E0303F" stroke-width="12"/>
+    <text x="0" y="36" text-anchor="middle" font-family="Luckiest Guy" font-size="106" fill="#E0303F" letter-spacing="6">TIE</text></g>
+  </svg></div>
+  <div class="word" id="b4-nah" style="left:820px;top:1200px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="110" style="fill:#FFD064">NAH.</text></svg></div></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"BEST OF 40","pts":"40","unit":"TIES","sub":"STILL TIED","color":"#E39A2E","dark":"#A8661A","light":"#FFF0D2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  var S = 0.62, Y = 2000;
+  WA.actor('b4-dean', ['rps-down', 'rps-up', 'annoyed'], { x: 250, y: Y, s: S, member: 'dean', tag: 'DEAN', color: '#EE5982' });
+  WA.actor('b4-jake', ['rps-down', 'rps-up', 'annoyed'], { x: 830, y: Y, s: S, member: 'jake', tag: 'JAKE', color: '#E39A2E', flip: true });
+  WA.actor('b4-flex', ['smug', 'toss'], { x: 540, y: Y, s: 0.58 });
+  WA.pose(tl, '#b4-dean', 'rps-down', 0);
+  WA.pose(tl, '#b4-jake', 'rps-down', 0);
+  WA.pose(tl, '#b4-flex', 'smug', 0);
+
+  // the board: two digit strips (0-9), moved one cell per tie
+  var cells = ''; for (var d = 0; d < 10; d++) cells += '<div>' + d + '</div>';
+  document.getElementById('b4-tens').innerHTML = cells;
+  document.getElementById('b4-units').innerHTML = cells;
+  function show(n, at) {
+    tl.set('#b4-tens', { y: -210 * Math.floor(n / 10) }, at);
+    tl.set('#b4-units', { y: -210 * (n % 10) }, at);
+  }
+
+  // the sign bubbles: rock / paper / scissors icons
+  var skin = '#F2C6A0', INK = '#341720';
+  var icons = {
+    r: '<g stroke="' + INK + '" stroke-width="8" stroke-linejoin="round" fill="' + skin + '"><rect x="-52" y="-44" width="104" height="92" rx="34"/><path d="M-30 -44 L-30 -10 M0 -44 L0 -10 M30 -44 L30 -10" fill="none" stroke-linecap="round"/><path d="M-52 10 Q-70 -4 -60 -24 Q-48 -30 -40 -16" /></g>',
+    p: '<g stroke="' + INK + '" stroke-width="8" stroke-linejoin="round" fill="' + skin + '"><rect x="-40" y="-70" width="20" height="74" rx="10"/><rect x="-16" y="-80" width="20" height="84" rx="10"/><rect x="8" y="-76" width="20" height="80" rx="10"/><rect x="32" y="-60" width="20" height="64" rx="10"/><path d="M-48 -6 Q-80 -30 -72 -44 Q-62 -50 -40 -24"/><rect x="-46" y="-10" width="98" height="70" rx="26"/></g>',
+    s: '<g stroke="' + INK + '" stroke-width="8" stroke-linejoin="round" fill="' + skin + '"><rect x="-34" y="-84" width="22" height="90" rx="11" transform="rotate(-14 -23 0)"/><rect x="2" y="-84" width="22" height="90" rx="11" transform="rotate(14 13 0)"/><rect x="-46" y="-6" width="96" height="70" rx="28"/><path d="M-20 -6 L-20 20 M10 -6 L10 20" fill="none" stroke-linecap="round"/></g>'
+  };
+  ['b4-bd', 'b4-bj'].forEach(function (id, k) {
+    var tail = 'M-34 86 L0 132 L34 86';
+    document.getElementById(id).innerHTML = '<svg width="220" height="240" viewBox="-110 -110 220 240">' +
+      '<circle r="100" fill="' + INK + '" transform="translate(6 10)"/><path d="' + tail + ' Z" fill="#FFFFFF" stroke="' + INK + '" stroke-width="9" stroke-linejoin="round"/>' +
+      '<circle r="100" fill="#FFFFFF" stroke="' + INK + '" stroke-width="10"/>' +
+      ['r', 'p', 's'].map(function (c) { return '<g class="b4-ic" id="' + id + '-' + c + '"' + (k ? ' transform="scale(-1 1)"' : '') + '>' + icons[c] + '</g>'; }).join('') + '</svg>';
+  });
+  function sign(c, at) {
+    ['b4-bd', 'b4-bj'].forEach(function (id) {
+      ['r', 'p', 's'].forEach(function (x) { tl.set('#' + id + '-' + x, { opacity: x === c ? 1 : 0 }, at); });
+    });
+  }
+
+  // the ref and the coin: up it goes, and away
+  show(0, 0);
+  gsap.set('#b4-coin', { x: 540 + (702 - 640) * 0.58, y: Y + (768 - 1340) * 0.58 });
+  WA.take(tl, '#b4-flex', 'toss', 8 * F, 0.08);
+  WA.toss(tl, '#b4-coin', 8 * F, { x0: 540 + (919 - 640) * 0.58, y0: Y + (463 - 1340) * 0.58, vx: 22, vy: -46, g: 0.9, frames: 30, spin: 40, fade: false });
+  WA.word(tl, '#b4-nah', 10 * F, 22, { rot: 8, rot0: -10, seed: 2 });
+  tl.to('#b4-flex', { y: 1300, duration: 10 * F, ease: 'back.in(1.6)' }, 20 * F);
+
+  // rounds: pump, pump, pump, SHOOT -- the same sign every time
+  function pumps(who, t0, every, n) {
+    for (var i = 0; i < n; i++) {
+      WA.pose(tl, who, 'rps-up', (t0 + i * 2 * every) * F);
+      WA.pose(tl, who, 'rps-down', (t0 + (i * 2 + 1) * every) * F);
+    }
+  }
+  var ties = 0;
+  function round(t0, every, c, big) {
+    pumps('#b4-dean', t0, every, 2);
+    pumps('#b4-jake', t0, every, 2);
+    var shoot = t0 + 4 * every;
+    tl.set(['#b4-bd', '#b4-bj'], { opacity: 0 }, t0 * F);
+    sign(c, shoot * F);
+    if (big) {
+      WA.popIn(tl, '#b4-bd', shoot * F, 6, { rot0: -16, rot: -4 });
+      WA.popIn(tl, '#b4-bj', shoot * F, 6, { rot0: 16, rot: 4 });
+      WA.popIn(tl, '#b4-tie', (shoot + 2) * F, 7, { rot0: -20, rot: 0 });
+      tl.to('#b4-tie', { opacity: 0, scale: 0.6, duration: 4 * F }, (shoot + 10) * F);
+      WA.squash(tl, '#b4-board', (shoot + 2) * F, 0.1, 8);
+    } else {
+      tl.set(['#b4-bd', '#b4-bj'], { opacity: 1, scale: 1, rotation: 0 }, shoot * F);
+    }
+    ties += 1;
+    show(ties, (shoot + 2) * F);
+    return shoot;
+  }
+  round(26, 3, 'r', true);
+  round(42, 3, 'p', true);
+  // the blur: 38 more rounds in 38 frames, the board spinning up to 40
+  var seq = ['s', 'r', 'p'];
+  for (var k = 0; k < 38; k++) {
+    var t = 58 + k;
+    WA.pose(tl, '#b4-dean', k % 2 ? 'rps-down' : 'rps-up', t * F);
+    WA.pose(tl, '#b4-jake', k % 2 ? 'rps-down' : 'rps-up', t * F);
+    if (k % 2) sign(seq[Math.floor(k / 2) % 3], t * F);
+    ties += 1;
+    show(ties, t * F);
+  }
+  tl.set(['#b4-bd', '#b4-bj'], { opacity: 1, scale: 1, rotation: 0 }, 58 * F);
+  WA.shake(tl, '#b4-board', 58 * F, 38 * F, 4, { seed: 3, step: 2 });
+  // 40. both done.
+  tl.set(['#b4-bd', '#b4-bj'], { opacity: 0 }, 98 * F);
+  WA.take(tl, '#b4-dean', 'annoyed', 98 * F, 0.1);
+  WA.take(tl, '#b4-jake', 'annoyed', 98 * F, 0.1);
+  WA.squash(tl, '#b4-board', 97 * F, 0.16, 12);
+  tl.set('#b4-tie', { top: 1720 }, 97 * F);
+  WA.popIn(tl, '#b4-tie', 98 * F, 8, { rot0: -20, rot: 0, to: 1.3 });
+  WA.shake(tl, '#b4-tie', 106 * F, 10 * F, 6, { seed: 7, decay: true });
+
+  window.__timelines['joke-bestof40'] = tl;
+})();
+</script>
+</body>
+</html>

@@ -109,9 +109,10 @@ const Logic = (() => {
     const today = ordinal(now, S.timezone);
     const weekDates = Array.from({ length: S.weeks }, (_, w) => dayKey(addDays(S.start, w * 7, S.timezone), S.timezone));
     for (const m of members) by[m.id] = { id: m.id, weekPts: Array(S.weeks).fill(0), weekGym: Array(S.weeks).fill(0), fraudWeeks: new Set(), posts: [], counted: [], cat: {}, total: 0, strikes: 0, strikeWeeks: [], eliminated: false, elimWeek: null, safeWeeks: 0, streak: 0, bestStreak: 0, witnessed: 0 };
-    for (const m of members) by[m.id].injuryWeeks = new Set();
+    for (const m of members) { by[m.id].injuryWeeks = new Set(); by[m.id].injuryReports = []; }
     for (const report of cfg.injuryPeriods || []) {
       const R = by[report.memberId], start = Date.parse(report.startedAt);
+      if (R) R.injuryReports.push({ id: report.id || null, startedAt: report.startedAt, resolvedAt: report.resolvedAt || null });
       const end = Math.min(report.resolvedAt ? Date.parse(report.resolvedAt) : Infinity, +now + 1);
       if (!R || !Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
       const first = Math.max(0, weekIdx(start, S.start, S.timezone));
@@ -269,8 +270,9 @@ const Logic = (() => {
       add('valentine', year, { who: short, sunday: weekday === 0 });
     }
 
+    const bestOf40 = bestOf40Week(J, people, calc, S, tz, now);
     const [dean, jake] = people('coin');
-    if (dean && jake && pts(dean) > 0 && pts(dean) === pts(jake)) {
+    if (dean && jake && pts(dean) > 0 && pts(dean) === pts(jake) && !bestOf40) {
       add('coin', `${w}:${pts(dean)}`, { pts: pts(dean), a: dean.id, b: jake.id });
     }
     const [leader] = people('bluehair');
@@ -343,7 +345,7 @@ const Logic = (() => {
       const days = Math.floor((now - since) / DAY), n = Math.floor(days / J.scared.days);
       if (n > 0) add('scared', `${dayKey(since, tz)}:${n}`, { n, days });
     }
-    for (const type of ['iron', 'liquor', 'timesheet']) {
+    for (const type of ['iron', 'liquor', 'timesheet', 'fridge']) {
       const [target] = people(type);
       if (!target) continue;
       const { goal, fraudWeeks } = calc.by[target.id];
@@ -359,6 +361,7 @@ const Logic = (() => {
       }
     }
     roundTwo(add, { members, calc, J, now, tz, w, S, clock, counted, week, people, pts, alive, firstWeek });
+    roundThree(add, { members, calc, J, now, tz, w, S, counted, week, people, pts, alive, firstWeek, bestOf40 });
     if (hoat) {
       const h = byUsername.get(hoat.username);
       if (h && pts(h) >= hoat.min) add('hoat', w, { pts: pts(h), who: h.id });
@@ -476,6 +479,134 @@ const Logic = (() => {
           seen.add(key);
           add('partners', key, { who: pair, cat: a.cat, posts: [a.id, b.id] });
         }
+      }
+    }
+  }
+
+  /* Running weekly totals, post by post, up to `now`: calls visit(week, totals) after each counted post,
+     totals = { memberId: points this week so far } for the given members. Fraud weeks count as 0. */
+  function replayWeeks(calc, list, S, tz, now, visit) {
+    const ids = list.map(m => m.id), run = {};
+    const posts = ids.flatMap(id => calc.by[id].counted).filter(p => Date.parse(p.at) <= +now).sort(byTime);
+    for (const p of posts) {
+      const k = weekIdx(p.at, S.start, tz);
+      const t = (run[k] ||= Object.fromEntries(ids.map(id => [id, 0])));
+      if (!calc.by[p.memberId].fraudWeeks.has(k)) t[p.memberId] += CATS[p.cat]?.pts || 0;
+      visit(k, t);
+    }
+  }
+  /* Best of 40: this is the week Dean and Jake tie for the `ties`-th time this season (tied above 0 at any point
+     in a week counts that week, the way The Coin would have played). That week it plays instead of The Coin. */
+  function bestOf40Week(J, people, calc, S, tz, now) {
+    if (!J.bestof40) return false;
+    const pair = people('bestof40');
+    if (pair.length !== 2 || !pair.every(Boolean)) return false;
+    const tied = new Set();
+    replayWeeks(calc, pair, S, tz, now, (k, t) => {
+      const [a, b] = pair.map(m => t[m.id]);
+      if (a > 0 && a === b) tied.add(k);
+    });
+    return tied.has(S.idx) && [...tied].filter(k => k < S.idx).length === (J.bestof40.ties || 3) - 1;
+  }
+
+  /* Round 3 inside jokes (animations/hyperframes, NEW-ANIMATIONS-3). Mom's Fridge shares the goal-post loop in jokes(). */
+  function roundThree(add, { members, calc, J, now, tz, w, S, counted, week, people, pts, alive, firstWeek, bestOf40 }) {
+    const goal = m => calc.by[m.id].goal;
+    const upToNow = week.filter(p => Date.parse(p.at) <= +now);
+    const latestOf = m => counted.filter(p => p.memberId === m.id && Date.parse(p.at) <= +now).at(-1);
+    const quietFor = m => { const p = latestOf(m); return +now - (p ? Date.parse(p.at) : firstWeek(m)); };
+
+    // Connor still in and 72+ hours without a log: Signal Lost (No Map plays instead if Dylan has gone quiet too)
+    const [sat] = people('signal');
+    if (alive(sat) && quietFor(sat) >= J.signal.hours * HOUR) {
+      const pair = J.nomap ? people('nomap') : [];
+      const other = pair.includes(sat) ? pair.find(m => m && m.id !== sat.id) : null;
+      const noMap = other && alive(other) && quietFor(other) >= J.nomap.hours * HOUR;
+      const latest = latestOf(sat);
+      if (!noMap) add('signal', latest?.id || 'start', { who: sat.id, post: latest?.id || null, hours: Math.floor(quietFor(sat) / HOUR) });
+    }
+    // Connor logs something timed between 10 PM and 4:59 AM: 3 AM Besties
+    const [owl] = people('besties');
+    if (owl) {
+      for (const post of upToNow) {
+        const hour = zoned(post.at, tz).hour;
+        if (post.memberId === owl.id && (hour >= J.besties.from || hour < J.besties.to)) add('besties', post.id, { who: owl.id, post: post.id });
+      }
+    }
+    // Everyone still in has reached his goal this week, except Connor: Locked Out (anyone injured this week doesn't count)
+    const [stray] = people('lockedout');
+    if (alive(stray) && pts(stray) < goal(stray)) {
+      const others = members.filter(m => m.id !== stray.id && alive(m) && !calc.by[m.id].injuryWeeks.has(w));
+      if (others.length && others.every(m => pts(m) >= goal(m))) add('lockedout', w, { who: stray.id, pts: pts(stray), goal: goal(stray) });
+    }
+    // Dean and Dylan tied above 0: The Volcano
+    const [hiker, partner] = people('volcano');
+    if (hiker && partner && pts(hiker) > 0 && pts(hiker) === pts(partner)) {
+      add('volcano', `${w}:${pts(hiker)}`, { pts: pts(hiker), who: [hiker.id, partner.id] });
+    }
+    // The third week Dean and Jake tie: Best of 40 (The Coin skips that week, see jokes())
+    if (bestOf40) {
+      const pair = people('bestof40');
+      add('bestof40', w, { who: pair.map(m => m.id), pts: pts(pair[0]), n: J.bestof40.ties || 3 });
+    }
+    // The third week this season Dylan hits exactly 4 (La4): Retire the Number, once a season
+    const [la4] = people('la4');
+    if (la4) {
+      const hit = new Set();
+      replayWeeks(calc, [la4], S, tz, now, (k, t) => { if (t[la4.id] === J.la4.points) hit.add(k); });
+      if (hit.has(w) && [...hit].filter(k => k < w).length === (J.la4.weeks || 3) - 1) add('la4', w, { who: la4.id, pts: J.la4.points, n: J.la4.weeks || 3 });
+    }
+    // Jake logs Beers with the fellas: Balanced Diet that night, The Pull-Out the morning after (from 6 AM, group timezone)
+    const [fella] = people('diet');
+    if (fella) {
+      for (const post of upToNow) if (post.memberId === fella.id && post.cat === 'beers') add('diet', post.id, { who: fella.id, post: post.id });
+    }
+    const [host] = people('pullout');
+    if (host) {
+      for (const post of counted) {
+        if (post.memberId !== host.id || post.cat !== 'beers' || +now - Date.parse(post.at) > 2 * DAY) continue;
+        // the first 6 AM after the post: the same morning for a post after midnight, otherwise the next one
+        let morning = parseDay(dayKey(post.at, tz), tz, J.pullout.hour);
+        if (+morning <= Date.parse(post.at)) morning = parseDay(dayKey(addDays(post.at, 1, tz), tz), tz, J.pullout.hour);
+        if (+now >= +morning && +now < +morning + DAY) add('pullout', post.id, { who: host.id, post: post.id });
+      }
+    }
+    // Jake's first post after a dry spell long enough for The Radiator (4 days): Jailbreak
+    const [jailed] = people('jailbreak');
+    if (alive(jailed)) {
+      let previous = firstWeek(jailed);
+      for (const post of counted.filter(p => p.memberId === jailed.id && Date.parse(p.at) <= +now)) {
+        const time = Date.parse(post.at);
+        if (time >= +S.wkStart && time < +S.wkEnd && time - previous >= 96 * HOUR) {
+          add('jailbreak', post.id, { who: jailed.id, post: post.id, days: Math.floor((time - previous) / DAY) });
+        }
+        previous = time;
+      }
+    }
+    // The commissioner marks Phil recovered: Cleared to Play (once per report, the week it closes)
+    const [patient] = people('cleared');
+    if (patient) {
+      for (const report of calc.by[patient.id].injuryReports || []) {
+        const closed = report.resolvedAt ? Date.parse(report.resolvedAt) : NaN;
+        if (report.id && closed <= +now && closed >= +S.wkStart) add('cleared', report.id, { who: patient.id, report: report.id });
+      }
+    }
+    // Phil logs on three days in a row this week: Early Spring
+    const [groundhog] = people('spring');
+    if (groundhog) {
+      const days = [...new Set(upToNow.filter(p => p.memberId === groundhog.id).map(p => ordinal(p.at, tz)))].sort((a, b) => a - b);
+      let run = 0, best = 0;
+      days.forEach((d, i) => { run = i && d === days[i - 1] + 1 ? run + 1 : 1; best = Math.max(best, run); });
+      if (best >= J.spring.days) add('spring', w, { who: groundhog.id, days: best });
+    }
+    // The first date after a Scared of Girls drought: War Hero (keyed like the drought's Scared of Girls event)
+    if (J.warhero) {
+      let previous = +S.start;
+      for (const post of counted.filter(p => p.cat === 'date' && Date.parse(p.at) <= +now)) {
+        const time = Date.parse(post.at), since = Math.max(+S.start, previous);
+        const days = Math.floor((time - since) / DAY), n = Math.floor(days / (J.scared?.days || 30));
+        if (n > 0 && time >= +S.wkStart && time < +S.wkEnd) add('warhero', `${dayKey(since, tz)}:${n}`, { who: post.memberId, post: post.id, days });
+        previous = time;
       }
     }
   }

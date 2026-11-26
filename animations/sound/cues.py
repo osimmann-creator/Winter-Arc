@@ -687,6 +687,120 @@ CUES['joke-valentine'] = [  # Valentine's Day: scrolling 0-28, arrow 22-30 (THUN
     *joke_card(120),
 ]
 
+# ---------------------------------------------------------------- inside jokes, round 3 (HyperFrames: hyperframes/joke-*.html)
+CUES['joke-signal'] = [  # Signal Lost: orbit 0-62 (blip pings), DAY 2/3 at 22/44, bars out 16/30/44/58, LOST 62, panic 66, mic 86, COME IN 90, card 120
+    C(0, 'space', -15, d=4.0, fi=0.3, fo=1.0), *[C(f, 'chirp', -19, r=1.6) for f in (2, 17, 32, 47)], C(30, 'heartbeat', -20, d=1.0, fo=0.3),
+    C(22, 'pop_pluck', -14), C(44, 'pop_pluck', -13, r=0.9),
+    *[C(f, 'pop_in', -15, r=r) for f, r in ((16, 1.1), (30, 0.95), (44, 0.82), (58, 0.7))],
+    C(62, 'power_down', -9), C(62, 'zap', -16, d=0.5), C(63, 'scratch', -18, d=0.4), word(63, -13),
+    C(64, 'alarm', -13, d=1.8, fo=0.5), C(64, 'sting_reveal', -12), C(67, 'gasp', -8), ooh(68, -13),
+    C(86, 'switch', -12), C(87, 'swish', -15), C(90, 'pop_in', -10), C(91, 'notify', -14), C(104, 'tick', -16),
+    *joke_card(120),
+]
+CUES['joke-besties'] = [  # 3 AM Besties: neon on 4-13, clock ticks to 3:00 at 18, slide in 20-34, fries THUD 46, munch 56-80, cheers 84, CLINK 90, heart 102, card 120
+    C(0, 'bar', -23, d=4.0, fi=0.4, fo=1.0), C(4, 'zap', -21, r=1.5, d=0.2), C(8, 'zap', -21, r=1.3, d=0.2), C(13, 'switch', -14),
+    *[C(f, 'tick', -18) for f in (2, 6, 10, 14)], C(18, 'bell_desk', -10, d=1.0, fo=0.5),
+    C(26, 'whoosh_fast', -10, p=-0.3), C(28, 'whoosh_fast', -11, r=0.9, p=0.3), C(31, 'squeak', -19, r=0.8), C(33, 'squeak', -19, r=0.7),
+    C(42, 'whoosh_heavy', -9), C(46, 'thud', -4), C(46, 'drop_sack', -8), C(46, 'boom_short', -11), word(46, -11),
+    *[C(f, 'paper_crumple', -17, d=0.22, r=1.2) for f in (56, 64, 72, 80)],
+    C(85, 'swish', -13), C(90, 'clink', -4), C(90, 'glass_cheers', -9), word(90, -11), C(92, 'sparkle', -12), cheer(92, -14, d=1.6),
+    C(102, 'pop_in', -12), C(103, 'twinkle', -14),
+    *joke_card(120),
+]
+CUES['joke-lockedout'] = [  # Locked Out: windups 12/36/58, throws 20/44/66, PLINKs 28/52/76, phone buzzes 32/58/84, card 120
+    C(0, 'night', -17, d=4.0, fi=0.4, fo=1.0), C(6, 'owl', -24, r=1.1), C(98, 'owl', -23, r=1.2),
+    *[C(f, 'swish', -17) for f in (12, 36, 58)], *[C(f, 'whoosh_fast', -12, r=1.3) for f in (21, 45, 67)],
+    C(28, 'clink', -7, r=1.6), C(28, 'tick', -10), word(29, -12),
+    C(52, 'clink', -6, r=1.5), C(52, 'tick', -9), word(53, -12),
+    C(76, 'clink', -3, r=1.3), C(76, 'glass_set', -10), word(77, -11), ooh(80, -14),
+    *[C(f, 'phone_vibe', -8, d=0.6) for f in (32, 58, 84)], *[C(f + 2, 'notify', -13) for f in (32, 58, 84)],
+    C(96, 'sting_soft', -15),
+    *joke_card(120),
+]
+CUES['joke-volcano'] = [  # The Volcano: headlamps climb 0-44, 5:00 at 44, push in 44-64, sunrise 48-90, over the rim 62-76, champ 78, BURP 92, card 120
+    C(0, 'wind', -18, d=3.0, fi=0.3, fo=1.0), *[C(f, 'gravel', -19, p=0.2 if i % 2 else -0.2) for i, f in enumerate(range(2, 44, 6))],
+    C(44, 'alarm', -15, d=0.5), C(56, 'whoosh_big', -12), C(50, 'bed_warm', -21, d=2.4, fi=0.6, fo=0.8), C(60, 'rooster', -14),
+    *[C(f, 'gravel', -14) for f in (64, 68, 72, 76)],
+    C(78, 'fanfare', -8), cheer(79, -13, d=1.4),
+    C(92, 'burp', -2), C(92, 'rumble', -8, d=0.9, fo=0.4), C(92, 'boom_short', -11), word(93, -11),
+    C(94, 'whoosh_fast', -10), C(94, 'gasp', -8),
+    *joke_card(120),
+]
+CUES['joke-bestof40'] = [  # Best of 40: coin tossed 8 (NAH 10), ref out 20-30, round 1 shoot 38 (TIE 40), round 2 shoot 54 (TIE 56), blur 58-97, 40 + annoyed 98, card 120
+    C(0, 'pad', -24, d=1.2, fi=0.2, fo=0.5), C(8, 'coin_flip', -6), C(9, 'whoosh_fast', -12), word(10, -12), C(22, 'whoosh_out', -11),
+    *[C(f, 'tom_mid' if i % 2 == 0 else 'tom_hi', -11) for i, f in enumerate((26, 29, 32, 35))], C(38, 'slap', -14), C(40, 'stamp', -6), C(41, 'ding', -12),
+    *[C(f, 'tom_mid' if i % 2 == 0 else 'tom_hi', -11) for i, f in enumerate((42, 45, 48, 51))], C(54, 'slap', -14), C(56, 'stamp', -6), C(57, 'ding', -12, r=1.1),
+    C(58, 'drumroll', -9, d=1.3, fi=0.1, fo=0.1), C(58, 'clock', -18, d=1.3),
+    C(97, 'crash', -9, d=1.2, fo=0.5), C(98, 'stamp', -3), C(99, 'boo', -17, d=1.2, fo=0.5), ooh(99, -11),
+    *joke_card(120),
+]
+CUES['joke-retire'] = [  # Retire the Number: lights CLUNK 6, salute 14, the jersey rises 14-74, locks in 76 (confetti, flashes), champ 80, card 120
+    C(0, 'pad', -23, d=4.0, fi=0.3, fo=1.0), C(6, 'switch', -4), C(6, 'clank', -9), word(6, -12), C(14, 'swish', -16),
+    C(16, 'rope', -15), C(16, 'chain', -18, d=2.0, fo=0.5), C(40, 'drumroll', -7, d=1.2, fi=0.5),
+    C(76, 'clank', -10), C(76, 'crash', -12, d=1.4, fo=0.6), C(76, 'fanfare', -9), C(76, 'party_pop', -12),
+    applause(76, -8, d=2.2), cheer(77, -10, d=2.0), C(82, 'jump', -15),
+    *[C(f, 'shutter', -16) for f in (78, 84, 88, 93, 98, 104, 108)],
+    *joke_card(120),
+]
+CUES['joke-diet'] = [  # Balanced Diet: chew 6-30, BZZT 40 (BEERS? 42), perks up 45, YEET 56, the beer slides 66-78, grabs it 80, AHHH 86, card 120
+    C(0, 'bed_warm', -17, d=2.2, fi=0.3, fo=0.6), *[C(f, 'paper_crumple', -15, d=0.2, r=0.8) for f in (6, 14, 22, 30)],
+    C(40, 'phone_vibe', -10, d=0.7), word(40, -12), C(42, 'notify', -10), C(45, 'sting_reveal', -13), C(46, 'jump', -16),
+    C(56, 'whoosh_fast', -6), word(58, -11), C(58, 'swish', -12, r=0.9), C(92, 'slap', -14),
+    C(70, 'whoosh', -10), C(78, 'glass_set', -6), C(80, 'glass_cheers', -10), C(82, 'sparkle', -12), word(86, -12), cheer(84, -15, d=1.4),
+    *joke_card(120),
+]
+CUES['joke-pullout'] = [  # The Pull-Out: 6 AM birds, BOING 20 and 34, folds 46, SNAP 50, feet wiggle 60-106, review 66, one star 72, card 120
+    C(2, 'chirp', -20), C(10, 'chirp', -21, r=1.2), C(28, 'chirp', -22, r=0.9),
+    C(20, 'boing', -4), C(20, 'bounce', -11), C(21, 'squeak', -15, r=0.7), word(21, -12), C(21, 'gasp', -10),
+    C(34, 'boing', -2, r=0.9), C(34, 'bounce', -9), C(35, 'squeak', -14, r=0.6), word(35, -11),
+    C(46, 'whoosh_heavy', -8), C(50, 'slam', -2), C(50, 'door_slam', -7), C(50, 'thud', -6), C(51, 'powder', -12), word(51, -11), ooh(52, -12),
+    *[C(f, 'squeak', -18, r=1.2) for f in (60, 76, 92, 106)],
+    C(66, 'pop_in', -10), C(67, 'notify', -13), C(72, 'ding', -8), *[C(74 + k * 2, 'tick', -18) for k in range(1, 5)],
+    *joke_card(120),
+]
+CUES['joke-jailbreak'] = [  # Jailbreak: the door swings open 8 (WHAM 9), the drag 12-86 (chain, scrape, sparks), SCRRRAPE 48, stop 86, thumbs 92, shine 96, hop 106, card 120
+    C(0, 'bed_warm', -24, d=4.0, fi=0.3, fo=1.0), C(8, 'door_slam', -4), C(8, 'whoosh_fast', -12), word(9, -11), C(10, 'city', -22, d=2.6, fi=0.2, fo=0.6),
+    C(12, 'chain', -11, d=2.5, fi=0.3, fo=0.4), C(14, 'skid', -13, d=2.4, fi=0.3, fo=0.5), C(18, 'sizzle', -19, d=2.2, fi=0.3, fo=0.4),
+    *steps(list(range(15, 86, 6)), g=-14), word(48, -11),
+    C(86, 'clank', -6), C(86, 'metal_drop', -9),
+    C(92, 'swish', -12), C(96, 'sparkle', -10), C(96, 'ding', -10), cheer(96, -14, d=1.4), C(106, 'jump', -16),
+    *joke_card(120),
+]
+CUES['joke-fridge'] = [  # Mom's Fridge: ticks M-F 8-28, the star swoops 36-44, SLAP 44, sparkles 52-92, SO PROUD 66, hearts 84-94, card 120
+    C(0, 'bed_warm', -22, d=4.0, fi=0.4, fo=1.0), *[C(f, 'pencil', -10) for f in (8, 13, 18, 23, 28)],
+    C(40, 'whoosh', -8), C(44, 'slap', -3), C(44, 'card_slap', -8), word(44, -11),
+    *[C(f, 'twinkle', -13, r=1 + 0.06 * i) for i, f in enumerate((52, 57, 62))], C(80, 'sparkle', -13),
+    C(66, 'pop_in', -10), C(70, 'kiss', -10), applause(66, -16, d=1.4),
+    *[C(f, 'pop_pluck', -15, r=1 + 0.1 * i) for i, f in enumerate((84, 89, 94))],
+    *joke_card(120),
+]
+CUES['joke-cleared'] = [  # Cleared to Play: the cast arm up 6-14, wave 14-30, CRACK 30, shatter 38, Phil POPs up 40-47, jumps out 52, lands 65, spring 58-96, grin 90, hop 100, card 120
+    C(0, 'wind_soft', -16, d=2.2, fi=0.3, fo=0.8), C(8, 'land_dirt', -14), C(12, 'pop', -10), *[C(f, 'swish', -18) for f in (14, 18, 22, 26)],
+    C(30, 'punch', -9), C(30, 'glass_break', -15, d=0.4), word(30, -11),
+    C(38, 'glass_break', -11, d=0.8), C(38, 'powder', -13), C(40, 'pop', -7), C(44, 'boing', -10), word(42, -11), cheer(44, -12, d=1.6),
+    C(52, 'jump', -8), C(58, 'whoosh_fast', -14), C(65, 'land', -6), C(65, 'land_dirt', -12),
+    C(60, 'magic', -10), C(66, 'triad', -10), *[C(f, 'chirp', -15, r=r) for f, r in ((70, 1.0), (78, 1.2), (86, 0.9))], C(74, 'sparkle', -14),
+    C(100, 'jump', -16),
+    *joke_card(120),
+]
+CUES['joke-spring'] = [  # Early Spring: pops out 12, looks down 24, ? 30, NO SHADOW 40, shades 54, clouds off 58-74, chair 76, lounging 88, glint 98, card 120
+    C(0, 'wind_soft', -16, d=2.4, fi=0.3, fo=0.8), C(12, 'pop', -5), C(12, 'land_dirt', -12), C(16, 'boing', -14),
+    C(24, 'swish', -16), C(30, 'boing', -12, r=1.2), C(40, 'sting_reveal', -10), word(40, -11),
+    C(54, 'swish', -10), C(56, 'sparkle', -10), C(62, 'magic', -12), C(64, 'whoosh_big', -12),
+    *[C(f, 'chirp', -15, r=r) for f, r in ((70, 1.1), (82, 0.95))],
+    C(76, 'pop_in', -12), C(78, 'cloth', -12), C(86, 'whoosh_fast', -12), C(88, 'jump', -10), C(90, 'waves', -20, d=1.2, fi=0.2, fo=0.6),
+    C(98, 'twinkle', -12), cheer(90, -15, d=1.4),
+    *joke_card(120),
+]
+CUES['joke-warhero'] = [  # War Hero: the parade marches in 0-62, stop 62, the medal falls 66-74 (DING 75), confetti 78/84, bounces 88/98/108, card 120
+    C(0, 'city', -22, d=2.4, fi=0.3, fo=0.6), cheer(0, -18, d=2.2), *steps(list(range(2, 62, 6)), g=-15),
+    *[C(f, 'cajon', -15) for f in range(0, 62, 12)], C(62, 'thud', -14),
+    C(70, 'whoosh', -10), C(74, 'ding', -3), C(74, 'coin_drop', -10), C(75, 'gem', -12), word(75, -11), C(76, 'sparkle', -12),
+    C(78, 'fanfare', -6), C(78, 'party_pop', -6), C(84, 'party_pop', -8, r=1.1), applause(78, -8, d=2.2), cheer(79, -9, d=2.0),
+    *[C(f, 'jump', -16) for f in (88, 98, 108)],
+    *joke_card(120),
+]
+
 # ---------------------------------------------------------------- The Monday Report (HyperFrames: hyperframes/recap-*.html)
 # The weekly recap the app plays back to back on Mondays. Every segment opens on the WINTER ARC WEEKLY banner
 # (assets/recap.js: plate pops at its start, tab 5 frames later). The per-member clips share one cue list each.

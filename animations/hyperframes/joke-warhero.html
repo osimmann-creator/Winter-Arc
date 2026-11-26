@@ -1,0 +1,136 @@
+<!doctype html>
+<!--
+  War Hero (joke-warhero): a parade. Flexander (a clip about anyone: no names) rides in on the shoulders of two
+  anonymous carriers under a WELCOME HOME banner, fists up. They stop; a medal with a heart on it drops onto his
+  chest. DING. Confetti everywhere. The drought is over.
+  Beats (30 fps): parade in 0-60, stop 62, medal 70, confetti 74, bounce 84-110, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #wh-crew { position: absolute; left: 0; top: 0; width: 1080px; height: 2348px; }
+  #wh-medal { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
+  #wh-medal svg { position: absolute; left: -60px; top: -150px; overflow: visible; }
+  #wh-conf { position: absolute; inset: 0; }
+  #wh-flags path { transform-box: fill-box; transform-origin: 50% 0; }
+  #wh-shine { position: absolute; width: 0; height: 0; opacity: 0; }
+  #wh-shine svg { position: absolute; left: -80px; top: -80px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-warhero" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="wh-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#C7E7FB">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="wh-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9DD3F5"/><stop offset="1" stop-color="#E4F4FF"/></linearGradient></defs>
+    <rect width="1080" height="2348" fill="url(#wh-sky)"/>
+    <!-- town -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="-20" y="1260" width="300" height="700" fill="#F2C6A0"/><path d="M-20 1260 L130 1140 L280 1260 Z" fill="#B5533F"/>
+      <rect x="800" y="1220" width="300" height="740" fill="#C9E0F2"/><path d="M800 1220 L950 1100 L1100 1220 Z" fill="#5A4E8A"/>
+    </g>
+    <g fill="#FFFFFF" stroke="#341720" stroke-width="7"><rect x="40" y="1340" width="80" height="100" rx="6"/><rect x="160" y="1340" width="80" height="100" rx="6"/><rect x="850" y="1300" width="80" height="100" rx="6"/><rect x="970" y="1300" width="80" height="100" rx="6"/></g>
+    <!-- the banner -->
+    <path d="M60 760 Q540 860 1020 760" fill="none" stroke="#341720" stroke-width="8"/>
+    <g stroke="#341720" stroke-width="10"><path d="M150 790 L150 1000 M930 790 L930 1000" stroke-width="14"/></g>
+    <rect x="170" y="820" width="740" height="150" rx="18" fill="#E05A47" stroke="#341720" stroke-width="10"/>
+    <text x="540" y="922" text-anchor="middle" font-family="Luckiest Guy" font-size="96" fill="#FFFFFF" stroke="#341720" stroke-width="8" paint-order="stroke" letter-spacing="4">WELCOME HOME</text>
+    <!-- bunting -->
+    <path d="M-20 1080 Q540 1180 1100 1080" fill="none" stroke="#341720" stroke-width="7"/>
+    <g id="wh-flags" stroke="#341720" stroke-width="6" stroke-linejoin="round"></g>
+    <!-- street -->
+    <path d="M-20 1960 L1100 1960 L1100 2360 L-20 2360 Z" fill="#C9CED8" stroke="#341720" stroke-width="10"/>
+    <path d="M-20 2140 L1100 2140" stroke="#FFFFFF" stroke-width="16" stroke-dasharray="80 60"/>
+  </svg>
+  <div id="wh-crew">
+    <div id="wh-hero"></div>
+    <div id="wh-c0"></div>
+    <div id="wh-c1"></div>
+    <div id="wh-medal"><svg width="120" height="200" viewBox="-60 -150 120 200">
+      <path d="M-40 -84 L-12 -30 L12 -30 L40 -84 L22 -84 L0 -44 L-22 -84 Z" fill="#2F66E6" stroke="#341720" stroke-width="7" stroke-linejoin="round"/>
+      <circle cx="0" cy="0" r="42" fill="#C77928" stroke="#341720" stroke-width="8"/>
+      <circle cx="0" cy="0" r="31" fill="#FFD064" stroke="#341720" stroke-width="5"/>
+      <path d="M0 18 Q-24 3 -20 -10 Q-17 -22 -7 -20 Q-2 -18 0 -12 Q2 -18 7 -20 Q17 -22 20 -10 Q24 3 0 18 Z" fill="#FF5FA2" stroke="#341720" stroke-width="5" stroke-linejoin="round"/>
+    </svg></div>
+  </div>
+  <div id="wh-shine"><svg width="160" height="160" viewBox="-80 -80 160 160">
+    <g stroke="#341720" stroke-width="6" stroke-linejoin="round"><path d="M0 -70 L14 -14 L70 0 L14 14 L0 70 L-14 14 L-70 0 L-14 -14 Z" fill="#FFF3B0"/></g>
+  </svg></div>
+  <div id="wh-fall" style="position:absolute;inset:0"></div>
+  <div id="wh-conf"></div>
+  <div class="word" id="wh-ding" style="left:820px;top:1250px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="130" style="fill:#FFD064">DING!</text></svg></div></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"WAR HERO","pts":"4","unit":"PTS","sub":"THE DROUGHT IS OVER","color":"#2F66E6","dark":"#1C46A8","light":"#D6E2FF"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  var S = 0.55, Y = 2130, IN = 62, D0 = -900;
+  // bunting flags
+  var fh = '', cols = ['#E05A47', '#FFD064', '#2F66E6', '#45B87A', '#FFFFFF'];
+  for (var i = 0; i < 12; i++) {
+    var x = 20 + i * 92, y = 1080 + 100 * (1 - Math.pow((x - 540) / 560, 2)) * 0.95;
+    fh += '<path d="M' + (x - 34) + ' ' + y + ' L' + (x + 34) + ' ' + y + ' L' + x + ' ' + (y + 70) + ' Z" fill="' + cols[i % 5] + '"/>';
+  }
+  document.getElementById('wh-flags').innerHTML = fh;
+  tl.fromTo('#wh-flags path', { rotation: -6 }, { rotation: 6, duration: 0.5, ease: 'sine.inOut', yoyo: true, repeat: 10, stagger: 0.04, immediateRender: false }, 0);
+
+  // confetti falling the whole way
+  WA.snow(tl, '#wh-fall', { n: 46, seed: 12, speed: 260, drift: 30, size: [14, 24], html: function (i, sz) {
+    var c = ['#EE5982', '#FFD064', '#7254DC', '#45B87A', '#5C7CF0', '#F2853A'][i % 6];
+    return '<i style="display:block;width:' + sz + 'px;height:' + (sz * 0.55) + 'px;background:' + c + ';border:3px solid #341720;border-radius:3px;transform:rotate(' + (i * 37 % 180) + 'deg)"></i>';
+  } });
+  // two carriers (anonymous colourways), the hero up on their hands
+  WA.actor('wh-c0', ['carry-a', 'carry-b'], { x: 430, y: Y, s: S, member: 'anon' });
+  WA.actor('wh-c1', ['carry-a', 'carry-b'], { x: 650, y: Y, s: S, member: 'anon2' });
+  var hipY = Y + (517 - 1340) * S + 10;
+  WA.actor('wh-hero', ['champ-sit'], { x: 540, y: hipY + (1340 - 996) * S, s: S });
+  WA.pose(tl, '#wh-hero', 'champ-sit', 0);
+  var MY = hipY + (796 - 996) * S + 26;
+  gsap.set('#wh-medal', { x: 540, y: MY });
+
+  // the parade comes in
+  gsap.set('#wh-crew', { x: D0 });
+  tl.to('#wh-crew', { x: 0, duration: IN * F, ease: 'power1.out' }, 0);
+  WA.cycle(tl, '#wh-c0', ['carry-a', 'carry-b'], 0, IN * F, 6, 0);
+  WA.cycle(tl, '#wh-c1', ['carry-b', 'carry-a'], 0, IN * F, 6, 0);
+  for (var t = 0; t < IN; t += 6) {
+    tl.to('#wh-hero', { y: -16, duration: 3 * F, ease: 'sine.out' }, t * F);
+    tl.to('#wh-hero', { y: 0, duration: 3 * F, ease: 'sine.in' }, (t + 3) * F);
+  }
+  WA.pose(tl, '#wh-c0', 'carry-a', IN * F);
+  WA.pose(tl, '#wh-c1', 'carry-b', IN * F);
+  WA.squash(tl, '#wh-hero', IN * F, 0.06, 10);
+
+  // the medal
+  tl.fromTo('#wh-medal', { opacity: 1, y: MY - 700, rotation: -30 }, { opacity: 1, y: MY, rotation: 0, duration: 8 * F, ease: 'power2.in', immediateRender: false }, 66 * F);
+  WA.squash(tl, '#wh-medal svg', 74 * F, 0.2, 10);
+  gsap.set('#wh-medal svg', { transformOrigin: '60px 150px' });
+  gsap.set('#wh-shine', { left: 600, top: hipY + (796 - 996) * S - 40 });
+  WA.popIn(tl, '#wh-shine', 75 * F, 6, { rot0: -40, rot: 0 });
+  tl.to('#wh-shine', { scale: 0, rotation: 60, opacity: 0, duration: 8 * F, ease: 'power1.in' }, 82 * F);
+  WA.word(tl, '#wh-ding', 75 * F, 28, { rot: 8, rot0: -10, seed: 3 });
+  WA.confetti(tl, '#wh-conf', 78 * F, 160, 1500, { n: 34, seed: 2, speed: 30, angle: -1.25, spread: 0.6, frames: 44 });
+  WA.confetti(tl, '#wh-conf', 78 * F, 920, 1500, { n: 34, seed: 3, speed: 30, angle: -1.9, spread: 0.6, frames: 44 });
+  WA.confetti(tl, '#wh-conf', 84 * F, 540, 1100, { n: 30, seed: 4, speed: 22, spread: 1.6, frames: 40 });
+  // the bounce: up, up, up
+  [88, 98, 108].forEach(function (f) {
+    tl.to('#wh-hero', { y: -60, duration: 4 * F, ease: 'power2.out' }, f * F);
+    tl.to('#wh-hero', { y: 0, duration: 4 * F, ease: 'power2.in' }, (f + 4) * F);
+    tl.to('#wh-medal', { y: MY - 60, duration: 4 * F, ease: 'power2.out' }, f * F);
+    tl.to('#wh-medal', { y: MY, duration: 4 * F, ease: 'power2.in' }, (f + 4) * F);
+    WA.squash(tl, '#wh-c0', (f + 8) * F, 0.06, 6);
+    WA.squash(tl, '#wh-c1', (f + 8) * F, 0.06, 6);
+  });
+
+  window.__timelines['joke-warhero'] = tl;
+})();
+</script>
+</body>
+</html>

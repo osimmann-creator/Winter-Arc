@@ -48,7 +48,7 @@ Inside-joke videos can pop up once per member when the trigger fires. Members ca
 
 | | When | Feed card |
 |---|---|---|
-| **The Coin** | Dean and Jake are tied on points this week (above 0). Lands on its edge. | Yes, with the tied score |
+| **The Coin** | Dean and Jake are tied on points this week (above 0). Lands on its edge. In the third week they tie, Best of 40 plays instead. | Yes, with the tied score |
 | **Blue Hair** | Connor has the most points this week. | Yes |
 | **The Iron** | Ayaad first reaches his weekly points goal with an activity dated Sunday. | Yes |
 | **The Liquor Run** | Gaurav first reaches his weekly points goal with an activity dated Sunday. | Yes |
@@ -81,8 +81,21 @@ Inside-joke videos can pop up once per member when the trigger fires. Members ca
 | **New Year's Eve** | Dec 31. A giant kettlebell drops at midnight. | Yes |
 | **Groundhog Day** | Feb 2. Phil has spoken: back in 6 weeks. | Yes |
 | **Valentine's Day** | Feb 14. Cupid's arrow lands on the couch. | Yes, naming everyone still short (a date is worth 4) |
+| **Signal Lost** | Connor is still in and 72+ hours without a log. Once per dry spell. If Dylan has gone quiet too, No Map plays instead. | Yes |
+| **3 AM Besties** | Connor logs anything timed between 10 PM and 4:59 AM. Once per post. | Yes, with the time |
+| **Locked Out** | Everyone still in has reached his goal this week except Connor, who's still in and short. Anyone on the injury report that week doesn't count. Once per week. | Yes, with what he still needs |
+| **The Volcano** | Dean and Dylan are tied on points this week (above 0). | Yes, with the tied score |
+| **Best of 40** | Dean and Jake tie for the third week this season (a week counts if they were level above 0 at any point). Plays instead of The Coin that week. | Yes |
+| **Retire the Number** | The third week this season Dylan hits exactly 4 points (La4) at any point. Once a season. | Yes |
+| **Balanced Diet** | Jake logs Beers with the fellas. Once per post. | Yes |
+| **The Pull-Out** | The morning after a Jake beers post: from the next 6 AM in the group's timezone until that night. Once per post. | Yes |
+| **Jailbreak** | Jake's first post after 4+ days without one (a dry spell long enough for The Radiator). Once per dry spell. | Yes, with how long he was gone |
+| **Mom's Fridge** | Jake's post that gets him to his weekly goal is dated Monday to Friday. Once per week. | Yes, with the day |
+| **Cleared to Play** | The commissioner marks Phil recovered, closing his injury report. Once per report. | Yes |
+| **Early Spring** | Phil logs something on three days in a row this week. No shadow. Once per week. | Yes |
+| **War Hero** | Someone logs the first date after a Scared of Girls drought. No name in the video. Once per drought. | Yes, naming him |
 
-The GTA clips (Grand Theft #1 through Partners in Crime) and the holidays can be about anyone, so their videos have no names in them. The same joke can be triggered again after one full intervening game week (Monday through Sunday).
+The GTA clips (Grand Theft #1 through Partners in Crime), War Hero and the holidays can be about anyone, so their videos have no names in them. The same joke can be triggered again after one full intervening game week (Monday through Sunday).
 
 **Naughty or Nice (Christmas):** all day on Dec 24 (group timezone) a ballot is pinned to the top of the feed, with a nudge on Home. Everyone votes 😇 Nice or 😈 Naughty on every other member, eliminated guys included, and can change his votes until 11:59 PM. Until then the ballot only shows how many people have voted and who hasn't. From 12:00 AM on Dec 25 the server saves the results as the `xmas` event, so each phone plays the `joke-xmas` intro once and then stamps every face NICE (gold, a gift) or NAUGHTY (red, coal) with its count, nice list first and the naughtiest last. A results card with both lists stays in the feed; tap it to replay the reveal. The rules are `XMAS` in `js/config.js`: majority decides, ties go naughty, anyone who doesn't vote goes naughty, and the server never sends who voted what. Votes are kept in the `xmas_votes` table (migration 0011).
 
@@ -153,4 +166,4 @@ To add another:
 
    With no file names it uploads every clip in `assets/celebrations/` and `assets/intro/`. Do that after remixing the sound, because that changes every video.
 
-For a new inside joke, register the clip in `INSIDE_JOKES`, implement the trigger in `Logic.jokes`, and add the server event validation and a D1 migration when the event type is new. The round 2 clips are made with HyperFrames in `animations/hyperframes` (see [animations/README.md](animations/README.md#hyperframes)), and their event types arrive with D1 migration `drizzle/0011_round2_jokes.sql`. **Apply 0011 before publishing the code that records them**: until then the database refuses those event types (the other jokes still get recorded). 0011 rebuilds the events table, so it first copies every table that points at it (seen marks, comments, comment hearts, reactions) and drops the old ones leaves-first. Nothing is lost, even though D1 runs ON DELETE CASCADE during a migration. It also adds the `xmas_votes` table for the Christmas vote, which has to be live before Dec 24. Keep the GitHub and Sites source histories in sync. A GitHub push alone does not publish the Site or upload clips to R2.
+For a new inside joke, register the clip in `INSIDE_JOKES`, implement the trigger in `Logic.jokes`, and add the server event validation and a D1 migration when the event type is new. The round 2 clips are made with HyperFrames in `animations/hyperframes` (see [animations/README.md](animations/README.md#hyperframes)), and their event types arrive with D1 migration `drizzle/0011_round2_jokes.sql`. **Apply 0011 before publishing the code that records them**: until then the database refuses those event types (the other jokes still get recorded). 0011 rebuilds the events table, so it first copies every table that points at it (seen marks, comments, comment hearts, reactions) and drops the old ones leaves-first. Nothing is lost, even though D1 runs ON DELETE CASCADE during a migration. It also adds the `xmas_votes` table for the Christmas vote, which has to be live before Dec 24. The round 3 clips (Signal Lost through War Hero) arrive with `drizzle/0012_round3_jokes.sql`, which rebuilds the events table the same safe way; **apply 0012 before publishing the code that records them**. 0012 also accepts the event types of the round 3 ideas that aren't made yet (`shoes`, `sleptin`, `refund`, `pressed`, `umbrella`, `wrongguy`, `appedition`, `nexttrain`) and The Monday Report's `recap`, so those won't need another rebuild. Cleared to Play uses the injury report's id, which the server now sends with each injury period. Keep the GitHub and Sites source histories in sync. A GitHub push alone does not publish the Site or upload clips to R2.

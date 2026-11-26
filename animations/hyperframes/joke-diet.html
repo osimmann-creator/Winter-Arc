@@ -1,0 +1,139 @@
+<!doctype html>
+<!--
+  Balanced Diet (joke-diet): Jake at the table, glumly chewing a plate of broccoli. His phone buzzes: THE FELLAS:
+  BEERS? He perks up, flings the whole plate over his shoulder, and a cold one slides in along the table. He grabs
+  it and beams.
+  Beats (30 fps): chew 0-40, buzz 40, perk up 44, fling 56, slide 66-78, beer 80, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  .bd-abs { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  #bd-plate svg { position: absolute; left: -170px; top: -90px; overflow: visible; }
+  .bd-flo svg { position: absolute; left: -40px; top: -40px; overflow: visible; }
+  #bd-phone svg { position: absolute; left: -90px; top: -40px; overflow: visible; }
+  #bd-note { opacity: 0; transform-origin: 0 0; }
+  #bd-note svg { position: absolute; left: -330px; top: -300px; overflow: visible; }
+  #bd-mug svg { position: absolute; left: -80px; top: -190px; overflow: visible; }
+  #bd-shine { opacity: 0; }
+  #bd-shine svg { position: absolute; left: -100px; top: -100px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-diet" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="bd-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#F4E3C3">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <rect width="1080" height="2348" fill="#F4E3C3"/>
+    <g fill="#EBD5AE"><rect x="0" y="0" width="60" height="2348"/><rect x="180" y="0" width="60" height="2348"/><rect x="360" y="0" width="60" height="2348"/><rect x="540" y="0" width="60" height="2348"/><rect x="720" y="0" width="60" height="2348"/><rect x="900" y="0" width="60" height="2348"/></g>
+    <!-- window -->
+    <rect x="610" y="520" width="380" height="460" rx="18" fill="#FFFFFF" stroke="#341720" stroke-width="10"/>
+    <rect x="630" y="540" width="340" height="420" rx="8" fill="#9DD3F5"/>
+    <path d="M630 860 Q720 820 800 850 Q880 820 970 850 L970 960 L630 960 Z" fill="#B9E2C8"/>
+    <path d="M800 540 L800 960 M630 750 L970 750" stroke="#FFFFFF" stroke-width="14"/>
+    <!-- a framed 'EAT CLEAN' sign -->
+    <rect x="110" y="600" width="360" height="230" rx="14" fill="#FFFFFF" stroke="#341720" stroke-width="10" transform="rotate(-3 290 715)"/>
+    <g transform="rotate(-3 290 715)" font-family="Luckiest Guy" text-anchor="middle" fill="#45B87A"><text x="290" y="700" font-size="64">EAT</text><text x="290" y="780" font-size="64">CLEAN</text></g>
+    <path d="M0 1460 L1080 1460" stroke="#D9C29A" stroke-width="18"/>
+  </svg>
+  <div id="bd-jake"></div>
+  <!-- the table -->
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <path d="M60 1960 L1020 1960 L980 2360 L100 2360 Z" fill="#B97A4A" stroke="#341720" stroke-width="10"/>
+    <path d="M110 2010 L970 2010" stroke="#A0663A" stroke-width="18" stroke-linecap="round"/>
+    <rect x="20" y="1900" width="1040" height="70" rx="20" fill="#D8975F" stroke="#341720" stroke-width="10"/>
+    <path d="M60 1918 L1020 1918" stroke="#EDB582" stroke-width="10" stroke-linecap="round"/>
+  </svg>
+  <div class="bd-abs" id="bd-plate"><svg width="340" height="120" viewBox="-170 -90 340 120">
+    <ellipse cx="0" cy="0" rx="160" ry="32" fill="#FFFFFF" stroke="#341720" stroke-width="9"/>
+    <ellipse cx="0" cy="-4" rx="110" ry="18" fill="#EEF2F6"/>
+  </svg></div>
+  <div class="bd-abs bd-flo" id="bd-fl0"></div><div class="bd-abs bd-flo" id="bd-fl1"></div><div class="bd-abs bd-flo" id="bd-fl2"></div>
+  <div class="bd-abs" id="bd-phone"><svg width="180" height="80" viewBox="-90 -40 180 80">
+    <path d="M-80 10 L50 -26 Q66 -30 72 -16 L84 10 Q88 22 72 26 L-60 30 Q-76 30 -82 20 Z" fill="#2B2236" stroke="#341720" stroke-width="7" stroke-linejoin="round"/>
+    <path id="bd-scr" d="M-64 12 L52 -18 L66 8 L-54 22 Z" fill="#1B1F33"/>
+    <path id="bd-scr-on" d="M-64 12 L52 -18 L66 8 L-54 22 Z" fill="#7CF0A9" opacity="0"/>
+  </svg></div>
+  <div class="bd-abs" id="bd-note"><svg width="420" height="310" viewBox="-330 -300 420 310">
+    <path d="M-310 -290 L50 -290 Q80 -290 80 -260 L80 -110 Q80 -80 50 -80 L-20 -80 L30 -10 L-90 -80 L-310 -80 Q-340 -80 -340 -110 L-340 -260 Q-340 -290 -310 -290 Z" fill="#341720" transform="translate(6 10)"/>
+    <path d="M-310 -290 L50 -290 Q80 -290 80 -260 L80 -110 Q80 -80 50 -80 L-20 -80 L30 -10 L-90 -80 L-310 -80 Q-340 -80 -340 -110 L-340 -260 Q-340 -290 -310 -290 Z" fill="#FFFFFF" stroke="#341720" stroke-width="9" stroke-linejoin="round"/>
+    <text x="-310" y="-232" font-family="Luckiest Guy" font-size="38" fill="#7A6A8A" letter-spacing="2">THE FELLAS</text>
+    <text x="-310" y="-130" font-family="Luckiest Guy" font-size="96" fill="#E39A2E">BEERS?</text>
+  </svg></div>
+  <div class="bd-abs" id="bd-mug"><svg width="160" height="200" viewBox="-80 -190 160 200">
+    <path d="M40 -140 Q100 -140 100 -90 Q100 -40 40 -40" fill="none" stroke="#341720" stroke-width="26"/>
+    <path d="M40 -140 Q100 -140 100 -90 Q100 -40 40 -40" fill="none" stroke="#F4E3C3" stroke-width="12"/>
+    <rect x="-60" y="-160" width="110" height="160" rx="16" fill="#F2B544" stroke="#341720" stroke-width="9"/>
+    <path d="M-40 -130 L-40 -20 M-10 -130 L-10 -20 M20 -130 L20 -20" stroke="#FFD98A" stroke-width="10" stroke-linecap="round"/>
+    <path d="M-70 -150 Q-74 -186 -40 -186 Q-26 -206 0 -194 Q24 -208 40 -188 Q66 -186 60 -152 Z" fill="#FFFFFF" stroke="#341720" stroke-width="8" stroke-linejoin="round"/>
+  </svg></div>
+  <div class="bd-abs" id="bd-shine"><svg width="200" height="200" viewBox="-100 -100 200 200">
+    <g stroke="#341720" stroke-width="7" stroke-linejoin="round"><path d="M0 -84 L16 -16 L84 0 L16 16 L0 84 L-16 16 L-84 0 L-16 -16 Z" fill="#FFF3B0"/></g>
+  </svg></div>
+  <div class="word" id="bd-bz" style="left:880px;top:2080px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="80" style="fill:#7CF0A9">BZZT</text></svg></div></div>
+  <div class="word" id="bd-yeet" style="left:300px;top:1180px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#45B87A">YEET!</text></svg></div></div>
+  <div class="word" id="bd-ahh" style="left:790px;top:1330px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#F2B544">AHHH</text></svg></div></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"BALANCED DIET","pts":"1","unit":"BEER","sub":"THE FELLAS CALLED","color":"#E39A2E","dark":"#A8661A","light":"#FFF0D2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  var X = 520, Y = 2252, S = 0.8;
+  WA.actor('bd-jake', ['table-chew', 'table-buzz', 'table-fling', 'table-beer'], { x: X, y: Y, s: S, member: 'jake', tag: 'JAKE', color: '#E39A2E' });
+  WA.pose(tl, '#bd-jake', 'table-chew', 0);
+  // broccoli florets on the plate
+  var flo = '<svg width="80" height="80" viewBox="-40 -40 80 80"><rect x="-8" y="2" width="16" height="30" rx="6" fill="#8FC85A" stroke="#341720" stroke-width="6"/>' +
+    '<g stroke="#341720" stroke-width="6" fill="#4E9A3A"><circle cx="-14" cy="-6" r="16"/><circle cx="14" cy="-6" r="16"/><circle cx="0" cy="-18" r="18"/></g></svg>';
+  [['#bd-fl0', 480, 1870], ['#bd-fl1', 540, 1862], ['#bd-fl2', 600, 1872]].forEach(function (f) {
+    document.querySelector(f[0]).innerHTML = flo;
+    gsap.set(f[0], { x: f[1], y: f[2] });
+  });
+  gsap.set('#bd-plate', { x: 540, y: 1900 });
+  gsap.set('#bd-phone', { x: 850, y: 1890 });
+  gsap.set('#bd-note', { x: 975, y: 1800 });
+  gsap.set('#bd-mug', { x: 1260, y: 1906 });
+
+  // chew. chew. chew.
+  [6, 14, 22, 30].forEach(function (f) { WA.squash(tl, '#bd-jake', f * F, 0.05, 7); });
+  // BZZT: THE FELLAS: BEERS?
+  tl.set('#bd-scr-on', { opacity: 1 }, 40 * F);
+  WA.shake(tl, '#bd-phone svg', 40 * F, 14 * F, 6, { seed: 4, rot: 8, step: 1 });
+  WA.word(tl, '#bd-bz', 40 * F, 20, { rot: 8, rot0: -10, seed: 3, amp: 3 });
+  WA.popIn(tl, '#bd-note', 42 * F, 9, { rot0: 10, rot: 0 });
+  WA.take(tl, '#bd-jake', 'table-buzz', 45 * F, 0.1);
+  WA.hop(tl, '#bd-jake', 46 * F, 30, 8);
+
+  // fling the plate
+  WA.take(tl, '#bd-jake', 'table-fling', 56 * F, 0.12);
+  WA.toss(tl, '#bd-plate', 57 * F, { x0: 540, y0: 1900, vx: -20, vy: -48, g: 1.1, frames: 34, spin: -26, fade: false });
+  WA.toss(tl, '#bd-fl0', 57 * F, { x0: 480, y0: 1870, vx: -28, vy: -40, g: 1.2, frames: 30, spin: -30, fade: false });
+  WA.toss(tl, '#bd-fl1', 58 * F, { x0: 540, y0: 1862, vx: -8, vy: -54, g: 1.2, frames: 34, spin: 24, fade: false });
+  WA.toss(tl, '#bd-fl2', 57 * F, { x0: 600, y0: 1872, vx: 16, vy: -50, g: 1.2, frames: 34, spin: 30, fade: false });
+  WA.word(tl, '#bd-yeet', 58 * F, 24, { rot: -10, rot0: 14, seed: 6 });
+  WA.squash(tl, '#bd-fl1', 92 * F, 0.35, 10);
+  tl.to('#bd-note', { scale: 0, opacity: 0, duration: 5 * F, ease: 'back.in(2)' }, 62 * F);
+  tl.set('#bd-scr-on', { opacity: 0 }, 64 * F);
+
+  // a cold one slides in, all the way across to his hand
+  tl.to('#bd-mug', { x: 300, duration: 12 * F, ease: 'power3.out' }, 66 * F);
+  tl.fromTo('#bd-mug svg', { rotation: -6 }, { rotation: 0, duration: 12 * F, ease: 'power3.out', immediateRender: false }, 66 * F);
+  tl.set('#bd-mug', { opacity: 0 }, 80 * F);
+  WA.take(tl, '#bd-jake', 'table-beer', 80 * F, 0.12);
+  gsap.set('#bd-shine', { x: X + (339 - 640) * S + 40, y: Y + (493 - 1340) * S - 140 });
+  WA.popIn(tl, '#bd-shine', 82 * F, 6, { rot0: -40, rot: 0 });
+  tl.to('#bd-shine', { scale: 0, rotation: 60, opacity: 0, duration: 8 * F, ease: 'power1.in' }, 90 * F);
+  WA.word(tl, '#bd-ahh', 86 * F, 30, { rot: -6, rot0: 10, seed: 2 });
+  WA.bob(tl, '#bd-jake', 92 * F, 0.9, 10, 0.45);
+
+  window.__timelines['joke-diet'] = tl;
+})();
+</script>
+</body>
+</html>
