@@ -134,6 +134,9 @@ const XMAS = {
 /* Osim's own stamp every week he reaches the minimum: it slams onto his screen,
    sits on his ring card, and a card goes to the feed for everyone. */
 const HOAT = { username: 'osim', text: 'HOAT GUARANTEE', title: 'Hoat Guarantee', feed: true };
+/* Everyone with his own character (animations/src/hero/looks.ts; sheets in animations/characters). His Home screen
+   shows him instead of Flexander, from assets/mascot/<username>/<pose>.webp. Anyone not listed gets Flexander. */
+const CHARACTERS = ['osim', 'phil', 'dylan', 'connor', 'gaurav', 'dean', 'amaan', 'jake', 'ayaad'];
 
 const REACTIONS = ['\u{1F525}', '\u{1F4AA}', '\u{1F44F}', '\u{1F602}', '\u{1F9E2}'];   // fire, flex, clap, laugh, cap
 const CAP = '\u{1F9E2}';

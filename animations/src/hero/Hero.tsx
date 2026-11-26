@@ -2,6 +2,8 @@ import React, { useId } from 'react';
 import { useCurrentFrame } from 'remotion';
 import { M, I, T, R, S, chain, mul, svgM, localLight, ap } from '../lib/m2';
 import { smooth, limbPts, capsule, circlePath, ellPath, rrPath, heartPath, softStar, scallopPts, P } from '../lib/shape';
+import { Look, LookCtx, useLook, HairPal } from './looks';
+import { MemberHead } from './heads';
 
 /* ------------------------------------------------------------------ */
 /* Palette                                                             */
@@ -70,12 +72,12 @@ export const mixHex = (a: string, b: string, t: number) => {
   const B = hex(b);
   return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join('');
 };
-const hairCols = (t: number) => ({
-  hair: mixHex(C.hair, BLUE_HAIR.hair, t),
-  hairMid: mixHex(C.hairMid, BLUE_HAIR.hairMid, t),
-  hairLite: mixHex(C.hairLite, BLUE_HAIR.hairLite, t),
-  hairCurl: mixHex(C.hairCurl, BLUE_HAIR.hairCurl, t),
-  hairDark: mixHex(C.hairDark, BLUE_HAIR.hairDark, t),
+export const hairCols = (h: HairPal, t: number) => ({
+  hair: mixHex(h.hair, BLUE_HAIR.hair, t),
+  hairMid: mixHex(h.mid, BLUE_HAIR.hairMid, t),
+  hairLite: mixHex(h.lite, BLUE_HAIR.hairLite, t),
+  hairCurl: mixHex(h.curl, BLUE_HAIR.hairCurl, t),
+  hairDark: mixHex(h.dark, BLUE_HAIR.hairDark, t),
 });
 
 /* ------------------------------------------------------------------ */
@@ -315,14 +317,19 @@ const HAND = {
 /* ------------------------------------------------------------------ */
 /* Hand                                                                */
 /* ------------------------------------------------------------------ */
-const FIST_ACCENT = (
-  <g>
-    <path d="M-26 8 C-14 4 5 5 15 11 Q2 9 -16 14 Q-29 19 -26 8Z" fill={C.skinHi} />
-    <path d="M16 14 Q36 22 33 43 L27 50 Q27 30 16 14Z" fill="#EE936A" />
-  </g>
-);
+const FistAccent: React.FC = () => {
+  const K = useLook().skin;
+  return (
+    <g>
+      <path d="M-26 8 C-14 4 5 5 15 11 Q2 9 -16 14 Q-29 19 -26 8Z" fill={K.hi} />
+      <path d="M16 14 Q36 22 33 43 L27 50 Q27 30 16 14Z" fill={K.fistSh} />
+    </g>
+  );
+};
+const FIST_ACCENT = <FistAccent />;
 const HandG: React.FC<{ m: M; lm: M; type: Hand }> = ({ m, lm, type }) => {
-  const sk = { fill: C.skin, shade: C.skinSh, off: 9 };
+  const K = useLook().skin;
+  const sk = { fill: K.skin, shade: K.sh, off: 9 };
   if (type === 'open' || type === 'relax') {
     const fingers = type === 'open' ? HAND.fingers : HAND.relaxFingers;
     const thumb = type === 'open' ? HAND.thumbOpen : HAND.thumbRelax;
@@ -375,21 +382,30 @@ const Cuff: React.FC = () => {
 };
 
 /* cel-shading accents from the refined kit (part-local coordinates) */
-const UPPER_ACCENT = (
-  <g>
-    <path d="M-48 3 C-33 -38 -8 -51 13 -36 C-15 -37 -34 -15 -48 3Z" fill={C.skinHi} />
-    <path d="M-63 76 C-54 59 -45 53 -30 53 C-37 64 -46 76 -57 84 Q-65 91 -63 76Z" fill={C.skinHi} />
-    <path d="M-34 104 C-18 117 0 120 22 109 C7 127 -20 136 -36 117Z" fill={C.skinMid} />
-    <path d="M-22 145 Q18 151 40 124 Q36 154 13 169 Q-9 173 -22 145Z" fill={C.skinDeep} />
-  </g>
-);
-const FORE_ACCENT = (
-  <g>
-    <path d="M-32 12 C-24 -3 -16 -9 -9 -8 Q-20 11 -23 31 C-27 43 -34 28 -32 12Z" fill={C.skinHi} />
-    <path d="M12 3 C34 20 30 47 17 71 Q23 49 15 30 Q9 17 12 3Z" fill={C.skinWarm} />
-  </g>
-);
-const LEG_ACCENT = <path d="M-25 11 Q-14 -10 -4 -6 Q-15 12 -16 39 Q-23 53 -25 33Z" fill={C.skinHi} />;
+const UpperAccent: React.FC = () => {
+  const K = useLook().skin;
+  return (
+    <g>
+      <path d="M-48 3 C-33 -38 -8 -51 13 -36 C-15 -37 -34 -15 -48 3Z" fill={K.hi} />
+      <path d="M-63 76 C-54 59 -45 53 -30 53 C-37 64 -46 76 -57 84 Q-65 91 -63 76Z" fill={K.hi} />
+      <path d="M-34 104 C-18 117 0 120 22 109 C7 127 -20 136 -36 117Z" fill={K.mid} />
+      <path d="M-22 145 Q18 151 40 124 Q36 154 13 169 Q-9 173 -22 145Z" fill={K.deep} />
+    </g>
+  );
+};
+const ForeAccent: React.FC = () => {
+  const K = useLook().skin;
+  return (
+    <g>
+      <path d="M-32 12 C-24 -3 -16 -9 -9 -8 Q-20 11 -23 31 C-27 43 -34 28 -32 12Z" fill={K.hi} />
+      <path d="M12 3 C34 20 30 47 17 71 Q23 49 15 30 Q9 17 12 3Z" fill={K.warm} />
+    </g>
+  );
+};
+const LegAccent: React.FC = () => <path d="M-25 11 Q-14 -10 -4 -6 Q-15 12 -16 39 Q-23 53 -25 33Z" fill={useLook().skin.hi} />;
+const UPPER_ACCENT = <UpperAccent />;
+const FORE_ACCENT = <ForeAccent />;
+const LEG_ACCENT = <LegAccent />;
 
 /** Outline pass: thick ink silhouette behind fills so joined segments read as one shape. */
 const Ol: React.FC<{ m: M; d: string; w?: number }> = ({ m, d, w = LW }) => (
@@ -400,15 +416,16 @@ export const ArmG: React.FC<{ a: Rig['aL']; root: M; flex: number; hand: Hand; e
   a, root, flex, hand, el, item, itemBehind,
 }) => {
   const L = (m: M) => mul(root, m);
+  const K = useLook().skin;
   const ua = upperArmD(flex);
   const folded = Math.abs(el) > 58;
-  const deltoid = <Line d="M-42 42 C-25 42 -6 34 8 20" w={4.5} c={C.line} />;
-  const peak = flex > 0.45 ? <Line d="M-40 110 Q-26 124 -4 120" w={4.25} c={C.line} /> : null;
+  const deltoid = <Line d="M-42 42 C-25 42 -6 34 8 20" w={4.5} c={K.line} />;
+  const peak = flex > 0.45 ? <Line d="M-40 110 Q-26 124 -4 120" w={4.25} c={K.line} /> : null;
   const upper = (stroke: boolean) => (
-    <Part m={a.upper} lm={L(a.upper)} d={ua} fill={C.skinLimb} shade={C.skinSh} off={16} noStroke={!stroke} inner={UPPER_ACCENT} over={<g>{deltoid}{peak}</g>} />
+    <Part m={a.upper} lm={L(a.upper)} d={ua} fill={K.limb} shade={K.sh} off={16} noStroke={!stroke} inner={UPPER_ACCENT} over={<g>{deltoid}{peak}</g>} />
   );
   const fore = (stroke: boolean) => (
-    <Part m={a.fore} lm={L(a.fore)} d={foreArmD} fill={C.skinLimb} shade={C.skinSh} off={14} noStroke={!stroke} inner={FORE_ACCENT} over={<Cuff />} />
+    <Part m={a.fore} lm={L(a.fore)} d={foreArmD} fill={K.limb} shade={K.sh} off={14} noStroke={!stroke} inner={FORE_ACCENT} over={<Cuff />} />
   );
   return (
     <g>
@@ -424,7 +441,7 @@ export const ArmG: React.FC<{ a: Rig['aL']; root: M; flex: number; hand: Hand; e
           {fore(false)}
           {upper(false)}
           <g transform={svgM(a.elbow)}>
-            <Line d="M-20 -6 Q-8 2 4 -4" w={4} c={C.line} o={0.72} />
+            <Line d="M-20 -6 Q-8 2 4 -4" w={4} c={K.line} o={0.72} />
           </g>
         </>
       )}
@@ -437,14 +454,15 @@ export const ArmG: React.FC<{ a: Rig['aL']; root: M; flex: number; hand: Hand; e
 
 const LegG: React.FC<{ l: Rig['lL']; root: M; kneel?: boolean }> = ({ l, root, kneel }) => {
   const L = (m: M) => mul(root, m);
+  const K = useLook().skin;
   if (kneel) {
     return (
       <g>
         <Ol m={l.thigh} d={thighD} />
-        <Part m={l.thigh} lm={L(l.thigh)} d={thighD} fill={C.skin} shade={C.skinSh} off={12} noStroke inner={LEG_ACCENT} />
+        <Part m={l.thigh} lm={L(l.thigh)} d={thighD} fill={K.skin} shade={K.sh} off={12} noStroke inner={LEG_ACCENT} />
         <g transform={svgM(l.knee)}>
-          <ellipse cx={0} cy={4} rx={30} ry={20} fill={C.skin} stroke={C.ink} strokeWidth={LW} />
-          <Line d="M-14 0 Q0 10 14 0" w={4} c={C.line} o={0.7} />
+          <ellipse cx={0} cy={4} rx={30} ry={20} fill={K.skin} stroke={C.ink} strokeWidth={LW} />
+          <Line d="M-14 0 Q0 10 14 0" w={4} c={K.line} o={0.7} />
         </g>
       </g>
     );
@@ -453,13 +471,13 @@ const LegG: React.FC<{ l: Rig['lL']; root: M; kneel?: boolean }> = ({ l, root, k
     <g>
       <Ol m={l.thigh} d={thighD} />
       <Ol m={l.shin} d={shinD} />
-      <Part m={l.thigh} lm={L(l.thigh)} d={thighD} fill={C.skin} shade={C.skinSh} off={12} noStroke inner={LEG_ACCENT} />
+      <Part m={l.thigh} lm={L(l.thigh)} d={thighD} fill={K.skin} shade={K.sh} off={12} noStroke inner={LEG_ACCENT} />
       <Part
         m={l.shin}
         lm={L(l.shin)}
         d={shinD}
-        fill={C.skin}
-        shade={C.skinSh}
+        fill={K.skin}
+        shade={K.sh}
         off={11}
         noStroke
         inner={
@@ -470,7 +488,7 @@ const LegG: React.FC<{ l: Rig['lL']; root: M; kneel?: boolean }> = ({ l, root, k
             <Line d="M-32 88 L30 88" w={6} c={C.sandal} />
           </g>
         }
-        over={<Line d="M-14 -2 Q-2 8 10 0" w={4} c={C.line} o={0.7} />}
+        over={<Line d="M-14 -2 Q-2 8 10 0" w={4} c={K.line} o={0.7} />}
       />
       <g transform={svgM(l.ankle)}>
         <path d={soleD} fill={C.sandal} stroke={C.ink} strokeWidth={5.5} strokeLinejoin="round" />
@@ -479,8 +497,8 @@ const LegG: React.FC<{ l: Rig['lL']; root: M; kneel?: boolean }> = ({ l, root, k
         m={l.ankle}
         lm={L(l.ankle)}
         d={footD}
-        fill={C.skin}
-        shade={C.skinSh}
+        fill={K.skin}
+        shade={K.sh}
         off={8}
         lw={6.25}
         inner={<Line d="M-30 -12 L-38 28" w={9} c={C.sandal} />}
@@ -516,29 +534,30 @@ const SashTail: React.FC<{ m: M; f: number }> = ({ m, f }) => {
 };
 
 const TorsoG: React.FC<{ m: M; lm: M; f: number }> = ({ m, lm }) => {
+  const K = useLook().skin;
   const sashD = 'M58 -306 Q12 -170 -68 -38 L-28 -12 Q64 -140 132 -272 Q108 -302 58 -306 Z';
   return (
     <>
       <Ol m={m} d={NECK_D} />
       <Ol m={m} d={TORSO_D} />
-      <Part m={m} lm={lm} d={NECK_D} fill={C.skin} shade={C.skinSh} off={18} noStroke inner={<g><path d="M-41 -324 Q-30 -306 -11 -301 L-41 -302Z" fill="#EA9B70" /><path d="M-60 -362 H60 V-326 Q0 -306 -60 -326 Z" fill={C.skinSh} /></g>} />
+      <Part m={m} lm={lm} d={NECK_D} fill={K.skin} shade={K.sh} off={18} noStroke inner={<g><path d="M-41 -324 Q-30 -306 -11 -301 L-41 -302Z" fill={K.neckHi} /><path d="M-60 -362 H60 V-326 Q0 -306 -60 -326 Z" fill={K.sh} /></g>} />
       <Part
         m={m}
         lm={lm}
         d={TORSO_D}
-        fill={C.skin}
-        shade={C.skinSh}
+        fill={K.skin}
+        shade={K.sh}
         off={24}
         noStroke
         inner={
           <g>
-            <path d="M-127 -233 Q-88 -262 -36 -248 Q-75 -243 -110 -225 Q-122 -220 -127 -233Z" fill={C.skinHi} />
-            <path d="M-77 -220 Q-60 -230 -45 -224 Q-59 -213 -74 -214Z" fill="#FFD1A1" />
+            <path d="M-127 -233 Q-88 -262 -36 -248 Q-75 -243 -110 -225 Q-122 -220 -127 -233Z" fill={K.hi} />
+            <path d="M-77 -220 Q-60 -230 -45 -224 Q-59 -213 -74 -214Z" fill={K.chestHi} />
             {/* trap / collar shade under the chin */}
-            <path d="M-70 -310 Q0 -276 70 -310 L70 -330 L-70 -330 Z" fill={C.skinSh} opacity={0.7} />
+            <path d="M-70 -310 Q0 -276 70 -310 L70 -330 L-70 -330 Z" fill={K.sh} opacity={0.7} />
             {/* under-pec shade */}
-            <path d="M-6 -226 C-12 -186 -40 -162 -80 -164 C-112 -166 -134 -184 -150 -206 L-150 -188 C-128 -160 -100 -150 -76 -150 C-36 -148 -10 -170 -2 -206 Z" fill={C.skinSh} opacity={0.9} />
-            <path d="M6 -226 C12 -186 40 -162 80 -164 C112 -166 134 -184 150 -206 L150 -188 C128 -160 100 -150 76 -150 C36 -148 10 -170 2 -206 Z" fill={C.skinSh} opacity={0.9} />
+            <path d="M-6 -226 C-12 -186 -40 -162 -80 -164 C-112 -166 -134 -184 -150 -206 L-150 -188 C-128 -160 -100 -150 -76 -150 C-36 -148 -10 -170 -2 -206 Z" fill={K.sh} opacity={0.9} />
+            <path d="M6 -226 C12 -186 40 -162 80 -164 C112 -166 134 -184 150 -206 L150 -188 C128 -160 100 -150 76 -150 C36 -148 10 -170 2 -206 Z" fill={K.sh} opacity={0.9} />
             {/* pecs */}
             <Line d="M-2 -236 C-8 -190 -40 -164 -80 -166 C-112 -168 -132 -186 -144 -206" w={5} />
             <Line d="M2 -236 C8 -190 40 -164 80 -166 C112 -168 132 -186 144 -206" w={5} />
@@ -550,11 +569,11 @@ const TorsoG: React.FC<{ m: M; lm: M; f: number }> = ({ m, lm }) => {
                 <Line d={`M6 ${y} Q26 ${y - 6} ${46 - i * 3} ${y + 2}`} w={4} />
               </g>
             ))}
-            <Line d="M-72 -128 Q-60 -88 -62 -50" w={4} c={C.line} o={0.7} />
-            <Line d="M72 -128 Q60 -88 62 -50" w={4} c={C.line} o={0.7} />
-            <Line d="M-5 -50 Q0 -44 5 -50" w={4} c={C.line} />
+            <Line d="M-72 -128 Q-60 -88 -62 -50" w={4} c={K.line} o={0.7} />
+            <Line d="M72 -128 Q60 -88 62 -50" w={4} c={K.line} o={0.7} />
+            <Line d="M-5 -50 Q0 -44 5 -50" w={4} c={K.line} />
             {/* cast shadow of the sash on the skin */}
-            <path d="M-28 -12 Q64 -140 132 -272 L150 -262 Q84 -128 -6 2 Z" fill={C.skinSh} />
+            <path d="M-28 -12 Q64 -140 132 -272 L150 -262 Q84 -128 -6 2 Z" fill={K.sh} />
             {/* sash */}
             <path d={sashD} fill={C.cloth} />
             <path d="M-10 -40 Q54 -150 112 -266 L132 -272 Q64 -140 -28 -12 Z" fill={C.clothSh} />
@@ -734,14 +753,17 @@ const laurel = () => {
 const LEAVES = laurel();
 const LEAF_D = 'M0 0 Q14 -12 38 -2 Q18 11 0 0 Z';
 
-const HeadG: React.FC<{ p: Pose; m: M; lm: M; f: number; extra?: React.ReactNode }> = ({ p, m, lm, extra }) => {
+const HeadG: React.FC<{ p: Pose; m: M; lm: M; f: number; extra?: React.ReactNode }> = ({ p, m, lm, f, extra }) => {
+  const look = useLook();
   const id = 'h' + useId().replace(/[^a-zA-Z0-9]/g, '');
+  if (look.face !== 'flex') return <MemberHead p={p} m={m} lm={lm} f={f} extra={extra} />;
+  const K = look.skin;
   const [lx, ly] = localLight(lm);
   const tn = p.turn;
   const HD = headPath(tn);
   const ex = tn * 18;
   const eyeY = -172;
-  const hc = hairCols(p.hairBlue ?? 0);
+  const hc = hairCols(look.hair, p.hairBlue ?? 0);
   // hair
   const backHair = scallopPts(0, -250, 140, 102, 160, 380, 11, 24) + ' L120 -176 L-120 -176 Z';
   const hl: P[] = [];
@@ -773,28 +795,28 @@ const HeadG: React.FC<{ p: Pose; m: M; lm: M; f: number; extra?: React.ReactNode
       {/* ears */}
       {[-1, 1].map((s) => (
         <g key={s} transform={`translate(${-tn * 8} 0) scale(${s} 1)`}>
-          <path d="M-114 -196 C-152 -206 -158 -136 -118 -128 Z" fill={C.skin} stroke={C.ink} strokeWidth={LW} strokeLinejoin="round" />
+          <path d="M-114 -196 C-152 -206 -158 -136 -118 -128 Z" fill={K.skin} stroke={C.ink} strokeWidth={LW} strokeLinejoin="round" />
           <Line d="M-124 -182 C-140 -178 -140 -152 -126 -146" w={4} />
         </g>
       ))}
       {/* head base */}
-      <path d={HD} fill={C.skinSh} />
+      <path d={HD} fill={K.sh} />
       <g clipPath={`url(#${id})`}>
-        <path d={HD} fill={C.skinFace} transform={`translate(${lx * 26} ${ly * 26})`} />
+        <path d={HD} fill={K.face} transform={`translate(${lx * 26} ${ly * 26})`} />
         {/* warm cheeks */}
         <path
           transform={`translate(${ex} 0)`}
           d="M-135 -95 C-113 -103 -92 -93 -82 -77 Q-104 -63 -123 -79 Z M135 -95 C113 -103 92 -93 82 -77 Q104 -63 123 -79 Z"
-          fill={C.cheek}
+          fill={K.cheek}
           opacity={0.44}
         />
         {p.red > 0 ? <path d="M-140 -330 H140 V30 H-140 Z" fill="#FF3B3B" opacity={p.red * 0.32} /> : null}
         {/* under-chin / jaw shade on right */}
-        <path d="M-130 -8 Q0 14 130 -8 L130 20 L-130 20 Z" fill={C.skinSh} opacity={0.6} />
+        <path d="M-130 -8 Q0 14 130 -8 L130 20 L-130 20 Z" fill={K.sh} opacity={0.6} />
         {/* cheekbone glints */}
         <g transform={`translate(${ex} 0)`}>
-          <path d="M-119 -108 Q-107 -114 -97 -108 Q-103 -103 -113 -103Z" fill={C.skinHi} />
-          <path d="M96 -108 Q108 -115 118 -109 Q114 -103 103 -102Z" fill={C.skinHi} />
+          <path d="M-119 -108 Q-107 -114 -97 -108 Q-103 -103 -113 -103Z" fill={K.hi} />
+          <path d="M96 -108 Q108 -115 118 -109 Q114 -103 103 -102Z" fill={K.hi} />
         </g>
         {/* blush */}
         {p.blush > 0 ? (
@@ -806,9 +828,9 @@ const HeadG: React.FC<{ p: Pose; m: M; lm: M; f: number; extra?: React.ReactNode
       </g>
       <path d={HD} fill="none" stroke={C.ink} strokeWidth={LW} strokeLinejoin="round" />
       {/* chin */}
-      <Line d={`M${-32 + tn * 22} -42 Q${tn * 22} -30 ${32 + tn * 22} -42`} w={4} c={C.line} o={0.85} />
+      <Line d={`M${-32 + tn * 22} -42 Q${tn * 22} -30 ${32 + tn * 22} -42`} w={4} c={K.line} o={0.85} />
       <Line d={`M${tn * 28 - 7} -24 Q${tn * 28} -16 ${tn * 28} -6 M${tn * 28 + 7} -24 Q${tn * 28} -16 ${tn * 28} -6`} w={4} />
-      <ellipse cx={-34 + tn * 26} cy={-18} rx={12} ry={4.5} fill={C.skinHi} opacity={0.86} transform={`rotate(-12 ${-34 + tn * 26} -18)`} />
+      <ellipse cx={-34 + tn * 26} cy={-18} rx={12} ry={4.5} fill={K.hi} opacity={0.86} transform={`rotate(-12 ${-34 + tn * 26} -18)`} />
       {/* front hair */}
       <path d={fringe} fill={hc.hair} stroke={C.ink} strokeWidth={LW} strokeLinejoin="round" />
       <g fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -1059,9 +1081,17 @@ export type HeroProps = {
   headExtra?: React.ReactNode;
   shadow?: boolean;
   groundY?: number;
+  /** who to draw (src/hero/looks.ts). Default: the look from LookCtx, which is Flexander unless a scene sets one. */
+  look?: Look;
 };
 
-export const Hero: React.FC<HeroProps> = ({
+export const Hero: React.FC<HeroProps> = (props) => {
+  const ctx = useLook();
+  const look = props.look ?? ctx;
+  return look === ctx ? <HeroBody {...props} /> : <LookCtx.Provider value={look}><HeroBody {...props} /></LookCtx.Provider>;
+};
+
+const HeroBody: React.FC<HeroProps> = ({
   p, x, y, scale, behind, between, front, itemL, itemR, itemBehindL, itemBehindR, headExtra, shadow = true,
 }) => {
   const f = useCurrentFrame();

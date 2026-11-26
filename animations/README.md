@@ -37,7 +37,8 @@ npx remotion render Gym out/gym.mp4 --codec=h264 --crf=20
 
 | Path | What it is |
 |---|---|
-| `src/hero/Hero.tsx` | The mascot rig: body, poses, face, hands and toga. `pose()` builds a pose, and `Hero` draws it. |
+| `src/hero/Hero.tsx` | The mascot rig: body, poses, face, hands and toga. `pose()` builds a pose, and `Hero` draws it. `<Hero look={LOOKS.osim} …>` draws a member instead of Flexander. |
+| `src/hero/looks.ts`, `heads.tsx` | The crew's characters (see [Characters](#characters)): one look per member (skin, hair, beard, glasses, face) and the code that draws their heads. |
 | `src/scenes/*.tsx` | The celebrations (1080×2348, 30 fps, 4.5 s): Gym, GunShow, LegDay, Atlas, Mirror; Run, FrostMiles, Torch, NightOwl, GooseChase; Jickle, Volo, Soccer, Date, Beers, Reading |
 | `src/scenes/PullUp.tsx`, `BoxJump`, `RopeStorm`, `GainsShake`, `HammerTime` | Gym 6 to 10, in the new gym room (`GymRoom.tsx`) |
 | `src/scenes/RushHour.tsx`, `GreenLight`, `PigeonPanic`, `BridgeRun`, `CoffeeRun` | Run 6 to 10, down a city street and over the bridge (`CityKit.tsx`) |
@@ -50,7 +51,8 @@ npx remotion render Gym out/gym.mp4 --codec=h264 --crf=20
 | `src/scenes/kit.tsx`, `RunKit.tsx`, `ik.ts` | Shared props (dumbbell, tickets, steam, snow), the themeable running track and gait, and arm IK (`reach`) for putting a hand on a target |
 | `src/fx/` | Shared backgrounds (`Stage`), effects (bursts, speed lines, sparkles), motion helpers and the ribbon end card |
 | `src/app/AppArt.tsx` | App art: mascot poses (stills), the app icon, and the `Intro` opening animation |
-| `src/sheets/` | Model and style sheets, used for checking the character design |
+| `src/sheets/` | Model and style sheets, used for checking the character design, and the crew's character sheets (`CharacterSheet.tsx`) |
+| `characters/` | The character sheets as PNGs: one per member plus `crew.png` |
 | `src/Root.tsx` | Registers every composition |
 | `src/export/` + `scripts/` | Body-part sheet exporter (SVG/PNG per part + manifest of pivots) and the app asset build |
 
@@ -62,6 +64,16 @@ npx remotion render Gym out/gym.mp4 --codec=h264 --crf=20
 4. Add `{ id: 'gym-11', name: '…' }` to `CELEBRATIONS.gym` in the app's `js/config.js`.
 
 The mascot's hair can turn blue: set `hairBlue` (0 to 1) in a pose.
+
+## Characters
+
+Everyone in the group has his own character: Flexander's body, toga, sash, belt, cuffs and sandals, with his own face. The sheets in `characters/` (one per member, plus `crew.png`) show each one's full body, a head turnaround, six expressions, his Home poses, his palette and what to keep when drawing him. Use them as the reference for any new animation.
+
+- **Looks** live in `src/hero/looks.ts` (`LOOKS`, keyed by username): skin and hair colours, hairstyle, beard (a light wash with dots, so the skin shows through), glasses, eyes, brows, nose, mouth and head shape. `FLEXANDER` is the default look, so every existing scene still draws the mascot.
+- **Drawing one:** `<Hero look={LOOKS.dean} p={pose({...})} … />` in Remotion, or `flex-<pose>-dean.svg` in HyperFrames (add the username to the pose's `members` in `src/export/cast-poses.tsx` and run `./scripts/export-cast.sh`).
+- **His Home screen** shows his character in the app's six mascot poses: `assets/mascot/<username>/<pose>.webp` in the app, listed in `CHARACTERS` in the app's `js/config.js`.
+- **After changing a look**, run `node scripts/render-characters.mjs` to redraw the sheets and the Home stills (or `… sheets` / `… home osim` for part of it), then `./scripts/export-cast.sh` for the HyperFrames poses.
+- **A new member** needs a look in `LOOKS`, his username in `MEMBERS` in `scripts/render-characters.mjs` and in `CHARACTERS` in `js/config.js`, and notes and a signature face in `CREW` in `src/sheets/CharacterSheet.tsx`.
 
 ## HyperFrames
 
@@ -83,7 +95,7 @@ HyperFrames needs a Chrome. If it can't find one, point `PUPPETEER_EXECUTABLE_PA
 | `hyperframes/joke-<name>.html` | One file per clip: the scene, its GSAP timeline and the end card. The beats (in frames) are listed at the top. |
 | `hyperframes/compositions/endcard.html` | The ribbon end card (TITLE · COIN · CAPTION), mounted over the last 1.5 s with its words and colours as variables. |
 | `hyperframes/assets/kit.js`, `kit.css` | Shared helpers: shake, hop, squash, pose swaps, pop-ins, sound words, tosses, confetti, name tags. `kit.js` also lists the two GSAP rules every clip follows so it survives HyperFrames seeking back and forth. |
-| `hyperframes/assets/cast/` | Flexander's poses as SVG, exported from the Remotion rig by `scripts/export-cast.sh` (poses in `src/export/cast-poses.tsx`, member colourways and hand/head anchors in `cast.tsx`). The clips swap whole poses rather than animating limbs. |
+| `hyperframes/assets/cast/` | Flexander's poses as SVG, exported from the Remotion rig by `scripts/export-cast.sh` (poses in `src/export/cast-poses.tsx`, hand/head anchors in `cast.tsx`). A pose's `members` also get `flex-<pose>-<username>.svg`, that member's own character in the pose. The clips swap whole poses rather than animating limbs. |
 | `hyperframes/assets/buddy.js` | Buddy, the second character: friends and drivers who aren't in the app (no name tag), the cop, the guy at the table. One SVG with outfits, faces and props as options. |
 | `hyperframes/assets/props.js` | Cars (doors, wheels, police lights), stars and the other shared props. |
 | `hyperframes/render.mjs` | The build: `CLIPS` lists each clip and its poster second. |

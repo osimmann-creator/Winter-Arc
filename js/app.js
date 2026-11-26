@@ -223,7 +223,7 @@ const App = (() => {
   <h1 id="hT" class="sr">Home</h1>
   ${xmasNudgeHTML()}
   ${roastHTML(roastToday())}
-  <div class="greet"><img class="mascot" src="${Art.mascot(pose)}" alt="" width="338" height="640"><p class="bubble">${esc(line)}</p></div>
+  <div class="greet"><img class="mascot" src="${Art.mascot(pose, S.me.username)}" alt="" width="338" height="640"><p class="bubble">${esc(line)}</p></div>
   <div class="card ringcard">
     ${isHoat() && R.thisWeek >= min && se.status === 'live' ? `<span class="hoat-mini${pts >= min ? ' on' : ''}" role="img" aria-label="${esc(HOAT.text)}">${Art.hoatStamp()}</span>` : ''}
     ${ringSVG(pts, min)}
@@ -979,7 +979,7 @@ const App = (() => {
       await wait(650);
       if (isHoat()) await hoatSlam();
       else { const card = $('.ringcard'); if (card) { const st = document.createElement('span'); st.className = 'stamp-safe'; st.textContent = 'SAFE!'; card.appendChild(st); } }
-      const g = $('.greet .mascot'); if (g) g.src = Art.mascot(isHoat() ? 'thumbs' : 'flex');
+      const g = $('.greet .mascot'); if (g) g.src = Art.mascot(isHoat() ? 'thumbs' : 'flex', S.me.username);
       await Celebrate.confetti();
       toast(isHoat() ? `${HOAT.text}. ${min} points, as promised.` : R.eliminated ? 'You hit your goal! Every point still counts toward all-time.' : 'Safe this week! Anything more is bonus glory.', isHoat() ? 'thumbs' : 'flex');
     } else toast(`+${fmtPts(CATS[cat].pts)} for ${catName(cat)}. ${R.thisWeek >= min ? 'Already safe, now you’re just showing off.' : `${fmtPts(min - R.thisWeek)} to go this week.`}`);

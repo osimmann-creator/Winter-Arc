@@ -27,7 +27,7 @@ Run `npm run build` from the repository root. The deployable output is in `dist/
 | `js/art.js` | Built-in icons, the Hoat and NICE/NAUGHTY stamps, and paths to the art files |
 | `assets/celebrations/` | Celebration and inside-joke videos (`<id>.mp4` plus a `<id>.webp` poster) |
 | `assets/intro/` | Archived opening animation assets |
-| `assets/mascot/` | Mascot poses used around the app |
+| `assets/mascot/` | Mascot poses used around the app; `assets/mascot/<username>/` is that member's own character, which his Home screen shows instead of Flexander (`CHARACTERS` in `js/config.js`; character sheets in `animations/characters/`) |
 | `assets/demo/` | Sample proof photos from the original preview |
 | `assets/icons/` | Home-screen and browser icons (the marble thinker) |
 | `assets/fonts/` | Luckiest Guy, Bangers and Baloo 2 (open-source fonts, licences included) |

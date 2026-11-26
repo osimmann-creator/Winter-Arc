@@ -165,7 +165,13 @@ const Art = (() => {
 </svg>`;
   }
 
-  const mascot = pose => `assets/mascot/${pose}.webp`;
+  /** Flexander in a pose, or (with a username) that member's own character, for the poses Home uses. */
+  const MEMBER_POSES = ['wave', 'flex', 'thumbs', 'cheer', 'shrug', 'point'];
+  const mascot = (pose, who) => {
+    const u = String(who || '').toLowerCase();
+    return typeof CHARACTERS !== 'undefined' && CHARACTERS.includes(u) && MEMBER_POSES.includes(pose)
+      ? `assets/mascot/${u}/${pose}.webp` : `assets/mascot/${pose}.webp`;
+  };
   const photo = p => (!p ? '' : p.startsWith('demo:') ? `assets/demo/${p.slice(5)}.webp` : p);
   const video = id => `/media/celebrations/${id}.mp4`;
   const poster = id => `/media/celebrations/${id}.webp`;

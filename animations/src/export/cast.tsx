@@ -2,7 +2,8 @@
    Renders the mascot rig (src/hero/Hero.tsx) into still SVG poses that the HyperFrames clips in
    animations/hyperframes move around as whole pieces. Every pose shares one canvas (viewBox
    -640 -1340 1280 1440, feet at 0,0), so poses stacked at the same spot line up and can be swapped.
-   A member's version swaps the violet sash and trim for his app colour (ROSTER in js/config.js).
+   A member's version is his own character (src/hero/looks.ts: his face, hair and skin on the same body and toga).
+   The anonymous crew in GTA and holiday clips (anon, anon2) stay Flexander with the sash in a neutral colour.
 
    Run: ./scripts/export-cast.sh   →  hyperframes/assets/cast/flex-<pose>[-<member>].svg + flex.json */
 import React from 'react';
@@ -10,6 +11,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import { C, Hero, Pose, pose, rig, plant } from '../hero/Hero';
 import { POSES, PROPS, Look } from './cast-poses';
+import { LOOKS, Look as Person } from '../hero/looks';
 
 const OUT = process.argv[2] || 'hyperframes/assets/cast';
 mkdirSync(OUT, { recursive: true });
@@ -55,10 +57,11 @@ const pt = (q: [number, number]) => [Math.round(q[0] - VB.x), Math.round(q[1] - 
 for (const look of POSES as Look[]) {
   const p: Pose = look.plant ? plant(pose(look.p)) : pose(look.p);
   const r = rig(p);
-  const svg = withFont(markup(
+  const render = (who?: Person) => withFont(markup(
     <g>
       {look.back}
       <Hero
+        look={who}
         p={p}
         x={0}
         y={0}
@@ -85,8 +88,9 @@ for (const look of POSES as Look[]) {
     ankleR: pt(r.W(r.lR.ankle, 0, 0) as [number, number]),
     members: look.members ?? [],
   };
+  const svg = render();
   writeFileSync(`${OUT}/flex-${look.id}.svg`, svg);
-  for (const m of look.members ?? []) writeFileSync(`${OUT}/flex-${look.id}-${m}.svg`, recolor(svg, MEMBERS[m]));
+  for (const m of look.members ?? []) writeFileSync(`${OUT}/flex-${look.id}-${m}.svg`, LOOKS[m] ? render(LOOKS[m]) : recolor(svg, MEMBERS[m]));
 }
 for (const prop of PROPS) {
   writeFileSync(`${OUT}/prop-${prop.id}.svg`, withFont(renderToStaticMarkup(

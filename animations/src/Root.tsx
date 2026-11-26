@@ -22,6 +22,7 @@ import { RopeStormScene } from './scenes/RopeStorm';
 import { BoxJumpScene } from './scenes/BoxJump';
 import { PullUpScene } from './scenes/PullUp';
 import { ModelSheet, HeroBig, FaceSheet, StyleSheet } from './sheets/ModelSheet';
+import { CharacterSheet, CrewLineup } from './sheets/CharacterSheet';
 import { GymScene } from './scenes/Gym';
 import { RunScene } from './scenes/Run';
 import { JickleScene } from './scenes/Jickle';
@@ -66,8 +67,12 @@ export const RemotionRoot: React.FC = () => {
         <Still id="FaceSheet" component={FaceSheet} width={2400} height={1300} />
         <Still id="StyleSheet" component={StyleSheet} width={1080} height={1920} />
       </Folder>
+      <Folder name="Characters">
+        <Still id="CharacterSheet" component={CharacterSheet} width={2400} height={1500} defaultProps={{ id: 'osim' }} />
+        <Still id="CrewLineup" component={CrewLineup} width={2400} height={1100} />
+      </Folder>
       <Folder name="AppArt">
-        <Still id="Mascot" component={MascotStill} width={900} height={1200} defaultProps={{ pose: 'wave' }} />
+        <Still id="Mascot" component={MascotStill} width={900} height={1200} defaultProps={{ pose: 'wave', who: '' }} />
         <Still id="AppIcon" component={AppIcon} width={1024} height={1024} />
         <Still id="AppIconMaskable" component={AppIconMaskable} width={1024} height={1024} />
         <Composition id="Intro" component={IntroScene} durationInFrames={84} fps={30} width={1080} height={FULL_H} />
