@@ -71,7 +71,11 @@ const faceX = (y: number) => {
    edge: the hairline or fringe seen on the forehead, left → right (drawn over the head).
    lines: texture strokes. ears: the hair hangs over the tops of the ears. */
 type Stroke = [string, 'mid' | 'lite' | 'curl' | 'dark', number];
-type HairDef = { sil: Pt[]; edge: Pt[]; lines: Stroke[]; ears?: boolean; burn?: number };
+type HairDef = {
+  sil: Pt[]; edge: Pt[]; lines: Stroke[]; ears?: boolean; burn?: number;
+  /** the front piece takes the silhouette points above this height (default: all of it with ears, else -206) */
+  cut?: number;
+};
 const HAIR: Record<Exclude<HairStyle, 'flex'>, HairDef> = {
   // Osim: short sides, a messy top pushed up and a little to his left
   swept: {
@@ -84,16 +88,20 @@ const HAIR: Record<Exclude<HairStyle, 'flex'>, HairDef> = {
       ['M30 -282 C40 -302 52 -318 66 -330', 'dark', 4], ['M-58 -350 Q-44 -362 -26 -362', 'lite', 4],
     ],
   },
-  // Phil: middle part, the bangs swept up and out to both sides, full on top, ears showing
+  // Phil: middle part, curtain bangs that sweep down and out to the temples and flick out, thick sides that flare
+  // out and flick over the tops of the ears
   curtain: {
-    sil: [[-126, -194], [-138, -228], [-140, -268], [-128, -304], [-102, -334], [-62, -356], [-14, -366], [30, -364], [74, -352], [110, -328], [132, -296], [140, -260], [138, -226], [128, -194]],
-    edge: [[-120, -206], [-122, -226], [-116, -246], [-100, -258], [-76, -262], [-54, -268], [-34, -280], [-18, -296], [-6, -314, 1], [6, -296], [22, -280], [42, -270], [66, -264], [92, -260], [110, -250], [120, -232], [120, -206]],
+    sil: [[-122, -190], [-148, -184, 1], [-152, -204], [-160, -214, 1], [-154, -236], [-158, -266], [-146, -300], [-122, -330], [-86, -350], [-48, -360], [-18, -356], [0, -346, 1], [16, -358], [48, -364], [86, -354], [120, -332], [144, -302], [156, -268], [152, -240], [164, -218, 1], [154, -206], [152, -186, 1], [124, -190]],
+    edge: [[-122, -192], [-130, -212], [-128, -236], [-124, -252], [-110, -232, 1], [-98, -250], [-78, -258], [-56, -266], [-36, -280], [-20, -298], [-6, -316, 1], [8, -298], [24, -280], [44, -268], [66, -260], [88, -252], [104, -234, 1], [116, -252], [128, -236], [130, -212], [124, -192]],
     lines: [
-      ['M-8 -340 C-30 -330 -56 -310 -76 -282', 'mid', 7], ['M-12 -318 C-34 -300 -62 -284 -96 -272', 'dark', 4.5],
-      ['M4 -340 C26 -330 54 -312 76 -286', 'mid', 7], ['M8 -318 C30 -302 60 -286 94 -274', 'dark', 4.5],
-      ['M-50 -350 C-86 -340 -116 -316 -130 -282', 'lite', 5], ['M34 -350 C70 -342 104 -322 122 -292', 'lite', 4.5],
-      ['M-60 -296 C-84 -290 -106 -278 -120 -258', 'mid', 5], ['M60 -296 C84 -290 106 -278 120 -258', 'mid', 5],
+      ['M-8 -340 C-26 -322 -52 -298 -82 -284 C-98 -276 -106 -262 -110 -240', 'mid', 7], ['M-12 -320 C-30 -300 -56 -280 -90 -270', 'dark', 4.5],
+      ['M6 -342 C26 -324 52 -302 82 -288 C98 -280 104 -264 106 -244', 'mid', 7], ['M10 -320 C30 -302 58 -282 92 -272', 'dark', 4.5],
+      ['M-40 -350 C-82 -340 -118 -314 -134 -276 C-142 -256 -142 -236 -150 -214', 'lite', 5], ['M42 -352 C84 -342 120 -316 136 -280 C144 -260 144 -240 154 -220', 'lite', 4.5],
+      ['M-30 -338 C-58 -322 -84 -304 -100 -282', 'dark', 4], ['M30 -338 C58 -322 84 -304 100 -282', 'dark', 4],
+      ['M-138 -250 C-142 -230 -140 -210 -146 -196', 'dark', 4], ['M138 -250 C142 -230 140 -210 146 -196', 'dark', 4],
     ],
+    cut: -180,
+    burn: 0,
   },
   // Dylan: medium length and messy, swept up and over to his right, lighter at the ends
   fringe: {
@@ -161,16 +169,17 @@ const HAIR: Record<Exclude<HairStyle, 'flex'>, HairDef> = {
       ['M34 -288 C4 -300 -26 -316 -52 -332', 'dark', 4.5], ['M-6 -286 C-34 -296 -62 -310 -88 -316', 'dark', 4],
     ],
   },
-  // Ayaad: medium length with volume, swept back, waves falling over the tops of the ears
+  // Ayaad: longer and wavy, parted down the middle, swept back with locks falling onto the forehead, waves over the
+  // ears that flick out at the ends
   flow: {
-    sil: [[-134, -168], [-148, -210], [-150, -256], [-140, -298], [-114, -332], [-74, -358], [-26, -372], [26, -372], [74, -358], [114, -332], [140, -298], [150, -256], [148, -210], [136, -168]],
-    edge: [[-134, -170], [-132, -190], [-126, -206, 1], [-114, -218], [-102, -236], [-84, -250], [-62, -260], [-40, -272], [-22, -288], [-8, -308, 1], [6, -290], [22, -274], [42, -264], [64, -256], [86, -246], [104, -234], [116, -218], [126, -206, 1], [132, -190], [136, -170]],
+    sil: [[-128, -144], [-150, -128, 1], [-156, -152], [-168, -140, 1], [-162, -170], [-158, -198], [-170, -230], [-162, -268], [-146, -302], [-118, -334], [-80, -356], [-42, -366], [-14, -362], [0, -352, 1], [16, -364], [50, -368], [90, -354], [126, -330], [152, -294], [166, -258], [172, -222], [160, -192], [166, -164], [170, -138, 1], [158, -148], [154, -124, 1], [130, -144]],
+    edge: [[-128, -146], [-138, -170], [-132, -196, 1], [-130, -220], [-118, -240], [-100, -228, 1], [-90, -250], [-70, -260], [-50, -268], [-34, -282], [-22, -266, 1], [-14, -294], [-4, -314, 1], [8, -296], [22, -280], [42, -270], [64, -262], [86, -254], [102, -234, 1], [114, -250], [128, -232], [136, -204, 1], [142, -178], [132, -146]],
     lines: [
-      ['M-12 -344 C-40 -334 -72 -312 -100 -268', 'mid', 7], ['M-14 -320 C-38 -302 -70 -284 -110 -246', 'dark', 4.5],
-      ['M8 -344 C36 -334 70 -314 98 -270', 'mid', 7], ['M10 -320 C34 -304 68 -286 108 -250', 'dark', 4.5],
-      ['M-56 -356 C-94 -342 -124 -314 -138 -270', 'lite', 5], ['M44 -356 C84 -344 116 -318 132 -280', 'lite', 4.5],
-      ['M-138 -246 C-146 -220 -142 -196 -136 -178', 'mid', 5], ['M138 -246 C146 -220 142 -196 136 -178', 'mid', 5],
-      ['M-70 -300 C-96 -292 -116 -276 -128 -252', 'mid', 5], ['M70 -300 C96 -292 116 -276 128 -252', 'mid', 5],
+      ['M-10 -342 C-30 -326 -46 -310 -54 -296 C-62 -280 -80 -270 -100 -262 C-116 -254 -124 -240 -128 -222', 'mid', 7], ['M-12 -320 C-24 -304 -30 -290 -30 -276', 'dark', 4.5],
+      ['M8 -344 C30 -328 50 -312 62 -298 C74 -282 92 -274 108 -264 C122 -254 128 -238 132 -218', 'mid', 7], ['M12 -322 C30 -304 52 -288 76 -278', 'dark', 4.5],
+      ['M-46 -356 C-90 -344 -126 -316 -144 -272 C-152 -246 -146 -222 -152 -196 C-156 -176 -150 -160 -160 -146', 'lite', 5], ['M46 -358 C92 -346 128 -318 148 -274 C158 -248 154 -222 158 -196 C162 -176 156 -160 166 -146', 'lite', 4.5],
+      ['M-142 -238 C-152 -216 -146 -196 -150 -172', 'dark', 4.5], ['M142 -238 C152 -216 146 -196 150 -172', 'dark', 4.5],
+      ['M-60 -338 C-92 -322 -116 -296 -126 -264', 'dark', 4], ['M60 -340 C92 -324 116 -298 126 -266', 'dark', 4],
     ],
     ears: true,
   },
@@ -500,7 +509,7 @@ export const MemberHead: React.FC<{ p: Pose; m: M; lm: M; f: number; extra?: Rea
   const H = HAIR[look.hair.style as Exclude<HairStyle, 'flex'>];
   const sil = hairPath(H.sil, false) + ` L${H.sil[H.sil.length - 1][0]} -150 L${H.sil[0][0]} -150 Z`;
   // the front piece: the hairline edge, then back over the top along the silhouette
-  const topSil = H.sil.filter(([, y]) => y <= (H.ears ? 0 : -206));
+  const topSil = H.sil.filter(([, y]) => y <= (H.cut ?? (H.ears ? 0 : -206)));
   const front = hairPath([...H.edge, ...[...topSil].reverse()], true);
   const colors = { mid: hc.hairMid, lite: hc.hairLite, curl: hc.hairCurl, dark: hc.hairDark };
   const w = look.head.w;
@@ -563,8 +572,8 @@ export const MemberHead: React.FC<{ p: Pose; m: M; lm: M; f: number; extra?: Rea
         )}
         {look.beard ? <Beard look={look} tn={tn} clip={id} /> : null}
         {/* sideburns down to the ear (or the beard) */}
-        {H.ears ? null : [-1, 1].map((s) => (
-          <path key={s} transform={`scale(${s} 1)`} d={`M-122 -216 L-108 -216 L-109 ${burnY - (H.burn ? 0 : 0)} L-120 ${burnY + 6} Z`} fill={look.beard && look.beard.style !== 'stubble' ? look.beard.color : hc.hair} stroke={C.ink} strokeWidth={5} strokeLinejoin="round" />
+        {H.ears || H.burn === 0 ? null : [-1, 1].map((s) => (
+          <path key={s} transform={`scale(${s} 1)`} d={`M-122 -216 L-108 -216 L-109 ${burnY} L-120 ${burnY + 6} Z`} fill={look.beard && look.beard.style !== 'stubble' ? look.beard.color : hc.hair} stroke={C.ink} strokeWidth={5} strokeLinejoin="round" />
         ))}
         {/* front hair and its texture (it follows the face a little when he turns) */}
         <g transform={tn ? `translate(${f1(tn * 8)} 0)` : undefined}>

@@ -2,6 +2,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, clamp } from '../lib/anim';
 import { Stage, camP, Cam } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, ConfettiRain, Dust, Streaks } from '../fx/fx';
@@ -180,7 +181,7 @@ export const JokeMomScene: React.FC = () => {
         <Door open={open} f={f} />
         <TV f={f} on={f < YELL ? 1 : 0} />
         <ellipse cx={gx} cy={GY + 4} rx={220} ry={24} fill="#000" opacity={0.14} />
-        <Hero p={p} x={gx} y={GY} scale={SC} shadow={false} itemR={f < YELL + 2 ? <Controller /> : f >= RUN - 4 ? <GymBag /> : undefined} />
+        <Hero look={LOOKS.jake} p={p} x={gx} y={GY} scale={SC} shadow={false} itemR={f < YELL + 2 ? <Controller /> : f >= RUN - 4 ? <GymBag /> : undefined} />
         {/* controller flies away when he jumps */}
         {f >= YELL + 2 && f < YELL + 30 ? (
           <g transform={`translate(${gx + (f - YELL) * 16} ${1200 - (f - YELL) * 26 + (f - YELL) ** 2 * 1.4}) rotate(${(f - YELL) * 30})`}>

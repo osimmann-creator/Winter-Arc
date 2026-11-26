@@ -1,7 +1,9 @@
-// Inside joke: "PUNXSUTAWNEY PHIL" - Phil finally logs something after days underground. He sees his shadow: six more weeks.
+// Inside joke: "PUNXSUTAWNEY PHIL" - Phil finally logs something after days underground. He pops out of his burrow,
+// sees his shadow and dives back in: six more weeks. (Phil plays the groundhog; the Groundhog drawing is kept for reuse.)
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
-import { C } from '../hero/Hero';
+import { C, Hero, Pose, pose, plant, rig } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { E, kf, shake, seg, clamp, springAt, lerp } from '../lib/anim';
 import { Stage, camP, Cam } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, ConfettiRain, Cloud, Sun, Dust } from '../fx/fx';
@@ -87,6 +89,26 @@ export const Groundhog: React.FC<{ look: number; shock: number; blink: number; s
   );
 };
 
+/* ------------------------------- Phil in the burrow ------------------------------- */
+const PSC = 0.7; // Phil's scale
+const RIM = HY - 30; // everything below this line is down the hole
+const PAWS: Partial<Pose> = { shL: 22, elL: -118, wrL: 30, handL: 'relax', shR: 22, elR: -118, wrR: 30, handR: 'relax' };
+const philPose = (look: number, shock: number, blink: number): Pose =>
+  plant(
+    pose({
+      ...PAWS,
+      lookX: look, turn: look * 0.3, head: look * 4,
+      smile: 1 - shock, mouthMode: shock > 0.3 ? 'o' : 'grin', mouthOpen: lerp(0.3, 1, shock),
+      brow: lerp(0.5, 1.5, shock), browTilt: shock, pupil: lerp(1, 0.35, shock), sweat: shock, eyes: blink,
+    }),
+  );
+/** how far below the rim his feet are when he's all the way up: the rim crosses him at the belly */
+const PHIL_DROP = (() => {
+  const r = rig(philPose(0, 0, 0));
+  return -r.W(r.torso, 0, 40)[1] * PSC;
+})();
+const HIDE = 540; // how far he sinks to be out of sight
+
 /* ------------------------------- set ------------------------------- */
 const Mound: React.FC<{ front?: boolean; shake: number }> = ({ front, shake: sk }) => (
   <g transform={`translate(${HX + sk * Math.sin(sk * 40)} ${HY})`}>
@@ -130,6 +152,8 @@ export const JokePhilScene: React.FC = () => {
   // rise out of the hole, then dive back in
   const up = f < POP ? 0 : f < DIVE ? Math.min(1.08, springAt(f - POP, 0, 12, 1.4, 5)) : Math.max(0, 1 - E.in(seg(f, DIVE, DIVE + 6)));
   const gy = HY - 40 + (1 - up) * 460;
+  const py = RIM + PHIL_DROP + (1 - up) * HIDE; // Phil's feet (far down the hole)
+  const pp = philPose(0, 0, 0);
   const look = kf(f, [[0, 0], [30, -1], [38, 1], [46, 0], [SPOT - 2, 0], [SPOT + 2, -1, E.snap], [DIVE, -1]]);
   const shock = seg(f, SPOT, SPOT + 3);
   const blink = f >= 44 && f < 47 ? 1 : 0;
@@ -178,15 +202,14 @@ export const JokePhilScene: React.FC = () => {
         <Mound shake={rumble} />
         {/* his shadow on the snow */}
         <g opacity={shadow * 0.55} transform={`translate(${HX - 150} ${HY - 30}) skewX(30) scale(1 0.5)`}>
-          <ellipse cx={0} cy={-170} rx={128} ry={176} fill="#5A6A9A" />
-          <circle cx={0} cy={-330} r={110} fill="#5A6A9A" />
-          <circle cx={-76} cy={-418} r={28} fill="#5A6A9A" />
-          <circle cx={76} cy={-418} r={28} fill="#5A6A9A" />
+          <path d="M-150 0 L-150 -96 Q-150 -150 -96 -156 L96 -156 Q150 -150 150 -96 L150 0 Z" fill="#5A6A9A" />
+          <ellipse cx={0} cy={-292} rx={104} ry={134} fill="#5A6A9A" />
+          <path d="M-104 -300 L-122 -250 L-90 -262 Z M104 -300 L122 -250 L90 -262 Z" fill="#5A6A9A" />
         </g>
         <g clipPath="url(#holeClip)">
           {up > 0.01 ? (
-            <g transform={`translate(${HX} ${gy}) scale(${1 + (f >= SPOT && f < SPOT + 6 ? 0.06 : 0)})`}>
-              <Groundhog look={look} shock={shock} blink={blink} sniff={sniff} f={f} />
+            <g transform={`translate(${HX} ${RIM}) scale(${1 + (f >= SPOT && f < SPOT + 6 ? 0.06 : 0)}) translate(${-HX} ${-RIM})`}>
+              <Hero look={LOOKS.phil} p={philPose(look, shock, blink)} x={HX} y={py} scale={PSC} shadow={false} />
             </g>
           ) : null}
         </g>
@@ -198,7 +221,7 @@ export const JokePhilScene: React.FC = () => {
         <Mound front shake={rumble} />
         <Dust f={f} start={POP} x={HX} y={HY - 60} n={8} seed={3} spread={300} size={70} color="#FFFFFF" line="#B9C4EE" />
         <Dust f={f} start={DIVE + 4} x={HX} y={HY - 60} n={10} seed={8} spread={340} size={80} color="#FFFFFF" line="#B9C4EE" />
-        {up > 0.5 && f < DIVE ? <NameTag x={HX} y={gy - 520} name="PHIL" color={RED} t={f - POP - 6} /> : null}
+        {up > 0.5 && f < DIVE ? <NameTag x={HX} y={py + rig(pp).headTop()[1] * PSC - 50} name="PHIL" color={RED} t={f - POP - 6} /> : null}
       </g>
       <Snow f={f} n={f > BANNER ? 90 : 50} seed={6} speed={f > BANNER ? 8 : 4} />
       <BigBanner t={f - BANNER} />

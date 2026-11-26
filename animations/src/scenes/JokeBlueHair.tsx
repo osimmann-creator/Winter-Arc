@@ -2,6 +2,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, lerp } from '../lib/anim';
 import { Stage, camP, Cam } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, Glint, ConfettiRain, Sparks, Cloud, Burst, Twinkle } from '../fx/fx';
@@ -196,7 +197,7 @@ export const JokeBlueHairScene: React.FC = () => {
         </g>
         {/* amphora shadow on hero */}
         <ellipse cx={540} cy={1494} rx={170} ry={22} fill="#000" opacity={0.14 + 0.1 * seg(f, 14, 24) * (1 - seg(f, POUR + 16, POUR + 22))} />
-        <Hero p={p} x={GX} y={GY} scale={SC} headExtra={<Goo k={gooK} drip={f - POUR} />} itemL={f >= MIRROR - 4 ? <HandMirror /> : undefined} />
+        <Hero look={LOOKS.connor} p={p} x={GX} y={GY} scale={SC} headExtra={<Goo k={gooK} drip={f - POUR} />} itemL={f >= MIRROR - 4 ? <HandMirror /> : undefined} />
         {stream ? (
           <g>
             <path d={stream} fill={BLUE} stroke={INK} strokeWidth={8} strokeLinejoin="round" />

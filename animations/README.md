@@ -46,7 +46,7 @@ npx remotion render Gym out/gym.mp4 --codec=h264 --crf=20
 | `src/scenes/MMAMainEvent.tsx`, `MMAFlyingKnee`, `MMAChamp` | MMA 2 to 4, Amaan's, in the fight-night arena (`MMAKit.tsx`). His name is drawn in. |
 | `src/scenes/JickleChef.tsx`, `JickleErne`, `JickleJickled`, `JickleQuick` | Jickle 2 to 5 on a perspective court with day, beach-sunset and night looks (`JickleKit.tsx`) |
 | `src/scenes/BikeKOM.tsx`, `BikeSendIt`, `BikeSprint` | Bike 1 to 3: a head-on bicycle he pedals, the helmet and the road world (`BikeKit.tsx`) |
-| `src/scenes/Joke*.tsx` | The inside jokes (about 5.5 s): TheCoin (Dean vs Jake), BlueHair (Connor), TheIron (Ayaad), TheBag (Dean, Connor, Dylan), DylanFights, CrashOut and SatelliteHouse (Connor), PukedOn and MMAGuy (Amaan), TheRadiator and JakesMom (Jake), NetsGame (Jake and Gaurav), LiquorRun (Gaurav), PunxsutawneyPhil (Philip), ScaredOfGirls (everyone), TimeSheet (Jake). Names are drawn into these. |
+| `src/scenes/Joke*.tsx` | The inside jokes (about 5.5 s): TheCoin (Dean flips, Jake watches), BlueHair (Connor), TheIron (Ayaad), TheBag (Dean, Connor, Dylan), DylanFights, CrashOut and SatelliteHouse (Connor), PukedOn and MMAGuy (Amaan), TheRadiator and JakesMom (Jake), NetsGame (Jake and Gaurav), LiquorRun (Gaurav), PunxsutawneyPhil (Phil, popping out of his burrow), ScaredOfGirls (everyone), TimeSheet (Jake). Names are drawn into these. The ones without Osim, Gaurav or Amaan draw each member as his own character (`look={LOOKS.…}`); the rest still use Flexander until those three characters are final. |
 | `src/scenes/jokekit.tsx` | Shared bits for the newer jokes: name tags, text bubbles, rooms, clocks, calendars, the cap and the post card |
 | `src/scenes/kit.tsx`, `RunKit.tsx`, `ik.ts` | Shared props (dumbbell, tickets, steam, snow), the themeable running track and gait, and arm IK (`reach`) for putting a hand on a target |
 | `src/fx/` | Shared backgrounds (`Stage`), effects (bursts, speed lines, sparkles), motion helpers and the ribbon end card |
@@ -74,6 +74,8 @@ Everyone in the group has his own character: Flexander's body, toga, sash, belt,
 - **His Home screen** shows his character in the app's six mascot poses: `assets/mascot/<username>/<pose>.webp` in the app, listed in `CHARACTERS` in the app's `js/config.js`.
 - **After changing a look**, run `node scripts/render-characters.mjs` to redraw the sheets and the Home stills (or `… sheets` / `… home osim` for part of it), then `./scripts/export-cast.sh` for the HyperFrames poses.
 - **A new member** needs a look in `LOOKS`, his username in `MEMBERS` in `scripts/render-characters.mjs` and in `CHARACTERS` in `js/config.js`, and notes and a signature face in `CREW` in `src/sheets/CharacterSheet.tsx`.
+- **Arm layers.** By default (`armZL`/`armZR` = `'auto'`) an arm is drawn between the body and the head while it's down, and in front of the head once the hand or elbow comes up past the chin, so a raised arm never disappears behind the head. Set `'back'`, `'mid'` or `'top'` in a pose to pin it (a hand scratching the back of the head wants `'mid'`).
+- **Groups.** When several people stand close and their arms reach across each other's faces (TheBag), draw everyone with `layer="body"` first and then everyone with `layer="head"`: every face stays in front of the other guys' arms, and each guy's own raised arm still shows in front of his own face.
 
 ## HyperFrames
 

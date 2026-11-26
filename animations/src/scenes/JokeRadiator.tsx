@@ -2,6 +2,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, clamp, lerp } from '../lib/anim';
 import { Stage, camP, Cam } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, ConfettiRain, Sparks } from '../fx/fx';
@@ -184,7 +185,7 @@ export const JokeRadiatorScene: React.FC = () => {
         <Radiator />
         <Stool glow={f % 30 < 18 ? 1 : 0} buzz={buzz} f={f} />
         <ellipse cx={GX} cy={GY + 4} rx={220} ry={24} fill="#000" opacity={0.18} />
-        <Hero p={p} x={GX} y={GY} scale={SC} shadow={false} itemL={<Cuff />} />
+        <Hero look={LOOKS.jake} p={p} x={GX} y={GY} scale={SC} shadow={false} itemL={<Cuff />} />
         <Chain a={ANCHOR} b={cuff} slack={1 - taut} f={f} />
         <Sparks f={f} start={SNAP1} seed={3} n={10} x={cuff[0]} y={cuff[1]} speed={[10, 20]} g={0.6} size={[8, 14]} colors={['#FFFFFF', '#FFF0B7']} shape="star" />
         <Sparks f={f} start={SNAP2} seed={6} n={12} x={cuff[0]} y={cuff[1]} speed={[10, 22]} g={0.6} size={[8, 14]} colors={['#FFFFFF', '#FFF0B7']} shape="star" />

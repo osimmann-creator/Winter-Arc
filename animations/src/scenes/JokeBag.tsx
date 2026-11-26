@@ -2,6 +2,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, plant, rig } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, clamp, springAt, lerp } from '../lib/anim';
 import { Stage, camP, Cam } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, ConfettiRain, Dust, Sparks } from '../fx/fx';
@@ -19,10 +20,10 @@ const BAG_TOP = 1010;
 const KRAFT = '#D9A066';
 const KRAFT_D = '#A8733F';
 const SC = 0.58;
-const GUYS: { name: string; x: number; c: string }[] = [
-  { name: 'DEAN', x: 330, c: PEOPLE.dean[0] },
-  { name: 'CONNOR', x: 540, c: PEOPLE.connor[0] },
-  { name: 'DYLAN', x: 750, c: PEOPLE.dylan[0] },
+const GUYS: { name: string; who: string; x: number; c: string }[] = [
+  { name: 'DEAN', who: 'dean', x: 330, c: PEOPLE.dean[0] },
+  { name: 'CONNOR', who: 'connor', x: 540, c: PEOPLE.connor[0] },
+  { name: 'DYLAN', who: 'dylan', x: 750, c: PEOPLE.dylan[0] },
 ];
 
 /* ------------------------------- props ------------------------------- */
@@ -157,20 +158,26 @@ export const JokeBagScene: React.FC = () => {
         <g transform={`translate(540 ${1800 + dropY}) scale(${1 / squash} ${squash}) translate(-540 -1800)`}>
           <BagBack />
           {tie <= 0.01 ? <Handles tie={0} /> : null}
-          {GUYS.map((g, i) => {
-            const t = f - POP[i];
-            const k = t < 0 ? 0 : Math.min(1.12, springAt(t, 0, 12, 1.4, 5));
-            const gy = lerp(1840, 1330, k);
-            if (k <= 0) return null;
-            const p = plant(poseAt(f, BASE, KEYS[i]));
-            const head = stageOf(g.x, gy, SC)(rig(p).headTop());
-            return (
-              <g key={g.name}>
-                <Hero p={p} x={g.x} y={gy} scale={SC} shadow={false} />
-                <NameTag x={head[0]} y={head[1] - 40} name={g.name} color={g.c} t={t - 4} s={0.7} out={seg(f, CARD - 8, CARD)} rot={(i - 1) * 6} />
-              </g>
-            );
-          })}
+          {/* all three bodies, then all three heads: their arms cross each other's faces when they cheer, and the
+              faces stay in front */}
+          {(['body', 'head'] as const).map((layer) =>
+            GUYS.map((g, i) => {
+              const t = f - POP[i];
+              const k = t < 0 ? 0 : Math.min(1.12, springAt(t, 0, 12, 1.4, 5));
+              const gy = lerp(1840, 1330, k);
+              if (k <= 0) return null;
+              const p = plant(poseAt(f, BASE, KEYS[i]));
+              const head = stageOf(g.x, gy, SC)(rig(p).headTop());
+              return (
+                <g key={g.name + layer}>
+                  <Hero look={LOOKS[g.who]} layer={layer} p={p} x={g.x} y={gy} scale={SC} shadow={false} />
+                  {layer === 'head' ? (
+                    <NameTag x={head[0]} y={head[1] - 40} name={g.name} color={g.c} t={t - 4} s={0.7} out={seg(f, CARD - 8, CARD)} rot={(i - 1) * 6} />
+                  ) : null}
+                </g>
+              );
+            }),
+          )}
           <BagFront f={f} />
           {tie > 0.01 ? <Handles tie={tie} /> : null}
         </g>

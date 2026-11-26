@@ -2,6 +2,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, clamp, lerp } from '../lib/anim';
 import { Stage, camP, Cam } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, ConfettiRain, Cloud, Dust, Sparks } from '../fx/fx';
@@ -154,7 +155,7 @@ export const JokeFightScene: React.FC = () => {
         {!fighting ? (
           <g>
             {f < CLEAR ? <Hero p={rv} x={rX} y={TOP} scale={SC} /> : null}
-            <Hero p={d} x={DX} y={TOP} scale={SC} headExtra={<Bruised k={seg(f, CLEAR - 2, CLEAR + 2)} />} />
+            <Hero look={LOOKS.dylan} p={d} x={DX} y={TOP} scale={SC} headExtra={<Bruised k={seg(f, CLEAR - 2, CLEAR + 2)} />} />
           </g>
         ) : null}
         <FightCloud f={f} k={cloudK * 1.35} x={540} y={1120} />

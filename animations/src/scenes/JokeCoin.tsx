@@ -1,7 +1,9 @@
-// Inside joke: "THE COIN" - Dean and Jake are tied, Flexander flips a $1 coin to settle it... it lands on its edge.
+// Inside joke: "THE COIN" - Dean and Jake are tied. Dean flips a $1 coin to settle it while Jake watches... it lands on
+// its edge.
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, lerp, springAt, clamp } from '../lib/anim';
 import { Stage, camP, Cam } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, Glint, ConfettiRain, Sparks, Ring, FocusLines } from '../fx/fx';
@@ -11,9 +13,10 @@ import { TITLE_FONT } from '../fonts';
 import { softStar } from '../lib/shape';
 
 export const COIN_FRAMES = 165;
-const GX = 540;
+const GX = 330; // Dean, who flips
+const JX = 750; // Jake, who watches
 const GY = 1730;
-const SC = 0.78;
+const SC = 0.74;
 const toStage = stageOf(GX, GY, SC);
 const FLICK = 26;
 const HIT = 70;
@@ -100,13 +103,26 @@ const KEYS: Key<Pose>[] = [
   { f: FLICK - 3, p: { sy: 0.97, sx: 1.02, wrR: -50 } },
   { f: FLICK, p: { sy: 1.02, sx: 0.99, wrR: -90, elR: 150, mouthSkew: 0, lid: 0, lookX: 0, lookY: -1, turn: 0, mouthMode: 'o', mouthOpen: 0.4, brow: 1 }, e: E.out },
   { f: 46, p: { lookY: -1, head: -6, mouthOpen: 0.5, sy: 1, sx: 1 } },
-  { f: 62, p: { lookY: 0.6, head: 4, mouthOpen: 0.3, shR: 30, elR: 70, wrR: 0, handR: 'open' }, e: E.inOut },
-  { f: EDGE + 2, p: { lookY: 0.9, eyeMode: 'normal', pupil: 0.35, mouthMode: 'o', mouthOpen: 1, brow: 1.5, browTilt: 1, sweat: 1, shR: 50, elR: 40, shL: 50, elL: 40, handL: 'open', handR: 'open', sy: 1.05, sx: 0.97 }, e: E.back },
+  { f: 62, p: { lookY: 0.6, lookX: 0.5, head: 4, mouthOpen: 0.3, shR: 30, elR: 70, wrR: 0, handR: 'open' }, e: E.inOut },
+  { f: EDGE + 2, p: { lookY: 0.9, lookX: 0.45, eyeMode: 'normal', pupil: 0.35, mouthMode: 'o', mouthOpen: 1, brow: 1.5, browTilt: 1, sweat: 1, shR: 40, elR: 140, shL: 40, elL: 140, wrL: 0, wrR: 0, handL: 'open', handR: 'open', sy: 1.05, sx: 0.97 }, e: E.back },
   { f: 96, p: { sy: 1, sx: 1, pupil: 0.4 } },
   { f: STAMP + 6, p: { lookY: 0, lookX: 0, pupil: 1, mouthMode: 'grin', mouthOpen: 0.9, smile: 1, brow: 1, browTilt: 0.4, shL: 28, elL: 150, wrL: -64, handL: 'thumb', shR: 28, elR: 150, wrR: -64, handR: 'thumb', sweat: 0.5 }, e: E.back },
   { f: COIN_FRAMES, p: {} },
 ];
 const poseF = (f: number): Pose => plant(poseAt(f, BASE, KEYS));
+/* Jake: hands on his hips, watching Dean's thumb, then the coin, then the same double take and thumbs up */
+const KEYS_J: Key<Pose>[] = [
+  { f: 0, p: { shL: 30, elL: -96, wrL: 0, handL: 'fist', shR: 30, elR: -96, wrR: 0, handR: 'fist', hipL: 10, hipR: 10, knL: -5, knR: -5, lookX: -0.6, lookY: 0.1, turn: -0.2, smile: 1, mouthOpen: 0.2, brow: 0.4 } },
+  { f: 14, p: { lookX: -0.7, lookY: -0.1, turn: -0.25, mouthSkew: -0.5, browTilt: 0.8, brow: 0.9, lid: 0.2 } },
+  { f: FLICK + 2, p: { lookX: -0.3, lookY: -1, turn: -0.1, mouthSkew: 0, lid: 0, mouthMode: 'o', mouthOpen: 0.4, brow: 1 }, e: E.out },
+  { f: 46, p: { lookY: -1, head: 6, mouthOpen: 0.5 } },
+  { f: 62, p: { lookY: 0.6, lookX: -0.5, head: -4, mouthOpen: 0.3 }, e: E.inOut },
+  { f: EDGE + 2, p: { lookY: 0.9, lookX: -0.45, pupil: 0.35, mouthMode: 'o', mouthOpen: 1, brow: 1.5, browTilt: 1, sweat: 1, shR: 40, elR: 140, shL: 40, elL: 140, wrL: 0, wrR: 0, handL: 'open', handR: 'open', sy: 1.05, sx: 0.97 }, e: E.back },
+  { f: 96, p: { sy: 1, sx: 1, pupil: 0.4 } },
+  { f: STAMP + 6, p: { lookY: 0, lookX: 0, turn: 0, pupil: 1, mouthMode: 'grin', mouthOpen: 0.9, smile: 1, brow: 1, browTilt: 0.4, shL: 28, elL: 150, wrL: -64, handL: 'thumb', shR: 28, elR: 150, wrR: -64, handR: 'thumb', sweat: 0.5 }, e: E.back },
+  { f: COIN_FRAMES, p: {} },
+];
+const poseJ = (f: number): Pose => plant(poseAt(f, BASE, KEYS_J));
 
 /* coin flight (stage space) */
 const thumbAt = (f: number): [number, number] => {
@@ -201,7 +217,8 @@ export const JokeCoinScene: React.FC = () => {
           <path d={`M440 -200 L640 -200 L${540 + 260} ${FLOOR} L${540 - 260} ${FLOOR} Z`} fill="#FFF6C9" opacity={0.18} />
           <ellipse cx={540} cy={FLOOR - 4} rx={240} ry={40} fill="#FFF6C9" opacity={0.45} />
         </g>
-        <Hero p={p} x={GX} y={GY} scale={SC} />
+        <Hero look={LOOKS.dean} p={p} x={GX} y={GY} scale={SC} />
+        <Hero look={LOOKS.jake} p={poseJ(f)} x={JX} y={GY} scale={SC} />
         {/* coin shadow */}
         <ellipse cx={coin.x} cy={FLOOR + 4} rx={CR * (coin.landed ? 1 : clamp(1 - (FLOOR - coin.y) / 1400, 0.2, 1))} ry={16} fill="#000" opacity={0.2} />
         <Ring x={540} y={FLOOR} t={seg(f, HIT, HIT + 14)} r={260} sy={0.25} w={18} />
@@ -215,7 +232,7 @@ export const JokeCoinScene: React.FC = () => {
         <Glint x={540 + 60} y={FLOOR - CR * 1.6} s={1.1} t={seg(f, EDGE + 12, EDGE + 26)} />
         <Sparks f={f} start={HIT} seed={5} n={12} x={540} y={FLOOR} speed={[8, 20]} g={1} size={[10, 18]} colors={['#FFF0B7', '#FFD064']} />
         <Sfx f={f} start={6} text="TIED." x={540} y={760} size={130} rot={-4} fill="#FFF0B7" dur={18} />
-        <Sfx f={f} start={FLICK} text="FLICK!" x={790} y={1130} size={110} rot={10} fill="#FFFFFF" dur={16} />
+        <Sfx f={f} start={FLICK} text="FLICK!" x={560} y={1060} size={110} rot={10} fill="#FFFFFF" dur={16} />
         <Sfx f={f} start={HIT} text="TING!" x={300} y={1700} size={110} rot={-8} fill="#FFF0B7" dur={12} />
         <Sfx f={f} start={EDGE + 10} text="...ON ITS EDGE?!" x={540} y={1450} size={70} rot={-3} fill="#FFFFFF" dur={STAMP - EDGE - 12} shake={false} />
         <Sfx f={f} start={STAMP + 6} text="DEAD EVEN!" x={540} y={head[1] - 90} size={120} rot={-5} fill="#FFD064" dur={18} />

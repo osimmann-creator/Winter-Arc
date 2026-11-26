@@ -2,6 +2,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, clamp, lerp } from '../lib/anim';
 import { Stage, camP, Cam, W, TOP, FULL_H } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, ConfettiRain, Cloud, Stars, Sparks } from '../fx/fx';
@@ -199,6 +200,7 @@ export const JokeSatelliteScene: React.FC = () => {
         <ellipse cx={HOUSE[0] - 100} cy={HOUSE[1] + 600} rx={1100} ry={300} fill="none" stroke="#FFFFFF" strokeWidth={6} strokeDasharray="20 22" opacity={0.35 * seg(alt, 0.6, 0.9)} />
         <House f={f} />
         <Hero
+          look={LOOKS.connor}
           p={p}
           x={gx}
           y={gy}

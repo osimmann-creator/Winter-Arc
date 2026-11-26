@@ -2,6 +2,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant, C } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, lerp, springAt } from '../lib/anim';
 import { svgM } from '../lib/m2';
 import { Stage, camP, Cam } from '../fx/Stage';
@@ -260,6 +261,7 @@ export const JokeIronScene: React.FC = () => {
       <g transform={camP(cam, 1, sh)}>
         <ellipse cx={GX} cy={GY + 4} rx={300} ry={30} fill="#000" opacity={0.1} />
         <Hero
+          look={LOOKS.ayaad}
           p={p}
           x={GX}
           y={GY}

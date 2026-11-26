@@ -3,6 +3,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, clamp, lerp, springAt } from '../lib/anim';
 import { Stage, camP, Cam } from '../fx/Stage';
 import { Sfx, GlowDefs, Glow, ConfettiRain, Sparks, Burst, Twinkle } from '../fx/fx';
@@ -457,7 +458,7 @@ export const JokeTimesheetScene: React.FC = () => {
         <Dancer x={980} y={1650} s={0.95} f={f} ph={3.1} c="#33275F" rim={NEON[2]} />
       </g>
       <g transform={camP(cam, 1, sh)}>
-        <Hero p={p} x={GX} y={GY} scale={SC} shadow={false} itemR={f >= BUZZ - 2 && f < POP ? <HandPhone color={ORANGE} dark={ORANGE_D} glow={f >= BUZZ ? 1 : 0} /> : undefined} />
+        <Hero look={LOOKS.jake} p={p} x={GX} y={GY} scale={SC} shadow={false} itemR={f >= BUZZ - 2 && f < POP ? <HandPhone color={ORANGE} dark={ORANGE_D} glow={f >= BUZZ ? 1 : 0} /> : undefined} />
         {/* the screen lights his face */}
         {open > 0.05 ? <Glow x={GX} y={TABLE_Y - 330} r={330} id="glowB" o={0.55 * Math.min(1, open)} /> : null}
         <Table />

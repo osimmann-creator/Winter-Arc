@@ -2,6 +2,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { Hero, Pose, BASE, rig, plant } from '../hero/Hero';
+import { LOOKS } from '../hero/looks';
 import { poseAt, E, kf, shake, seg, Key, clamp, lerp } from '../lib/anim';
 import { Stage, camP, Cam, TOP, FULL_H } from '../fx/Stage';
 import { Sfx, GlowDefs, ConfettiRain, Sparks, FocusLines, Burst } from '../fx/fx';
@@ -105,7 +106,7 @@ export const JokeCrashOutScene: React.FC = () => {
       ) : null}
       <g transform={camP(cam, 1, S)}>
         <ellipse cx={GX} cy={GY + 6} rx={260} ry={28} fill="#000" opacity={0.14} />
-        <Hero p={p} x={GX} y={GY} scale={SC} shadow={false} itemR={f < THROW ? <HandPhone color="#2F66E6" dark="#1F47C2" glow={1 - rage} /> : undefined} />
+        <Hero look={LOOKS.connor} p={p} x={GX} y={GY} scale={SC} shadow={false} itemR={f < THROW ? <HandPhone color="#2F66E6" dark="#1F47C2" glow={1 - rage} /> : undefined} />
         {/* steam out of both ears */}
         <Steam x={ears[0][0] - 20} y={ears[0][1]} f={f} h={170} o={steamO} w={22} seed={2} />
         <Steam x={ears[1][0] + 20} y={ears[1][1]} f={f + 5} h={170} o={steamO} w={22} seed={7} />

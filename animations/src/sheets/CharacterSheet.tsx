@@ -21,7 +21,7 @@ export const CREW: Record<string, { notes: string[]; signature: [string, Partial
     signature: ['HOAT MODE', { wink: 1, turn: 0.2, lookX: 0.3, mouthSkew: 0.5, brow: 0.5 }],
   },
   phil: {
-    notes: ['Middle part, bangs swept out both ways', 'Black hair, ears showing', 'Narrow eyes that close when he smiles', 'Clean-shaven, wide smile'],
+    notes: ['Middle part, curtain bangs that flick out', 'Thick black hair, flared over the ears', 'Narrow eyes that close when he smiles', 'Clean-shaven, wide smile'],
     signature: ['PHIL HAS SPOKEN', { eyes: 1, smile: 1.2, mouthOpen: 0.35, brow: 0.4 }],
   },
   dylan: {
@@ -49,7 +49,7 @@ export const CREW: Record<string, { notes: string[]; signature: [string, Partial
     signature: ['RADIATOR NAP', { eyes: 1, mouthMode: 'o', mouthOpen: 0.15, head: 8, blush: 0.6 }],
   },
   ayaad: {
-    notes: ['Black hair parted down the middle', 'Full at the sides, over the tops of his ears', 'Thin moustache, light stubble', 'Slim face, easy smile'],
+    notes: ['Long, wavy black hair, middle part', 'Flows over his ears and flicks out', 'Thin moustache, light stubble', 'Slim face, easy smile'],
     signature: ['THE IRON', { mouthMode: 'grit', sweat: 1, browTilt: 1, brow: 0.4 }],
   },
 };

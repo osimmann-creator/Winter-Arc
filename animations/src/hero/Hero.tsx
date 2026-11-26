@@ -86,7 +86,11 @@ export const hairCols = (h: HairPal, t: number) => ({
 export type Hand = 'fist' | 'open' | 'thumb' | 'point' | 'relax' | 'grip';
 export type EyeMode = 'normal' | 'heart' | 'star' | 'spiral';
 export type MouthMode = 'grin' | 'o' | 'grit';
-export type ArmZ = 'back' | 'mid' | 'top';
+/** Which layer an arm is drawn on: behind the body ('back'), between the body and the head ('mid'), in front of the
+    head ('top'), or 'auto' (the default): 'mid' while the arm is down and 'top' once the hand or elbow comes up past
+    the chin, so a raised arm is never hidden behind the head. The switch happens below the chin, where the arm
+    can't overlap the head, so it never pops. */
+export type ArmZ = 'back' | 'mid' | 'top' | 'auto';
 
 export type Pose = {
   x: number; y: number; rot: number; sx: number; sy: number;
@@ -117,7 +121,7 @@ export const BASE: Pose = {
   mouthOpen: 0, smile: 1, mouthSkew: 0, eyes: 0,
   blush: 0, sweat: 0, pupil: 1, wink: 0, red: 0, kneel: 0, hairBlue: 0,
   handL: 'fist', handR: 'fist', eyeMode: 'normal', mouthMode: 'grin',
-  armZL: 'mid', armZR: 'mid',
+  armZL: 'auto', armZR: 'auto',
 };
 
 export const pose = (p: Partial<Pose>): Pose => ({ ...BASE, ...p });
@@ -1083,6 +1087,10 @@ export type HeroProps = {
   groundY?: number;
   /** who to draw (src/hero/looks.ts). Default: the look from LookCtx, which is Flexander unless a scene sets one. */
   look?: Look;
+  /** For a group whose arms reach across each other's faces: draw everyone with layer="body" first, then everyone
+      with layer="head". Heads then sit on top of every arm in the group, while each guy's own raised arm still
+      shows in front of his own face. Default: the whole hero in one go. */
+  layer?: 'body' | 'head';
 };
 
 export const Hero: React.FC<HeroProps> = (props) => {
@@ -1092,7 +1100,7 @@ export const Hero: React.FC<HeroProps> = (props) => {
 };
 
 const HeroBody: React.FC<HeroProps> = ({
-  p, x, y, scale, behind, between, front, itemL, itemR, itemBehindL, itemBehindR, headExtra, shadow = true,
+  p, x, y, scale, behind, between, front, itemL, itemR, itemBehindL, itemBehindR, headExtra, shadow = true, layer,
 }) => {
   const f = useCurrentFrame();
   const r = rig(p);
@@ -1112,9 +1120,28 @@ const HeroBody: React.FC<HeroProps> = ({
       />
     );
   };
-  const z = (zz: ArmZ) => [p.armZL === zz ? arm('L') : null, p.armZR === zz ? arm('R') : null];
+  const chinY = r.W(r.head, 0, 4)[1];
+  const armLayer = (zz: ArmZ, a: typeof r.aL): ArmZ => {
+    if (zz !== 'auto') return zz;
+    const handTop = r.W(a.wrist, 0, 40)[1] - 44;
+    const elbowTop = r.W(a.elbow)[1] - 36;
+    return Math.min(handTop, elbowTop) < chinY ? 'top' : 'mid';
+  };
+  const zL = armLayer(p.armZL, r.aL), zR = armLayer(p.armZR, r.aR);
+  const z = (zz: ArmZ) => [zL === zz ? arm('L') : null, zR === zz ? arm('R') : null];
   const lift = Math.max(0, -p.y);
   const shS = Math.max(0.35, 1 - lift / 600);
+  if (layer === 'head') {
+    return (
+      <g transform={`translate(${x} ${y}) scale(${scale})`}>
+        <g transform={svgM(r.root)}>
+          <HeroHead m={r.head} tops={z('top')}>
+            <HeadG p={p} m={r.head} lm={L(r.head)} f={f} extra={headExtra} />
+          </HeroHead>
+        </g>
+      </g>
+    );
+  }
   return (
     <g transform={`translate(${x} ${y}) scale(${scale})`}>
       {shadow ? (
@@ -1131,11 +1158,29 @@ const HeroBody: React.FC<HeroProps> = ({
         <BeltG m={mul(r.torso, R(-p.torso * 0.5))} />
         {between}
         {z('mid')}
-        <HeadG p={p} m={r.head} lm={L(r.head)} f={f} extra={headExtra} />
+        {layer === 'body' ? null : <HeadG p={p} m={r.head} lm={L(r.head)} f={f} extra={headExtra} />}
         {z('top')}
         {front}
       </g>
     </g>
+  );
+};
+
+/** layer="head": the head, then his own raised arms again, only where they cross his own head */
+const HeroHead: React.FC<{ m: M; tops: React.ReactNode[]; children: React.ReactNode }> = ({ m, tops, children }) => {
+  const id = 'hz' + useId().replace(/[^a-zA-Z0-9]/g, '');
+  return (
+    <>
+      {children}
+      {tops.some(Boolean) ? (
+        <>
+          <clipPath id={id}>
+            <ellipse cx={0} cy={-170} rx={176} ry={218} transform={svgM(m)} />
+          </clipPath>
+          <g clipPath={`url(#${id})`}>{tops}</g>
+        </>
+      ) : null}
+    </>
   );
 };
 
