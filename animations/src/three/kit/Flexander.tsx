@@ -4,9 +4,9 @@ import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { clamp, lerp, rng } from './math';
-import { Pose, SK, Side } from './pose';
+import { MouthShape, Pose, SK, Side } from './rig';
 import { SDF, capsule, ellipsoid, smax, smin, surfaceNets } from './sdf';
-import { blushTexture, eyeTexture, mouthTexture, MouthShape, sashTexture, skirtTexture } from './textures';
+import { blushTexture, eyeTexture, mouthTexture, sashTexture, skirtTexture } from './textures';
 
 // Flexander, sculpted in 3D: a clay-toy build of the 2D hero with the same
 // palette (Hero.tsx / looks.ts FLEXANDER) — big head, laurel, toga, gold.
@@ -36,7 +36,7 @@ const makeMats = () => ({
   leather: new THREE.MeshStandardMaterial({ color: C.leather, roughness: 0.6 }),
   leatherDark: new THREE.MeshStandardMaterial({ color: C.leatherDark, roughness: 0.65 }),
   blush: new THREE.MeshStandardMaterial({ map: blushTexture(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, roughness: 0.6 }),
-  mouth: Object.fromEntries((['o', 'focus', 'grit', 'grin', 'smile'] as MouthShape[]).map((m) => [m, new THREE.MeshStandardMaterial({ map: mouthTexture(m), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: 0.45 })])) as Record<MouthShape, THREE.MeshStandardMaterial>,
+  mouth: Object.fromEntries((['o', 'focus', 'grit', 'grin', 'smile', 'kiss', 'smirk', 'wow'] as MouthShape[]).map((m) => [m, new THREE.MeshStandardMaterial({ map: mouthTexture(m), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: 0.45 })])) as Record<MouthShape, THREE.MeshStandardMaterial>,
 });
 export const flexMats = () => (MATS ??= makeMats());
 
@@ -168,6 +168,47 @@ const buildFist = () => {
   const palm = new RoundedBoxGeometry(0.1, 0.07, 0.07, 3, 0.026).translate(0, 0.058, 0.004);
   const thumb = cappedTube([new THREE.Vector3(-0.052, 0.05, -0.026), new THREE.Vector3(-0.05, 0.022, -0.046), new THREE.Vector3(-0.028, -0.006, -0.05)], 0.019, 0.017);
   const g = mergeGeometries([...fingers, ...knuckles, palm, thumb]);
+  g.computeVertexNormals();
+  return g;
+};
+
+/** Open hand in the fist's frame: fingers run away from the wrist (-y), back of the hand is +z. */
+const buildOpen = () => {
+  const palm = new RoundedBoxGeometry(0.1, 0.09, 0.036, 3, 0.016).translate(0, 0.012, 0);
+  const fingers = [-0.034, -0.0115, 0.0115, 0.033].map((x, i) => {
+    const len = [0.078, 0.088, 0.084, 0.066][i];
+    return cappedTube([new THREE.Vector3(x, -0.026, 0.002), new THREE.Vector3(x * 1.12, -0.026 - len * 0.55, -0.006), new THREE.Vector3(x * 1.22, -0.026 - len, -0.02)], 0.0178 - i * 0.0007, 0.0158);
+  });
+  const thumb = cappedTube([new THREE.Vector3(-0.044, 0.03, -0.006), new THREE.Vector3(-0.074, 0.0, -0.016), new THREE.Vector3(-0.088, -0.032, -0.024)], 0.0195, 0.017);
+  const g = mergeGeometries([palm, ...fingers, thumb]);
+  g.computeVertexNormals();
+  return g;
+};
+
+/** A fist with the index finger out, pointing away from the wrist. */
+const buildPoint = () => {
+  const R = 0.036;
+  const parts: THREE.BufferGeometry[] = [];
+  const xs = [-0.034, -0.0115, 0.0115, 0.033];
+  xs.forEach((x, i) => {
+    if (i === 0) {
+      parts.push(cappedTube([new THREE.Vector3(x, 0.036, 0.016), new THREE.Vector3(x - 0.002, -0.01, 0.02), new THREE.Vector3(x - 0.004, -0.058, 0.018)], 0.0185, 0.0165));
+      return;
+    }
+    const pts: THREE.Vector3[] = [];
+    const a0 = Math.PI * 0.58;
+    const a1 = Math.PI * (2.12 - i * 0.03);
+    for (let k = 0; k <= 10; k++) {
+      const a = lerp(a0, a1, k / 10);
+      const rr = R * (1 - 0.05 * (k / 10));
+      pts.push(new THREE.Vector3(x, rr * Math.sin(a), -rr * Math.cos(a)));
+    }
+    parts.push(cappedTube(pts, 0.0195 - i * 0.0008, 0.0165));
+  });
+  for (const x of xs) parts.push(new THREE.SphereGeometry(0.022, 12, 10).translate(x, R * Math.sin(Math.PI * 0.58) + 0.004, -R * Math.cos(Math.PI * 0.58) + 0.006).toNonIndexed());
+  parts.push(new RoundedBoxGeometry(0.1, 0.07, 0.07, 3, 0.026).translate(0, 0.058, 0.004));
+  parts.push(cappedTube([new THREE.Vector3(-0.052, 0.05, -0.026), new THREE.Vector3(-0.05, 0.022, -0.046), new THREE.Vector3(-0.028, -0.006, -0.05)], 0.019, 0.017));
+  const g = mergeGeometries(parts);
   g.computeVertexNormals();
   return g;
 };
@@ -333,6 +374,8 @@ const buildGeo = () => {
     neck: new THREE.CylinderGeometry(0.085, 0.095, 0.2, 24),
     deltoid: new THREE.SphereGeometry(0.104, 28, 20).scale(1.04, 0.96, 1),
     fist: buildFist(),
+    open: buildOpen(),
+    point: buildPoint(),
     cuff: new THREE.CylinderGeometry(0.062, 0.058, 0.07, 32, 1, true),
     cuffLip: new THREE.TorusGeometry(0.06, 0.007, 8, 32).rotateX(Math.PI / 2),
     foot: buildFoot(),
@@ -441,14 +484,26 @@ const LimbTube: React.FC<{ a: THREE.Vector3; b: THREE.Vector3; c: THREE.Vector3;
 };
 
 // ---------------------------------------------------------------- parts
-const Arm: React.FC<{ s: Side; side: 1 | -1 }> = ({ s, side }) => {
+const Arm: React.FC<{ s: Side; side: 1 | -1; pump: number }> = ({ s, side, pump }) => {
   const G = flexGeo();
   const M = flexMats();
-  // fist frame from the bar axis and the forearm
-  const X = new THREE.Vector3(side, 0, 0);
+  // hand frame: x along what the fist closes around (or across the palm),
+  // y toward the wrist, z out of the back of the hand
   const toElbow = s.elbow.clone().sub(s.grip).normalize();
-  const Y = toElbow.clone().addScaledVector(X, -toElbow.dot(X)).normalize();
-  const Z = new THREE.Vector3().crossVectors(X, Y).multiplyScalar(side);
+  let X: THREE.Vector3;
+  let Y: THREE.Vector3;
+  let Z: THREE.Vector3;
+  if (s.palm) {
+    Z = s.palm.clone().negate().normalize();
+    Y = toElbow.clone().addScaledVector(Z, -toElbow.dot(Z)).normalize();
+    X = new THREE.Vector3().crossVectors(Y, Z).multiplyScalar(side);
+  } else {
+    X = s.axis.clone().normalize();
+    Y = toElbow.clone().addScaledVector(X, -toElbow.dot(X));
+    if (Y.lengthSq() < 1e-6) Y.set(0, 1, 0).addScaledVector(X, -X.y);
+    Y.normalize();
+    Z = new THREE.Vector3().crossVectors(X, Y).multiplyScalar(side);
+  }
   const m = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(s.grip);
   const hp = new THREE.Vector3();
   const hq = new THREE.Quaternion();
@@ -457,11 +512,13 @@ const Arm: React.FC<{ s: Side; side: 1 | -1 }> = ({ s, side }) => {
   const wrist = s.grip.clone().addScaledVector(Y, 0.072).addScaledVector(Z, 0.004);
   const fore = segment(s.elbow, wrist);
   const cuffAt = wrist.clone().addScaledVector(s.elbow.clone().sub(wrist).normalize(), 0.035);
+  const radius = useMemo(() => (pump === 1 ? ARM_R : (u: number) => ARM_R(u) * (1 + (pump - 1) * (u < 0.55 ? 1.25 : 0.8))), [pump]);
+  const hand = s.shape === 'open' ? G.open : s.shape === 'point' ? G.point : G.fist;
   return (
     <>
-      <LimbTube a={s.shoulder} b={s.elbow} c={wrist} radius={ARM_R} />
+      <LimbTube a={s.shoulder} b={s.elbow} c={wrist} radius={radius} />
       <group position={hp} quaternion={hq} scale={hs}>
-        <mesh geometry={G.fist} material={M.skin} castShadow receiveShadow />
+        <mesh geometry={hand} material={M.skin} castShadow receiveShadow />
       </group>
       <group position={cuffAt} quaternion={fore.q}>
         <mesh geometry={G.cuff} material={M.gold} castShadow />
@@ -472,7 +529,7 @@ const Arm: React.FC<{ s: Side; side: 1 | -1 }> = ({ s, side }) => {
   );
 };
 
-const Leg: React.FC<{ s: Side; side: 1 | -1 }> = ({ s, side }) => {
+const Leg: React.FC<{ s: Side }> = ({ s }) => {
   const G = flexGeo();
   const M = flexMats();
   const shin = segment(s.knee, s.ankle);
@@ -484,7 +541,7 @@ const Leg: React.FC<{ s: Side; side: 1 | -1 }> = ({ s, side }) => {
           <mesh key={i} geometry={G.calfStrap} material={M.leather} position={[0, y, 0]} scale={[0.064 - i * 0.006, 0.07, 0.064 - i * 0.006]} castShadow />
         ))}
       </group>
-      <group position={s.ankle} rotation={[s.footPitch, side * 0.12, 0, 'YXZ']}>
+      <group position={s.ankle} rotation={[s.footPitch, s.footYaw, 0, 'YXZ']}>
         <mesh geometry={G.foot.skin} material={M.skin} castShadow receiveShadow />
         <mesh geometry={G.foot.sole} material={M.leatherDark} castShadow receiveShadow />
         <mesh geometry={G.foot.straps} material={M.leather} castShadow />
@@ -611,7 +668,7 @@ export const Flexander: React.FC<{ pose: Pose }> = ({ pose }) => {
   return (
     <group>
       <group position={pose.pelvis} quaternion={pose.torsoQ}>
-        <mesh geometry={G.torso} material={M.skin} castShadow receiveShadow />
+        <mesh geometry={G.torso} material={M.skin} scale={[1 + (pose.pump - 1) * 0.55, 1 + (pose.pump - 1) * 0.15, 1 + (pose.pump - 1) * 0.6]} position={[0, -(pose.pump - 1) * 0.02, 0]} castShadow receiveShadow />
         <mesh geometry={G.clothCore} material={M.cloth} castShadow receiveShadow />
         <Skirt pose={pose} />
         <mesh geometry={G.sash} material={M.sash} castShadow receiveShadow />
@@ -622,7 +679,7 @@ export const Flexander: React.FC<{ pose: Pose }> = ({ pose }) => {
         </group>
         <mesh geometry={G.brooch} material={M.goldDeep} position={[0.19, 0.548, 0.03]} rotation={[0.9, 0, -0.5]} scale={[0.62, 0.5, 0.62]} castShadow />
         {[1, -1].map((s) => (
-          <mesh key={s} geometry={G.deltoid} material={M.skin} position={[s * (SK.shoulderX + 0.012), SK.shoulderY + pose.shrug * 0.055 + 0.01, SK.shoulderZ]} castShadow receiveShadow />
+          <mesh key={s} geometry={G.deltoid} material={M.skin} scale={1 + (pose.pump - 1) * 1.1} position={[s * (SK.shoulderX + 0.012 + (pose.pump - 1) * 0.05), SK.shoulderY + pose.shrug * 0.055 + 0.01, SK.shoulderZ]} castShadow receiveShadow />
         ))}
         <group position={SK.neck} quaternion={pose.headQ}>
           <mesh geometry={G.neck} material={M.skin} position={[0, 0.05, 0.0]} castShadow receiveShadow />
@@ -631,10 +688,10 @@ export const Flexander: React.FC<{ pose: Pose }> = ({ pose }) => {
           </group>
         </group>
       </group>
-      <Arm s={pose.L} side={1} />
-      <Arm s={pose.R} side={-1} />
-      <Leg s={pose.L} side={1} />
-      <Leg s={pose.R} side={-1} />
+      <Arm s={pose.L} side={1} pump={pose.pump} />
+      <Arm s={pose.R} side={-1} pump={pose.pump} />
+      <Leg s={pose.L} />
+      <Leg s={pose.R} />
     </group>
   );
 };

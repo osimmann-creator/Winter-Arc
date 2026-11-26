@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { Pose, SK } from './pose';
+import { SK } from './rig';
 import { plateTexture } from './textures';
 
 // Chrome bar with knurled grips, bronze sleeves and rubber bumper plates.
@@ -8,6 +8,7 @@ import { plateTexture } from './textures';
 // and back up after the catch and the lockout.
 
 const HALF = 0.985;
+const IDENT = new THREE.Quaternion();
 export const bend = (x: number, whip: number) => whip * Math.pow(Math.abs(x) / HALF, 2.2);
 const slope = (x: number, whip: number) => (whip * 2.2 * Math.pow(Math.abs(x) / HALF, 1.2) * Math.sign(x)) / HALF;
 
@@ -84,7 +85,7 @@ const PlateStack: React.FC<{ side: 1 | -1; whip: number }> = ({ side, whip }) =>
   );
 };
 
-export const Barbell: React.FC<{ pose: Pose }> = ({ pose }) => {
+export const Barbell: React.FC<{ pos: THREE.Vector3; q?: THREE.Quaternion; whip: number }> = ({ pos, q, whip }) => {
   const G = barGeo();
   const M = barMats();
   const geo = useMemo(() => G.bar.clone(), [G]);
@@ -93,21 +94,21 @@ export const Barbell: React.FC<{ pose: Pose }> = ({ pose }) => {
     const rest = G.restBar;
     for (let i = 0; i < rest.length; i += 3) {
       out[i] = rest[i];
-      out[i + 1] = rest[i + 1] + bend(rest[i], pose.whip);
+      out[i + 1] = rest[i + 1] + bend(rest[i], whip);
       out[i + 2] = rest[i + 2];
     }
     geo.attributes.position.needsUpdate = true;
     geo.computeVertexNormals();
     geo.computeBoundingSphere();
-  }, [geo, G, pose.whip]);
+  }, [geo, G, whip]);
   return (
-    <group position={pose.bar} quaternion={pose.barQ}>
+    <group position={pos} quaternion={q ?? IDENT}>
       <mesh geometry={geo} material={M.chrome} castShadow receiveShadow />
       {[1, -1].map((s) => (
-        <mesh key={s} geometry={G.knurl} material={M.knurl} position={[s * 0.45, bend(s * 0.45, pose.whip), 0]} castShadow />
+        <mesh key={s} geometry={G.knurl} material={M.knurl} position={[s * 0.45, bend(s * 0.45, whip), 0]} castShadow />
       ))}
-      <PlateStack side={1} whip={pose.whip} />
-      <PlateStack side={-1} whip={pose.whip} />
+      <PlateStack side={1} whip={whip} />
+      <PlateStack side={-1} whip={whip} />
     </group>
   );
 };

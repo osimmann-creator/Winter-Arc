@@ -69,7 +69,7 @@ export const eyeTexture = () =>
   });
 
 /** Mouth shapes, drawn like the 2D Flexander: ink outline, dark mouth, white teeth. */
-export type MouthShape = 'o' | 'focus' | 'grit' | 'grin' | 'smile';
+export type MouthShape = 'o' | 'focus' | 'grit' | 'grin' | 'smile' | 'kiss' | 'smirk' | 'wow';
 export const mouthTexture = (shape: MouthShape) =>
   make('mouth-' + shape, 512, 256, (c) => {
     c.lineJoin = 'round';
@@ -184,6 +184,62 @@ export const mouthTexture = (shape: MouthShape) =>
       c.quadraticCurveTo(108, 96, 122, 100);
       c.moveTo(412, 78);
       c.quadraticCurveTo(404, 96, 390, 100);
+      c.stroke();
+    } else if (shape === 'kiss') {
+      c.fillStyle = '#C8445E';
+      c.beginPath();
+      c.ellipse(262, 128, 30, 26, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = '#7A1E30';
+      c.beginPath();
+      c.ellipse(262, 128, 11, 9, 0, 0, Math.PI * 2);
+      c.fill();
+      c.lineWidth = 10;
+      c.beginPath();
+      c.ellipse(262, 128, 30, 26, 0, 0, Math.PI * 2);
+      c.stroke();
+      c.lineWidth = 5;
+      c.beginPath();
+      c.moveTo(250, 104);
+      c.lineTo(252, 112);
+      c.moveTo(274, 104);
+      c.lineTo(272, 112);
+      c.moveTo(250, 152);
+      c.lineTo(252, 144);
+      c.moveTo(274, 152);
+      c.lineTo(272, 144);
+      c.stroke();
+    } else if (shape === 'smirk') {
+      c.lineWidth = 12;
+      c.beginPath();
+      c.moveTo(186, 140);
+      c.quadraticCurveTo(270, 150, 334, 104);
+      c.stroke();
+      c.lineWidth = 7;
+      c.beginPath();
+      c.moveTo(336, 92);
+      c.quadraticCurveTo(334, 106, 346, 114);
+      c.stroke();
+    } else if (shape === 'wow') {
+      const path = () => {
+        c.beginPath();
+        c.ellipse(256, 140, 56, 70, 0, 0, Math.PI * 2);
+      };
+      path();
+      c.fillStyle = inside;
+      c.fill();
+      c.save();
+      path();
+      c.clip();
+      c.fillStyle = '#FFFDF6';
+      c.fillRect(190, 60, 132, 30);
+      c.fillStyle = '#E3707B';
+      c.beginPath();
+      c.ellipse(256, 206, 44, 30, 0, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+      c.lineWidth = 11;
+      path();
       c.stroke();
     } else {
       c.lineWidth = 12;
@@ -541,4 +597,38 @@ export const glintTexture = () =>
       c.fill();
       c.restore();
     }
+  }, { srgb: false });
+
+/** Night sky for the side windows: deep blue, a lighter horizon, stars. */
+export const nightSkyTexture = () =>
+  make('nightsky', 256, 1024, (c, w, h) => {
+    const g = c.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, '#0A0F2E');
+    g.addColorStop(0.5, '#16245E');
+    g.addColorStop(0.85, '#2E4290');
+    g.addColorStop(1, '#5A6FB8');
+    c.fillStyle = g;
+    c.fillRect(0, 0, w, h);
+    const r = rng(613);
+    for (let i = 0; i < 420; i++) {
+      const s = r() < 0.92 ? 1 : 2;
+      c.fillStyle = `rgba(255,255,255,${0.35 + r() * 0.65})`;
+      c.fillRect(r() * w, r() * h * 0.85, s, s);
+    }
+  });
+
+/** A soft teardrop for flames. */
+export const softDotWarm = () =>
+  make('flame', 128, 192, (c) => {
+    const g = c.createRadialGradient(64, 120, 2, 64, 110, 70);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.4, 'rgba(255,255,255,0.55)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = g;
+    c.beginPath();
+    c.moveTo(64, 4);
+    c.bezierCurveTo(100, 70, 120, 120, 100, 160);
+    c.bezierCurveTo(84, 190, 44, 190, 28, 160);
+    c.bezierCurveTo(8, 120, 28, 70, 64, 4);
+    c.fill();
   }, { srgb: false });

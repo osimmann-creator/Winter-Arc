@@ -7,7 +7,13 @@ import { E, clamp, lerp, seg } from './math';
 // The BEAST MODE plaque from GymTheatre.tsx (same outline, colours, type and
 // spot on screen), built as a beveled enamel-and-gold slab that flips in.
 
-const C = { enamel: '#682E23', dark: '#311A22', foil: '#FFC77C', gleam: '#FFEDD0' };
+export type PlaqueTheme = 'beast' | 'atlas' | 'mirror';
+const THEMES: Record<PlaqueTheme, { enamel: string; dark: string; foil: string; gleam: string; light: string; metal: string }> = {
+  beast: { enamel: '#682E23', dark: '#311A22', foil: '#FFC77C', gleam: '#FFEDD0', light: '#7A3828', metal: '#F2B35A' },
+  atlas: { enamel: '#244860', dark: '#101D36', foil: '#ECD08D', gleam: '#E9FAFE', light: '#2E5A78', metal: '#E8C878' },
+  mirror: { enamel: '#734056', dark: '#391F34', foil: '#EEBA92', gleam: '#FFF2E3', light: '#8A4E68', metal: '#EDB08C' },
+};
+type Theme = (typeof THEMES)['beast'];
 const PERIMETER: [number, number][] = [[-420, 0], [-332, 0], [-317, -17], [-73, -17], [-55, -28], [55, -28], [73, -17], [317, -17], [332, 0], [420, 0], [397, 32], [414, 63], [336, 63], [314, 87], [-314, 87], [-336, 63], [-414, 63], [-397, 32]];
 const TAG: [number, number][] = [[-122, -2], [122, -2], [135, 16], [113, 45], [-113, 45], [-135, 16]];
 
@@ -18,7 +24,7 @@ const shapeFrom = (pts: [number, number][], dy = 0) => {
   return s;
 };
 
-const foilGradient = (c: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number) => {
+const foilGradient = (C: Theme, c: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number) => {
   const g = c.createLinearGradient(x0, y0, x1, y1);
   g.addColorStop(0, '#AA6E45');
   g.addColorStop(0.23, C.foil);
@@ -36,7 +42,7 @@ const pathFrom = (c: CanvasRenderingContext2D, pts: [number, number][]) => {
 };
 
 /** Face art in SVG units: x -440..440, y -50..110 at 2px per unit. */
-const faceTexture = (title: string) => {
+const faceTexture = (C: Theme, title: string) => {
   const canvas = document.createElement('canvas');
   canvas.width = 1760;
   canvas.height = 320;
@@ -44,14 +50,14 @@ const faceTexture = (title: string) => {
   c.scale(2, 2);
   c.translate(440, 50);
   const en = c.createLinearGradient(-200, -40, 120, 120);
-  en.addColorStop(0, '#7A3828');
+  en.addColorStop(0, C.light);
   en.addColorStop(0.5, C.enamel);
   en.addColorStop(1, C.dark);
   pathFrom(c, PERIMETER);
   c.fillStyle = en;
   c.fill();
   c.lineJoin = 'miter';
-  c.strokeStyle = foilGradient(c, -420, -28, 300, 120);
+  c.strokeStyle = foilGradient(C, c, -420, -28, 300, 120);
   c.lineWidth = 9;
   pathFrom(c, PERIMETER);
   c.stroke();
@@ -113,14 +119,14 @@ const faceTexture = (title: string) => {
 };
 
 /** Gold tag in its own units: x -150..150, y -10..50 (SVG y down), 4px per unit. */
-const tagTexture = () => {
+const tagTexture = (C: Theme) => {
   const canvas = document.createElement('canvas');
   canvas.width = 1200;
   canvas.height = 240;
   const c = canvas.getContext('2d')!;
   c.scale(4, 4);
   c.translate(150, 10);
-  c.fillStyle = foilGradient(c, -135, -2, 60, 60);
+  c.fillStyle = foilGradient(C, c, -135, -2, 60, 60);
   c.fillRect(-150, -10, 300, 60);
   c.strokeStyle = C.dark;
   c.globalAlpha = 0.65;
@@ -155,7 +161,8 @@ const sheenMat = () =>
     blending: THREE.AdditiveBlending,
   });
 
-export const PlaqueOverlay: React.FC<{ f: number; start: number; title: string; scene: THREE.Scene; aspect: number }> = ({ f, start, title, scene }) => {
+export const PlaqueOverlay: React.FC<{ f: number; start: number; title: string; theme: PlaqueTheme; scene: THREE.Scene }> = ({ f, start, title, theme, scene }) => {
+  const C = THEMES[theme];
   const parts = useMemo(() => {
     const shape = shapeFrom(PERIMETER);
     const body = new THREE.ExtrudeGeometry(shape, { depth: 12, bevelEnabled: true, bevelThickness: 5, bevelSize: 4, bevelSegments: 3, curveSegments: 1 });
@@ -166,15 +173,15 @@ export const PlaqueOverlay: React.FC<{ f: number; start: number; title: string; 
   }, []);
   // the parent only mounts the canvas once the plaque font has loaded
   const mats = useMemo(() => {
-    const gold = new THREE.MeshStandardMaterial({ color: '#F2B35A', metalness: 1, roughness: 0.22 });
+    const gold = new THREE.MeshStandardMaterial({ color: C.metal, metalness: 1, roughness: 0.22 });
     return {
-      face: new THREE.MeshStandardMaterial({ map: faceTexture(title), roughness: 0.32, metalness: 0.2 }),
+      face: new THREE.MeshStandardMaterial({ map: faceTexture(C, title), roughness: 0.32, metalness: 0.2 }),
       gold,
-      tag: new THREE.MeshStandardMaterial({ map: tagTexture(), metalness: 0.75, roughness: 0.28 }),
+      tag: new THREE.MeshStandardMaterial({ map: tagTexture(C), metalness: 0.75, roughness: 0.28 }),
       shadow: new THREE.MeshBasicMaterial({ color: '#12070A', transparent: true, opacity: 0.55, depthWrite: false }),
       sheen: sheenMat(),
     };
-  }, [title]);
+  }, [title, C]);
 
   const t = f - start;
   if (t < 0) return createPortal(<group />, scene);

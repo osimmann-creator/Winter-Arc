@@ -5,8 +5,9 @@ import * as THREE from 'three';
 import { Reflector } from 'three/examples/jsm/objects/Reflector.js';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { rng } from './math';
-import { friezeTexture, marbleTexture, platformWoodTexture, rubberTexture, sideSkyTexture, woodTexture } from './textures';
+import { Beam, Mote } from '../kit/Atmosphere';
+import { noise1, rng } from '../kit/math';
+import { friezeTexture, marbleTexture, nightSkyTexture, platformWoodTexture, rubberTexture, sideSkyTexture, softDotWarm, woodTexture } from '../kit/textures';
 
 // The Greek temple gym from gym/beast.webp, built in 3D: polished plank
 // floor with a gold ring, tall sunlit windows on the left, a balcony and
@@ -44,6 +45,7 @@ const makeMats = () => {
     platform: new THREE.MeshStandardMaterial({ map: platformWoodTexture(), roughness: 0.62 }),
     rubber: new THREE.MeshStandardMaterial({ map: m(rubberTexture(), 2, 4), roughness: 0.85 }),
     sideSky: new THREE.MeshBasicMaterial({ map: sideSkyTexture(), color: new THREE.Color(2.6, 2.3, 2.0), toneMapped: true }),
+    nightSky: new THREE.MeshBasicMaterial({ map: nightSkyTexture(), color: new THREE.Color(1.5, 1.6, 1.9), toneMapped: true }),
     plate: new THREE.MeshStandardMaterial({ color: '#23283A', roughness: 0.6 }),
     chalk: new THREE.MeshStandardMaterial({ color: '#F4F1EA', roughness: 0.95 }),
     ember: new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 1.6, 0.5) }),
@@ -176,9 +178,10 @@ const wallWithHoles = (w0: number, w1: number, h0: number, h1: number, holes: { 
 };
 
 // ---------------------------------------------------------------- the hall
-export const Hall: React.FC<{ debug?: string }> = ({ debug = '' }) => {
+export const TempleHall: React.FC<{ debug?: string; night?: boolean; f?: number }> = ({ debug = '', night = false, f = 0 }) => {
   const M = hallMats();
-  const view = useLoader(THREE.TextureLoader, staticFile('gym/beast.webp'));
+  const [dayView, nightView] = useLoader(THREE.TextureLoader, [staticFile('gym/beast.webp'), staticFile('gym/atlas.webp')]);
+  const view = night ? nightView : dayView;
   const parts = useMemo(() => {
     const col = columnParts();
     // left wall (x = -7.5): windows let the sun in
@@ -295,11 +298,17 @@ export const Hall: React.FC<{ debug?: string }> = ({ debug = '' }) => {
   const viewTex = useMemo(() => {
     const t = view.clone();
     t.colorSpace = THREE.SRGBColorSpace;
-    t.repeat.set(430 / 887, 220 / 1774);
-    t.offset.set(243 / 887, 1 - 625 / 1774);
+    if (night) {
+      // the Atlas backdrop's Milky Way and moonlit mountains
+      t.repeat.set(700 / 887, 750 / 1774);
+      t.offset.set(95 / 887, 1 - 1050 / 1774);
+    } else {
+      t.repeat.set(430 / 887, 220 / 1774);
+      t.offset.set(243 / 887, 1 - 625 / 1774);
+    }
     t.needsUpdate = true;
     return t;
-  }, [view]);
+  }, [view, night]);
 
   // kept out of the sun's path to the platform (it comes through the window at z = -3)
   const columns: [number, number][] = [[-3.9, 0.5], [3.9, -1.3], [-3.9, -3.9], [3.9, -4.7], [3.9, 2.3]];
@@ -362,14 +371,15 @@ export const Hall: React.FC<{ debug?: string }> = ({ debug = '' }) => {
       <mesh geometry={parts.bells} material={M.plate} castShadow receiveShadow />
 
       {/* skies */}
-      <mesh position={[0, 8.6, -24]} scale={[48, 24.5, 1]}>
+      <mesh position={night ? [0, 11, -24] : [0, 8.6, -24]} scale={night ? [40, 42.9, 1] : [48, 24.5, 1]}>
         <planeGeometry />
-        <meshBasicMaterial map={viewTex} color={new THREE.Color(1.5, 1.4, 1.35)} />
+        <meshBasicMaterial map={viewTex} color={night ? new THREE.Color(1.35, 1.4, 1.6) : new THREE.Color(1.5, 1.4, 1.35)} />
       </mesh>
       <mesh position={[-13, 5, -1]} rotation-y={Math.PI / 2} scale={[24, 14, 1]}>
         <planeGeometry />
-        <primitive object={M.sideSky} attach="material" />
+        <primitive object={night ? M.nightSky : M.sideSky} attach="material" />
       </mesh>
+      {night && <Braziers f={f} />}
 
       {/* columns */}
       <group visible={!debug.includes('nocols')}>
@@ -402,7 +412,42 @@ export const Hall: React.FC<{ debug?: string }> = ({ debug = '' }) => {
 };
 
 // ---------------------------------------------------------------- lights and environment
-export const HallLights: React.FC<{ boost: number }> = ({ boost }) => {
+// ---------------------------------------------------------------- fire bowls (night)
+export const BRAZIERS: [number, number][] = [[-1.85, 0.95], [1.85, 0.95]];
+const flameMat = () =>
+  new THREE.SpriteMaterial({ map: softDotWarm(), color: new THREE.Color(3.4, 1.7, 0.55), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+const Braziers: React.FC<{ f: number }> = ({ f }) => {
+  const M = hallMats();
+  const flame = useMemo(() => flameMat(), []);
+  return (
+    <>
+      {BRAZIERS.map(([x, z], i) => (
+        <group key={i} position={[x, FLOOR_Y, z]}>
+          <mesh position={[0, 0.42, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[0.06, 0.14, 0.84, 20]} />
+            <primitive object={M.bronze} attach="material" />
+          </mesh>
+          <mesh position={[0, 0.9, 0]} castShadow receiveShadow>
+            <sphereGeometry args={[0.24, 28, 14, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2]} />
+            <meshStandardMaterial color="#B57A45" metalness={1} roughness={0.35} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh position={[0, 0.88, 0]}>
+            <sphereGeometry args={[0.2, 16, 8]} />
+            <primitive object={M.ember} attach="material" />
+          </mesh>
+          {[0, 1, 2, 3, 4].map((k) => {
+            const ph = f * 0.35 + k * 1.7 + i * 3;
+            const h = 0.12 + ((ph * 0.37) % 1) * 0.42;
+            const s = (0.34 - h * 0.45) * (1 + 0.15 * Math.sin(ph * 2.3));
+            return <sprite key={k} material={flame} position={[Math.sin(ph) * 0.05, 0.95 + h, Math.cos(ph * 1.3) * 0.05]} scale={[s, s * 1.5, 1]} />;
+          })}
+        </group>
+      ))}
+    </>
+  );
+};
+
+export const HallLights: React.FC<{ boost: number; night?: boolean; f?: number }> = ({ boost, night = false, f = 0 }) => {
   const scene = useThree((s) => s.scene);
   const sun = useMemo(() => {
     const l = new THREE.DirectionalLight('#FFD3A6', 5.2);
@@ -428,7 +473,22 @@ export const HallLights: React.FC<{ boost: number }> = ({ boost }) => {
       scene.remove(sun.target);
     };
   }, [scene, sun]);
-  sun.intensity = 5.2 * boost;
+  sun.intensity = (night ? 2.4 : 5.2) * boost;
+  sun.color.set(night ? '#A9BEFF' : '#FFD3A6');
+  if (night) {
+    const flick = (i: number) => 1 + 0.12 * noise1(f * 0.45 + i * 9, 21) + 0.06 * noise1(f * 1.7 + i * 5, 22);
+    return (
+      <>
+        <primitive object={sun} />
+        <hemisphereLight args={['#4A5C9A', '#3A2632', 0.75]} />
+        <directionalLight position={[5, 3.2, -6]} intensity={0.7} color="#B9CCFF" />
+        <directionalLight position={[2, 3, 6]} intensity={0.35} color="#FFD2B0" />
+        {BRAZIERS.map(([x, z], i) => (
+          <pointLight key={i} position={[x, 1.25, z]} intensity={9 * flick(i)} distance={9} decay={1.6} color="#FF9A45" />
+        ))}
+      </>
+    );
+  }
   return (
     <>
       <primitive object={sun} />
@@ -437,6 +497,31 @@ export const HallLights: React.FC<{ boost: number }> = ({ boost }) => {
       <directionalLight position={[2, 3, 6]} intensity={0.85} color="#FFE2CC" />
     </>
   );
+};
+
+// ---------------------------------------------------------------- light shafts
+export const templeBeams = (): Beam[] => {
+  const out: Beam[] = [];
+  const r = rng(301);
+  for (const c of LEFT_WINDOWS) {
+    for (const y of [2.2, 4.0, 5.8, 7.4]) {
+      const start = new THREE.Vector3(-7.4, y + (r() - 0.5) * 0.4, c + (r() - 0.5) * 0.3);
+      const len = (start.y - FLOOR_Y) / -SUN_DIR.y;
+      out.push({ start, dir: SUN_DIR.clone(), len, width: 1.25 + r() * 0.45, k: (c === -3.0 ? 1.25 : 0.85) * (0.6 + r() * 0.5) });
+    }
+  }
+  return out;
+};
+
+export const templeMotes = (): Mote[] => {
+  const r = rng(404);
+  return Array.from({ length: 520 }, () => {
+    const c = LEFT_WINDOWS[Math.floor(r() * LEFT_WINDOWS.length)];
+    const start = new THREE.Vector3(-7.4, 1.4 + r() * 6.9, c + (r() - 0.5) * 1.5);
+    const sMax = (start.y - FLOOR_Y - 0.1) / -SUN_DIR.y;
+    const p = start.addScaledVector(SUN_DIR, r() * sMax);
+    return { p, seed: r() * 100, size: 0.008 + r() * 0.02, tw: r() * 6.28, b: 0.3 + r() * 0.7 };
+  });
 };
 
 /** Capture the empty hall into an environment map so chrome and gold reflect it. */
