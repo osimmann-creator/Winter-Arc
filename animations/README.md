@@ -127,6 +127,16 @@ node render.mjs recap-mvp-dean           # one
 - Their sound cues are at the end of `sound/cues.py` (`RECAP_*`, shared by the nine versions of each scene).
 - The clips have no numbers in them. The app's recap card shows last week's points.
 
+## Motion skills
+
+The repo's `.claude/skills/` folder holds 22 motion-graphics skills from [iart-ai/motion-skills](https://github.com/iart-ai/motion-skills) (MIT). They cover animation principles and easing, shot composition, kinetic typography, short-form vertical video, countdowns, captions, SVG, GSAP and Lottie, plus a code-made soundtrack. Claude loads them automatically when it works in this repo. `.claude/skills/ATTRIBUTION.md` lists them by pack.
+
+The soundtrack skill's sync checker works on our videos too. Give it the moments that should hit (in seconds) and it confirms a strong sound starts within 100 ms of each:
+
+```
+node ../.claude/skills/soundtrack/scripts/sync-check.mjs ../assets/celebrations/gym-7.mp4 --cues-file times.json
+```
+
 ## Sound
 
 Each video's soundtrack is built from short sound effects placed on frames, then muxed into the finished mp4. The picture is copied, not re-encoded.
