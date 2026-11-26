@@ -3,7 +3,8 @@
    WA.buddy(opts) returns an <svg> string, feet at the bottom centre: viewBox -320 -1040 640 1080 (feet at 0,0).
      skin   '#F0B98F' | any colour          hair  'short' | 'curly' | 'bald' | 'long' | 'buzz'   hairColor
      hat    null | 'beanie' | 'cap' | 'top' | 'cop' | 'santa'     shades  true/false
-     top    hoodie colour   pants  trouser colour   coat  'hoodie' | 'coat' | 'uniform'
+     top    hoodie colour   pants  trouser colour   coat  'hoodie' | 'coat' | 'uniform' | 'puffer'
+     beard  true/false (beardColor, default hairColor)
      face   'grin' | 'smile' | 'smug' | 'scared' | 'dazed' | 'mad' | 'neutral' | 'bliss'
      arms   'down' | 'up' | 'flail' | 'wheel' | 'hips' | 'wave' | 'point' | 'hold'
      legs   'stand' | 'walk' | 'sit' (sit: knees up, for a seat seen from the front) */
@@ -72,6 +73,13 @@
       out += '<path d="M-60 -690 L0 -560 L60 -690" fill="' + (o.shirt || '#FFFFFF') + '" stroke="' + INK + '" stroke-width="8" stroke-linejoin="round"/>';
       out += '<path d="M0 -560 L0 -330" stroke="' + INK + '" stroke-width="7"/>';
       out += '<path d="M-12 -560 L0 -540 L12 -560 L0 -600 Z" fill="' + (o.tie || '#C9442E') + '" stroke="' + INK + '" stroke-width="5"/>';
+    } else if (o.coat === 'puffer') {
+      // quilted bands, a zip and a big collar
+      [-600, -520, -440].forEach(function (y) {
+        out += '<path d="M-168 ' + y + ' Q0 ' + (y + 26) + ' 168 ' + y + '" fill="none" stroke="' + dk + '" stroke-width="12" stroke-linecap="round"/>';
+      });
+      out += '<path d="M0 -690 L0 -320" stroke="' + INK + '" stroke-width="8"/><rect x="-10" y="-640" width="20" height="34" rx="5" fill="#C9CED8" stroke="' + INK + '" stroke-width="5"/>';
+      out += '<path d="M-118 -740 Q0 -690 118 -740 L124 -680 Q0 -640 -124 -680 Z" fill="' + t + '" stroke="' + INK + '" stroke-width="9" stroke-linejoin="round"/>';
     } else {
       out += '<path d="M-90 -440 L90 -440 L104 -350 L-104 -350 Z" fill="' + dk + '" stroke="' + INK + '" stroke-width="8" stroke-linejoin="round"/>';
       out += '<path d="M-30 -660 L-36 -560 M30 -660 L36 -560" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>';
@@ -135,6 +143,12 @@
       '<path d="M150 -872 L14 -872 L22 -824 Q30 -806 66 -806 L104 -806 Q140 -806 146 -834 Z" fill="#1B1726" stroke="' + INK + '" stroke-width="8" stroke-linejoin="round"/>' +
       '<path d="M-124 -860 L-96 -830 M46 -860 L72 -836" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" opacity=".6"/>';
   }
+  function beard(o, mo) {
+    var c = o.beardColor || o.hairColor || '#3A2418', hi = shade(c, 0.22);
+    if (mo) return '<path d="M-70 -784 Q-34 -816 0 -800 Q34 -816 70 -784 Q40 -792 0 -786 Q-40 -792 -70 -784 Z" fill="' + c + '" stroke="' + INK + '" stroke-width="7" stroke-linejoin="round"/>';
+    return '<path d="M-152 -870 L-148 -780 Q-140 -636 0 -620 Q140 -636 148 -780 L152 -870 Q134 -810 112 -790 Q84 -722 0 -718 Q-84 -722 -112 -790 Q-134 -810 -152 -870 Z" fill="' + c + '" stroke="' + INK + '" stroke-width="9" stroke-linejoin="round"/>' +
+      '<path d="M-90 -690 Q0 -650 90 -690" fill="none" stroke="' + hi + '" stroke-width="10" stroke-linecap="round" opacity=".7"/>';
+  }
   function buddy(opt) {
     var o = Object.assign({ skin: '#F0B98F', hair: 'short', hairColor: '#3A2418', top: '#5C7CF0', pants: '#3E5A8C', coat: 'hoodie', face: 'smile', arms: 'down', legs: 'stand' }, opt || {});
     var skinDk = shade(o.skin, -0.2), armsBack = o.arms === 'wheel' || o.arms === 'hold';
@@ -156,7 +170,8 @@
     s += '<ellipse cx="-156" cy="-830" rx="30" ry="40" fill="' + o.skin + '" stroke="' + INK + '" stroke-width="8"/><ellipse cx="156" cy="-830" rx="30" ry="40" fill="' + o.skin + '" stroke="' + INK + '" stroke-width="8"/>';
     s += '<path d="M-150 -880 Q-156 -1000 0 -1004 Q156 -1000 150 -880 L144 -780 Q130 -700 0 -690 Q-130 -700 -144 -780 Z" fill="' + o.skin + '" stroke="' + INK + '" stroke-width="10" stroke-linejoin="round"/>';
     s += '<path d="M110 -950 Q140 -860 120 -760" stroke="' + skinDk + '" stroke-width="22" fill="none" stroke-linecap="round" opacity=".7"/>';
-    s += hair(o) + face(o) + (o.shades ? shades() : '') + hat(o);
+    if (o.beard) s += beard(o, false);
+    s += hair(o) + face(o) + (o.beard ? beard(o, true) : '') + (o.shades ? shades() : '') + hat(o);
     if (armsBack) s += arm(-1, o.arms, o) + arm(1, o.arms, o);
     s += '</g></svg>';
     return s;

@@ -63,7 +63,7 @@ export function injuryReportQuery(env, now) {
 }
 
 export const injuryPeriods = rows => rows.map(row => ({
-  memberId: row.member_id, startedAt: row.started_at, resolvedAt: row.resolved_at,
+  id: row.id, memberId: row.member_id, startedAt: row.started_at, resolvedAt: row.resolved_at,
 }));
 
 export async function listSocial(env, now = new Date(), viewerId = null) {

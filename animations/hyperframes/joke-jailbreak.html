@@ -1,0 +1,154 @@
+<!doctype html>
+<!--
+  Jailbreak (joke-jailbreak): inside the gym. The door at the left swings open (WHAM) and Jake shuffles in, still
+  cuffed to The Radiator, dragging it across the gym floor in a shower of sparks: SCRRRAPE. He stops, turns and
+  gives a big thumbs up. It came with him.
+  Beats (30 fps): door 8-14, drag in 12-86, scrape word 30, stop 86, thumbs 92, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #jb-crew { position: absolute; left: 0; top: 0; width: 1080px; height: 2348px; }
+  #jb-rad { position: absolute; left: 30px; top: 1780px; width: 290px; height: 330px; transform-origin: 145px 320px; }
+  #jb-rad svg { position: absolute; left: 0; top: 0; overflow: visible; }
+  .jb-chain { position: absolute; left: 0; top: 0; }
+  #jb-sparks { position: absolute; inset: 0; }
+  #jb-shine { position: absolute; width: 0; height: 0; opacity: 0; }
+  #jb-shine svg { position: absolute; left: -70px; top: -70px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-jailbreak" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="jb-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#C7E7FB">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="jb-out" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9DD3F5"/><stop offset="1" stop-color="#FFF3C8"/></linearGradient></defs>
+    <rect width="1080" height="2348" fill="#DCE3EC"/>
+    <rect x="0" y="0" width="1080" height="1300" fill="#CDD6E2"/>
+    <rect x="0" y="1300" width="1080" height="70" fill="#E05A47" stroke="#341720" stroke-width="8"/>
+    <!-- lights and a banner -->
+    <path d="M300 0 L300 430 M780 0 L780 430" stroke="#341720" stroke-width="8"/>
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round"><path d="M230 500 Q230 430 300 430 Q370 430 370 500 Z" fill="#2B2236"/><path d="M710 500 Q710 430 780 430 Q850 430 850 500 Z" fill="#2B2236"/></g>
+    <ellipse cx="300" cy="504" rx="44" ry="12" fill="#FFF3B0"/><ellipse cx="780" cy="504" rx="44" ry="12" fill="#FFF3B0"/>
+    <path d="M200 520 L120 900 L480 900 L400 520 Z M680 520 L600 900 L960 900 L880 520 Z" fill="#FFFFFF" opacity=".18"/>
+    <path d="M150 640 Q540 700 930 640" fill="none" stroke="#341720" stroke-width="7"/>
+    <path d="M180 650 L900 650 L900 780 L180 780 Z" fill="#2B3F7A" stroke="#341720" stroke-width="9" transform="rotate(2 540 715)"/>
+    <text x="540" y="745" text-anchor="middle" font-family="Luckiest Guy" font-size="88" fill="#FFD064" letter-spacing="6" transform="rotate(2 540 715)">NO DAYS OFF</text>
+    <text x="640" y="1180" text-anchor="middle" font-family="Luckiest Guy" font-size="190" fill="#FFFFFF" stroke="#341720" stroke-width="12" paint-order="stroke" letter-spacing="10" transform="rotate(-4 640 1100)">GYM</text>
+    <!-- the weight rack -->
+    <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+      <rect x="790" y="1640" width="22" height="440" fill="#7D8494"/><rect x="1020" y="1640" width="22" height="440" fill="#7D8494"/>
+      <rect x="780" y="1760" width="280" height="18" fill="#9AA3B8"/><rect x="780" y="1900" width="280" height="18" fill="#9AA3B8"/>
+      <rect x="820" y="1700" width="28" height="64" rx="8" fill="#2B2236"/><rect x="846" y="1724" width="60" height="16" fill="#C9CED8"/><rect x="904" y="1700" width="28" height="64" rx="8" fill="#2B2236"/>
+      <rect x="950" y="1708" width="24" height="56" rx="8" fill="#E05A47"/><rect x="972" y="1728" width="44" height="14" fill="#C9CED8"/><rect x="1014" y="1708" width="24" height="56" rx="8" fill="#E05A47"/>
+      <circle cx="860" cy="1858" r="44" fill="#2B2236"/><circle cx="860" cy="1858" r="12" fill="#C9CED8"/><circle cx="970" cy="1858" r="44" fill="#2B2236"/><circle cx="970" cy="1858" r="12" fill="#C9CED8"/>
+    </g>
+    <!-- the doorway (outside: daylight) -->
+    <rect x="-30" y="1430" width="280" height="640" fill="url(#jb-out)" stroke="#341720" stroke-width="12"/>
+    <path id="jb-beam" d="M250 1440 L250 2070 L620 2348 L-30 2348 L-30 2070 Z" fill="#FFF3C8" opacity="0"/>
+    <!-- the floor -->
+    <path d="M-20 2070 L1100 2070 L1100 2360 L-20 2360 Z" fill="#3A3F4E" stroke="#341720" stroke-width="10"/>
+    <path d="M-20 2170 L1100 2170 M-20 2270 L1100 2270 M300 2070 L270 2360 M640 2070 L640 2360 M980 2070 L1010 2360" stroke="#2E3240" stroke-width="8"/>
+    <path id="jb-beam2" d="M250 2070 L620 2348 L-30 2348 L-30 2070 Z" fill="#FFF3C8" opacity="0"/>
+  </svg>
+  <!-- the door: swings open on its left hinge -->
+  <div id="jb-door" style="position:absolute;left:-30px;top:1430px;width:280px;height:640px;transform-origin:0 50%">
+    <svg width="280" height="640" viewBox="0 0 280 640" style="position:absolute;left:0;top:0;overflow:visible">
+      <rect x="6" y="6" width="268" height="628" fill="#2B3F7A" stroke="#341720" stroke-width="12"/>
+      <rect x="60" y="60" width="150" height="190" rx="8" fill="#9DD3F5" stroke="#341720" stroke-width="9"/>
+      <rect x="40" y="330" width="210" height="34" rx="16" fill="#C9CED8" stroke="#341720" stroke-width="9"/>
+      <text x="140" y="470" text-anchor="middle" font-family="Luckiest Guy" font-size="54" fill="#FFFFFF" letter-spacing="4">PULL</text>
+    </svg>
+  </div>
+  <div id="jb-crew">
+    <div id="jb-rad"><svg width="290" height="330" viewBox="0 0 290 330">
+      <g stroke="#341720" stroke-width="9" stroke-linejoin="round">
+        <rect x="14" y="40" width="262" height="30" rx="12" fill="#E0D8C4"/><rect x="14" y="250" width="262" height="30" rx="12" fill="#E0D8C4"/>
+        <rect x="24" y="20" width="36" height="280" rx="16" fill="#F4EEDF"/><rect x="66" y="20" width="36" height="280" rx="16" fill="#F4EEDF"/>
+        <rect x="108" y="20" width="36" height="280" rx="16" fill="#F4EEDF"/><rect x="150" y="20" width="36" height="280" rx="16" fill="#F4EEDF"/>
+        <rect x="192" y="20" width="36" height="280" rx="16" fill="#F4EEDF"/><rect x="234" y="20" width="36" height="280" rx="16" fill="#F4EEDF"/>
+        <rect x="34" y="296" width="30" height="28" rx="6" fill="#C9BFA6"/><rect x="226" y="296" width="30" height="28" rx="6" fill="#C9BFA6"/>
+        <path d="M270 120 L290 120 L290 150" fill="none" stroke-width="12"/>
+        <circle cx="290" cy="160" r="12" fill="#C9CED8"/>
+      </g>
+      <path d="M32 40 L32 270 M74 40 L74 270 M116 40 L116 270 M158 40 L158 270 M200 40 L200 270 M242 40 L242 270" stroke="#FFFFFF" stroke-width="7" opacity=".7"/>
+    </svg></div>
+    <svg class="jb-chain" id="jb-chain0" width="1080" height="2348" viewBox="0 0 1080 2348" style="position:absolute;left:0;top:0;overflow:visible"></svg>
+    <svg class="jb-chain" id="jb-chain1" width="1080" height="2348" viewBox="0 0 1080 2348" style="position:absolute;left:0;top:0;overflow:visible;opacity:0"></svg>
+    <div id="jb-jake"></div>
+  </div>
+  <div id="jb-sparks"></div>
+  <div class="word" id="jb-wham" style="left:330px;top:1380px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="150" style="fill:#FFD064">WHAM!</text></svg></div></div>
+  <div class="word" id="jb-scrape" style="left:400px;top:2240px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#FFD064">SCRRRAPE</text></svg></div></div>
+  <div id="jb-shine"><svg width="140" height="140" viewBox="-70 -70 140 140">
+    <g stroke="#341720" stroke-width="6" stroke-linejoin="round"><path d="M0 -60 L12 -12 L60 0 L12 12 L0 60 L-12 12 L-60 0 L-12 -12 Z" fill="#FFF3B0"/></g>
+  </svg></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"JAILBREAK","pts":"1","unit":"RADIATOR","sub":"IT CAME WITH HIM","color":"#E39A2E","dark":"#A8661A","light":"#FFF0D2"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true }), r = WA.rng(21);
+  var X = 660, Y = 2100, S = 0.62, D0 = -720, T0 = 12, WALK = 74;
+  WA.actor('jb-jake', ['chain-a', 'chain-b', 'chain-thumbs'], { x: X, y: Y, s: S, member: 'jake', tag: 'JAKE', color: '#E39A2E' });
+  WA.pose(tl, '#jb-jake', 'chain-a', 0);
+  // the chain: from the cuff (his left wrist as we see it) to the radiator's pipe, a row of links
+  function chain(id, hx, hy) {
+    var cx = X + (hx - 640) * S, cy = Y + (hy - 1340) * S, px = 30 + 290, py = 1780 + 160, n = 9, h = '';
+    for (var i = 0; i <= n; i++) {
+      var t = i / n, x = px + (cx - px) * t, y = py + (cy - py) * t + Math.sin(t * Math.PI) * 26;
+      h += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + (i % 2 ? 9 : 16) + '" ry="' + (i % 2 ? 16 : 9) + '" fill="none" stroke="#341720" stroke-width="12"/>' +
+           '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + (i % 2 ? 9 : 16) + '" ry="' + (i % 2 ? 16 : 9) + '" fill="none" stroke="#C9CED8" stroke-width="5"/>';
+    }
+    document.getElementById(id).innerHTML = h;
+  }
+  chain('jb-chain0', 358, 980);
+  chain('jb-chain1', 337, 1026);
+
+  // the drag: the whole crew slides in, Jake shuffling, the radiator juddering along the pavement
+  // WHAM: the door swings open, daylight pours in
+  tl.to('#jb-door', { scaleX: 0.12, duration: 6 * F, ease: 'power3.out' }, 8 * F);
+  WA.shake(tl, '#jb-door', 14 * F, 6 * F, 4, { seed: 2, decay: true });
+  tl.to(['#jb-beam', '#jb-beam2'], { opacity: 0.35, duration: 6 * F }, 9 * F);
+  WA.word(tl, '#jb-wham', 9 * F, 24, { rot: -8, rot0: 12, seed: 5 });
+  gsap.set('#jb-crew', { x: D0, opacity: 0 });
+  tl.set('#jb-crew', { opacity: 1 }, T0 * F);
+  tl.to('#jb-crew', { x: 0, duration: WALK * F, ease: 'none' }, T0 * F);
+  WA.cycle(tl, '#jb-jake', ['chain-a', 'chain-b'], T0 * F, (T0 + WALK) * F, 6, 8);
+  for (var t = T0; t < T0 + WALK; t += 3) {
+    tl.to('#jb-rad', { rotation: (r() * 2 - 1) * 3, y: -r() * 8, duration: 3 * F, ease: 'none' }, t * F);
+  }
+  tl.to('#jb-rad', { rotation: 0, y: 0, duration: 4 * F, ease: 'back.out(3)' }, (T0 + WALK) * F);
+  // sparks where it scrapes (left behind in the street)
+  var bits = WA.spawn('#jb-sparks', 76, function (i) {
+    var c = ['#FFD064', '#FFF3B0', '#F2853A'][i % 3], w = 20 + r() * 18;
+    return '<i style="display:block;width:' + w + 'px;height:' + (w * 0.45) + 'px;background:' + c + ';border:3px solid #341720;border-radius:4px;box-shadow:0 0 12px #FFD064"></i>';
+  });
+  bits.forEach(function (b, i) {
+    var at = T0 + 1 + i * 0.97, cx = (i % 2 ? 64 : 256) + D0 * (1 - Math.min(1, (at - T0) / WALK)), a = Math.PI + 0.35 + r() * 0.8, sp = 10 + r() * 12;
+    gsap.set(b, { opacity: 0 });
+    WA.toss(tl, b, at * F, { x0: cx, y0: Y - 6, vx: Math.cos(a) * sp, vy: -Math.abs(Math.sin(a)) * sp - 6, g: 1.1, frames: 18, spin: 20, r0: r() * 360 });
+  });
+  WA.word(tl, '#jb-scrape', 48 * F, 34, { rot: -6, rot0: 10, seed: 6, amp: 6 });
+  WA.shake(tl, '#jb-scene', 20 * F, (WALK - 8) * F, 3, { seed: 8, step: 2 });
+
+  // made it: turn round, thumbs up
+  WA.take(tl, '#jb-jake', 'chain-thumbs', 92 * F, 0.1);
+  tl.set('#jb-chain0', { opacity: 0 }, 92 * F);
+  tl.set('#jb-chain1', { opacity: 1 }, 92 * F);
+  gsap.set('#jb-shine', { left: X + (953 - 640) * S + 30, top: Y + (631 - 1340) * S - 50 });
+  WA.popIn(tl, '#jb-shine', 96 * F, 6, { rot0: -40, rot: 0 });
+  tl.to('#jb-shine', { scale: 0, rotation: 60, opacity: 0, duration: 8 * F, ease: 'power1.in' }, 104 * F);
+  WA.hop(tl, '#jb-jake', 106 * F, 26, 8);
+
+  window.__timelines['joke-jailbreak'] = tl;
+})();
+</script>
+</body>
+</html>

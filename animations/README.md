@@ -1,6 +1,6 @@
 # Winter Arc animations (Remotion + HyperFrames)
 
-This is the source for the Winter Arc mascot, the 37 celebration videos, the inside-joke videos, the opening animation and the app art. Everything is drawn in code, so poses, timing and colors can all be edited: the mascot, the celebrations and the first 16 inside jokes in React + SVG with [Remotion](https://www.remotion.dev), and the round 2 inside jokes in HTML + GSAP with [HyperFrames](#hyperframes).
+This is the source for the Winter Arc mascot, the 37 celebration videos, the inside-joke videos, the opening animation and the app art. Everything is drawn in code, so poses, timing and colors can all be edited: the mascot, the celebrations and the first 16 inside jokes in React + SVG with [Remotion](https://www.remotion.dev), and the round 2 and round 3 inside jokes in HTML + GSAP with [HyperFrames](#hyperframes).
 
 ## Setup
 
@@ -79,9 +79,11 @@ Everyone in the group has his own character: Flexander's body, toga, sash, belt,
 
 ## HyperFrames
 
-The round 2 inside jokes are made with [HyperFrames](https://github.com/heygen-com/hyperframes) (HTML + GSAP rendered to video) in `hyperframes/`, in the same look: flat shapes, espresso outlines, Luckiest Guy titles and Bangers sound words, 1080×2348 at 30 fps, about 5.5 s, the same ribbon end card.
+The round 2 and round 3 inside jokes are made with [HyperFrames](https://github.com/heygen-com/hyperframes) (HTML + GSAP rendered to video) in `hyperframes/`, in the same look: flat shapes, espresso outlines, Luckiest Guy titles and Bangers sound words, 1080×2348 at 30 fps, about 5.5 s, the same ribbon end card.
 
 There are 17: `joke-thanksgiving`, Osim's four (`joke-crossing`, `joke-mycar`, `joke-finalcall`, `joke-worthit`), the crew's two (`joke-basement`, `joke-nomap`), the GTA six (`joke-grandtheft`, `joke-wanted`, `joke-busted`, `joke-wasted`, `joke-parole`, `joke-partners`) and the holidays (`joke-xmas`, `joke-nye`, `joke-groundhog`, `joke-valentine`). `joke-xmas` is only the intro to the Naughty or Nice reveal; the app draws the NICE and NAUGHTY stamps itself, because the clip is made before anyone votes.
+
+Round 3 adds 13 more: Connor's three (`joke-signal`, `joke-besties`, `joke-lockedout`), Dean and Dylan's `joke-volcano`, Dean and Jake's `joke-bestof40`, Dylan's `joke-retire`, Jake's four (`joke-diet`, `joke-pullout`, `joke-jailbreak`, `joke-fridge`), Phil's two (`joke-cleared`, `joke-spring`) and `joke-warhero`, which can be about anyone. The rest of round 3 (the ideas with Osim, Gaurav, Amaan or Ayaad in them) isn't made yet.
 
 ```
 cd hyperframes && npm i
@@ -98,11 +100,11 @@ HyperFrames needs a Chrome. If it can't find one, point `PUPPETEER_EXECUTABLE_PA
 | `hyperframes/compositions/endcard.html` | The ribbon end card (TITLE · COIN · CAPTION), mounted over the last 1.5 s with its words and colours as variables. |
 | `hyperframes/assets/kit.js`, `kit.css` | Shared helpers: shake, hop, squash, pose swaps, pop-ins, sound words, tosses, confetti, name tags. `kit.js` also lists the two GSAP rules every clip follows so it survives HyperFrames seeking back and forth. |
 | `hyperframes/assets/cast/` | Flexander's poses as SVG, exported from the Remotion rig by `scripts/export-cast.sh` (poses in `src/export/cast-poses.tsx`, hand/head anchors in `cast.tsx`). A pose's `members` also get `flex-<pose>-<username>.svg`, that member's own character in the pose. The clips swap whole poses rather than animating limbs. |
-| `hyperframes/assets/buddy.js` | Buddy, the second character: friends and drivers who aren't in the app (no name tag), the cop, the guy at the table. One SVG with outfits, faces and props as options. |
+| `hyperframes/assets/buddy.js` | Buddy, the second character: friends and drivers who aren't in the app (no name tag), the cop, the guy at the table, Connor's 3 AM friend (`beard: true`, `coat: 'puffer'`) and the guest on Jake's pull-out. One SVG with outfits, faces and props as options. |
 | `hyperframes/assets/props.js` | Cars (doors, wheels, police lights), stars and the other shared props. |
 | `hyperframes/render.mjs` | The build: `CLIPS` lists each clip and its poster second. |
 
-Sound works exactly as for the Remotion videos: each clip has an entry in `sound/cues.py`, under "round 2", and `render.mjs` runs `scripts/sound.py mix` on it.
+Sound works exactly as for the Remotion videos: each clip has an entry in `sound/cues.py`, under "round 2" or "round 3", and `render.mjs` runs `scripts/sound.py mix` on it.
 
 ### The Monday Report
 

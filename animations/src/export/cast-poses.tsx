@@ -132,7 +132,89 @@ export const Duffel: React.FC<{ color?: string; flip?: boolean }> = ({ color = '
   </g>
 );
 
+
+/* ------------------------------------------------------------ round 3 props (wrist space: the fist is near 0,70) */
+/** One french fry held up out of the fist. */
+export const Fry: React.FC<{ a?: number }> = ({ a = -108 }) => (
+  <g transform={`translate(0 70) rotate(${a})`}>
+    <rect x={-11} y={-10} width={22} height={170} rx={6} fill="#F7C94B" stroke={INK} strokeWidth={7} />
+    <rect x={-4} y={4} width={6} height={140} rx={3} fill="#FFE9A3" />
+  </g>
+);
+/** A soda cup with a lid and a straw, held upright in the fist when the arm is up. */
+export const Cup: React.FC<{ flip?: boolean }> = ({ flip }) => (
+  <g transform={`translate(0 70) rotate(180) scale(${flip ? -1 : 1} 1)`}>
+    <path d="M-52 -60 L52 -60 L42 110 Q40 124 26 124 L-26 124 Q-40 124 -42 110 Z" fill="#FFFFFF" stroke={INK} strokeWidth={8} strokeLinejoin="round" transform="scale(1 -1) translate(0 -64)" />
+    <path d="M-48 -10 L48 -10 L44 40 L-44 40 Z" fill="#E2384D" transform="scale(1 -1) translate(0 -64)" />
+    <rect x={-60} y={-130} width={120} height={22} rx={10} fill="#E9E4F2" stroke={INK} strokeWidth={7} />
+    <path d="M10 -130 L28 -200 L60 -206" fill="none" stroke={INK} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M10 -130 L28 -200 L60 -206" fill="none" stroke="#FFD064" strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" />
+  </g>
+);
+/** The 24-hour spot's paper fries bag, hanging from the fist by its folded top. */
+export const FriesBag: React.FC = () => (
+  <g transform="translate(0 64)">
+    <path d="M-72 20 L72 20 L84 230 Q84 244 70 244 L-70 244 Q-84 244 -84 230 Z" fill="#F4E3C3" stroke={INK} strokeWidth={8} strokeLinejoin="round" />
+    <path d="M-64 0 L64 0 L72 30 L-72 30 Z" fill="#E7CFA1" stroke={INK} strokeWidth={7} strokeLinejoin="round" />
+    <path d="M-30 -6 L-20 -40 M0 -6 L4 -46 M28 -6 L22 -38" stroke={INK} strokeWidth={14} strokeLinecap="round" />
+    <path d="M-30 -6 L-20 -40 M0 -6 L4 -46 M28 -6 L22 -38" stroke="#F7C94B" strokeWidth={6} strokeLinecap="round" />
+    <circle cx={0} cy={140} r={46} fill="#E2384D" stroke={INK} strokeWidth={7} />
+    <text x={0} y={156} textAnchor="middle" fontFamily="Luckiest Guy" fontSize={44} fill="#FFFFFF">24</text>
+  </g>
+);
+/** A fork with a broccoli floret on it, pointing up out of the fist. */
+export const BrocFork: React.FC<{ a?: number }> = ({ a = -116 }) => (
+  <g transform={`translate(0 70) rotate(${a})`}>
+    <rect x={-7} y={-10} width={14} height={120} rx={6} fill="#D9DFEA" stroke={INK} strokeWidth={6} />
+    <path d="M-16 108 L-16 140 M0 108 L0 146 M16 108 L16 140" stroke={INK} strokeWidth={12} strokeLinecap="round" />
+    <path d="M-16 108 L-16 140 M0 108 L0 146 M16 108 L16 140" stroke="#D9DFEA" strokeWidth={5} strokeLinecap="round" />
+    <rect x={-8} y={136} width={16} height={34} rx={6} fill="#8FC85A" stroke={INK} strokeWidth={6} />
+    <g stroke={INK} strokeWidth={6} fill="#4E9A3A">
+      <circle cx={-22} cy={184} r={22} /><circle cx={20} cy={184} r={22} /><circle cx={0} cy={200} r={24} /><circle cx={-6} cy={176} r={18} />
+    </g>
+    <circle cx={-12} cy={196} r={7} fill="#7CC05A" />
+  </g>
+);
+/** A beer mug, foam up, held up in the fist. */
+export const BeerMug: React.FC = () => (
+  <g transform="translate(0 70) rotate(180)">
+    <path d="M58 -10 Q118 -14 116 50 Q114 110 58 104" fill="none" stroke={INK} strokeWidth={34} strokeLinecap="round" />
+    <path d="M58 -10 Q118 -14 116 50 Q114 110 58 104" fill="none" stroke="#F3EEFE" strokeWidth={20} strokeLinecap="round" />
+    <rect x={-66} y={-40} width={132} height={190} rx={20} fill="#FFB359" stroke={INK} strokeWidth={9} />
+    <rect x={30} y={-30} width={22} height={170} rx={8} fill="#EA9332" />
+    <rect x={-50} y={-24} width={16} height={150} rx={8} fill="#FFFFFF" opacity={0.6} />
+    <path d="M-76 -40 Q-80 -86 -40 -82 Q-20 -112 12 -94 Q44 -112 64 -84 Q92 -86 82 -40 Z" fill="#FFFFFF" stroke={INK} strokeWidth={8} strokeLinejoin="round" />
+    <circle cx={-30} cy={30} r={6} fill="#FFFFFF" opacity={0.8} /><circle cx={6} cy={80} r={5} fill="#FFFFFF" opacity={0.8} />
+  </g>
+);
+/** The cuff from The Radiator (scenes/JokeRadiator.tsx). */
+export const Cuff: React.FC = () => (
+  <g transform="translate(0 6)">
+    <ellipse cx={0} cy={0} rx={44} ry={20} fill="none" stroke={INK} strokeWidth={16} />
+    <ellipse cx={0} cy={0} rx={44} ry={20} fill="none" stroke="#B9B3CC" strokeWidth={7} />
+  </g>
+);
+/** Mission-control headset (head space: eyes at y -176, x ±39, mouth near 0,-60). */
+export const Headset: React.FC = () => (
+  <g>
+    <path d="M-150 -170 Q-160 -352 0 -356 Q160 -352 150 -170" fill="none" stroke={INK} strokeWidth={22} strokeLinecap="round" />
+    <path d="M-150 -170 Q-160 -352 0 -356 Q160 -352 150 -170" fill="none" stroke="#3A3650" strokeWidth={10} strokeLinecap="round" />
+    <rect x={-182} y={-214} width={52} height={92} rx={22} fill="#3A3650" stroke={INK} strokeWidth={8} />
+    <rect x={130} y={-214} width={52} height={92} rx={22} fill="#3A3650" stroke={INK} strokeWidth={8} />
+    <path d="M-150 -140 Q-150 -66 -56 -56" fill="none" stroke={INK} strokeWidth={12} strokeLinecap="round" />
+    <path d="M-150 -140 Q-150 -66 -56 -56" fill="none" stroke="#5B5675" strokeWidth={5} strokeLinecap="round" />
+    <rect x={-66} y={-70} width={34} height={26} rx={12} fill="#2B2236" stroke={INK} strokeWidth={6} />
+  </g>
+);
+
 /* ------------------------------------------------------------ head extras (head space: eyes at y -176, x ±39) */
+/** A fry hanging out of the corner of the mouth. */
+export const MouthFry: React.FC = () => (
+  <g transform="translate(-34 -58) rotate(58)">
+    <rect x={-10} y={-6} width={20} height={126} rx={6} fill="#F7C94B" stroke={INK} strokeWidth={7} />
+    <rect x={-3} y={8} width={6} height={96} rx={3} fill="#FFE9A3" />
+  </g>
+);
 export const Shades: React.FC = () => (
   <g>
     <path d="M-128 -200 L128 -200" stroke={INK} strokeWidth={12} strokeLinecap="round" />
@@ -195,13 +277,13 @@ export const POSES: Look[] = [
   { id: 'handsup', p: { ...SCARED, mouthOpen: 0.8, ...HANDS_UP } },
   { id: 'shrug', p: { ...SMUG, lid: 0.2, ...SHRUG } },
   { id: 'smug', p: { ...SMUG, shL: 14, elL: -150, shR: 14, elR: -150, handL: 'relax', handR: 'relax' } },
-  { id: 'annoyed', p: { eyes: 0, lid: 0.5, mouthMode: 'grit', mouthOpen: 0.2, smile: 0.1, brow: 1.4, browTilt: -0.8, red: 0.5, shL: 14, elL: -150, shR: 14, elR: -150, lookY: -0.6 } },
+  { id: 'annoyed', p: { eyes: 0, lid: 0.5, mouthMode: 'grit', mouthOpen: 0.2, smile: 0.1, brow: 1.4, browTilt: -0.8, red: 0.5, shL: 14, elL: -150, shR: 14, elR: -150, lookY: -0.6 }, members: ['dean', 'jake'] },
   { id: 'phone', p: { ...SMUG, lid: 0.3, lookY: 0.5, shR: 22, elR: -118, handR: 'grip', wrR: -10, handL: 'relax' }, itemR: <HandPhone glow={1} /> },
   { id: 'thumbs', p: { ...JOY, shR: 70, elR: 100, handR: 'thumb', handL: 'relax' }, members: CREW },
 
   /* ---- walks and runs (two frames each, alternated in the clip) ---- */
-  { id: 'walk-a', p: walk(A, { turn: 0.45, lookX: 0.6 }), plant: true, members: ['dylan', 'connor'] },
-  { id: 'walk-b', p: walk(B, { turn: 0.45, lookX: 0.6 }), plant: true, members: ['dylan', 'connor'] },
+  { id: 'walk-a', p: walk(A, { turn: 0.45, lookX: 0.6 }), plant: true, members: ['dylan', 'connor', 'dean'] },
+  { id: 'walk-b', p: walk(B, { turn: 0.45, lookX: 0.6 }), plant: true, members: ['dylan', 'connor', 'dean'] },
   { id: 'proud-a', p: walk(A, { ...JOY, eyes: 0, turn: 0.45, lookX: 0.6, mouthOpen: 0.7 }), plant: true },
   { id: 'proud-b', p: walk(B, { ...JOY, eyes: 0, turn: 0.45, lookX: 0.6, mouthOpen: 0.7 }), plant: true },
   { id: 'run-a', p: run(A, { turn: 0.5, lookX: 0.8 }), plant: true },
@@ -256,6 +338,44 @@ export const POSES: Look[] = [
   { id: 'champ', p: { ...JOY, eyes: 1, shL: 152, elL: -24, shR: 152, elR: -24, handL: 'fist', handR: 'fist', shrugL: 12, shrugR: 12 }, members: CREW },
   { id: 'slump', p: { ...SIT, ...SAD, lookY: 0.9, head: 8, shL: 6, elL: -58, shR: 6, elR: -58, handL: 'relax', handR: 'relax', shrugL: 14, shrugR: 14 }, members: CREW },
   { id: 'slump-look', p: { ...SIT, ...SAD, lid: 0.45, lookX: -1, lookY: 0.8, mouthMode: 'o', mouthOpen: 0.3, head: -5, shL: 6, elL: -58, shR: 6, elR: -58, handL: 'relax', handR: 'relax', shrugL: 14, shrugR: 14 }, members: CREW },
+
+  /* ---- round 3 (NEW-ANIMATIONS-3.md) ---- */
+  // Signal Lost: Flexander at mission control, headset on, looking up-left at the big screen
+  { id: 'console', p: { eyes: 0, lid: 0.1, mouthMode: 'grin', mouthOpen: 0.25, smile: 0.8, brow: 0.6, lookX: -0.7, lookY: -0.9, turn: -0.25, head: -5, shL: 20, elL: -96, handL: 'relax', shR: 20, elR: -96, handR: 'relax' }, headExtra: <Headset />, members: ['anon'] },
+  { id: 'console-panic', p: { ...SCARED, lookX: -0.7, lookY: -0.9, turn: -0.25, shL: 58, elL: 118, handL: 'open', shR: 58, elR: 118, handR: 'open', shrugL: 18, shrugR: 18 }, headExtra: <Headset />, members: ['anon'] },
+  { id: 'console-call', p: { eyes: 0, lid: 0, mouthMode: 'o', mouthOpen: 0.7, smile: 0.2, brow: 1.4, browTilt: 1, sweat: 0.8, lookX: -0.4, lookY: -0.4, turn: -0.15, shR: 34, elR: -150, wrR: -10, handR: 'open', shL: 20, elL: -96, handL: 'relax' }, headExtra: <Headset />, members: ['anon'] },
+  // 3 AM Besties: Connor in the booth (forearms on the table, a fry, a toast with his left hand towards his friend)
+  { id: 'booth', p: { ...SIT, ...JOY, eyes: 0, mouthOpen: 0.6, shL: 22, elL: -104, handL: 'relax', shR: 22, elR: -104, handR: 'relax' }, members: ['connor'] },
+  { id: 'booth-fry', p: { ...SIT, ...BLISS, shL: 22, elL: -104, handL: 'relax', shR: 36, elR: -152, wrR: 14, handR: 'grip', head: -3 }, itemR: <Fry />, headExtra: <MouthFry />, members: ['connor'] },
+  { id: 'booth-cheers', p: { ...SIT, ...JOY, eyes: 1, shL: 22, elL: -104, handL: 'relax', shR: 124, elR: 40, wrR: -10, handR: 'grip', lookX: 0.6 }, itemR: <Cup />, members: ['connor'] },
+  // Locked Out: Connor with his fries bag (screen left hand), tossing pebbles at the window up to the screen right
+  { id: 'bag-look', p: { eyes: 0, lid: 0, mouthMode: 'o', mouthOpen: 0.25, smile: 0.5, brow: 1.2, browTilt: 0.4, lookX: 0.6, lookY: -1, turn: 0.2, head: -6, shL: 12, elL: 8, handL: 'grip', shR: 22, elR: -60, handR: 'fist' }, itemL: <FriesBag />, members: ['connor'] },
+  { id: 'bag-windup', p: { eyes: 0, lid: 0.25, mouthMode: 'grit', mouthOpen: 0.2, smile: 0.5, brow: 0.8, browTilt: -0.5, lookX: 0.6, lookY: -1, turn: 0.2, head: -4, shL: 12, elL: 8, handL: 'grip', shR: 140, elR: 70, wrR: 10, handR: 'fist', torso: 3 }, itemL: <FriesBag />, members: ['connor'] },
+  { id: 'bag-throw', p: { eyes: 0, lid: 0, mouthMode: 'o', mouthOpen: 0.45, smile: 0.6, brow: 1.3, browTilt: 0.3, lookX: 0.6, lookY: -1, turn: 0.2, head: -7, shL: 12, elL: 8, handL: 'grip', shR: 150, elR: -14, handR: 'open', torso: -3 }, itemL: <FriesBag />, members: ['connor'] },
+  // Best of 40: rock paper scissors. Arm sides here are screen sides (L = viewer's left); the throwing hand is R,
+  // facing right, so the one on the left stands as is and the one on the right is flipped
+  { id: 'rps-up', p: { eyes: 0, lid: 0.35, mouthMode: 'grit', mouthOpen: 0.3, smile: 0.3, brow: 1, browTilt: -1, red: 0.2, turn: 0.3, lookX: 0.8, shR: 60, elR: -150, handR: 'fist', shL: 16, elL: 24, handL: 'relax' }, members: ['dean', 'jake'] },
+  { id: 'rps-down', p: { eyes: 0, lid: 0.35, mouthMode: 'grit', mouthOpen: 0.3, smile: 0.3, brow: 1, browTilt: -1, red: 0.2, turn: 0.3, lookX: 0.8, shR: 50, elR: -64, handR: 'fist', shL: 16, elL: 24, handL: 'relax', sy: 0.98 }, members: ['dean', 'jake'] },
+  { id: 'toss', p: { ...SMUG, lid: 0.2, lookX: 0.7, lookY: -1, head: -6, shR: 150, elR: 12, wrR: -10, handR: 'open', shL: 20, elL: 30, handL: 'relax' } },
+  // Retire the Number: Dylan watching it go up, hand on heart
+  { id: 'salute', p: { eyes: 0, lid: 0.15, mouthMode: 'grin', mouthOpen: 0.15, smile: 0.9, brow: 1, browTilt: 0.6, blush: 0.5, head: -6, lookY: -1, shR: 154, elR: 54, wrR: 40, handR: 'open', shL: 14, elL: 16, handL: 'relax' }, members: ['dylan'] },
+  // Balanced Diet: Jake at the table (broccoli, the phone buzzes to his left, the fling, the beer)
+  { id: 'table-chew', p: { ...SIT, ...SAD, lid: 0.55, mouthMode: 'grit', mouthOpen: 0.12, smile: 0, lookY: 0.6, head: 4, shR: 34, elR: -148, wrR: 20, handR: 'grip', shL: 20, elL: -108, handL: 'relax' }, itemR: <BrocFork />, members: ['jake'] },
+  { id: 'table-buzz', p: { ...SIT, eyes: 0, lid: 0, mouthMode: 'o', mouthOpen: 0.4, smile: 0.5, brow: 1.5, browTilt: 0.4, lookX: 0.8, lookY: 0.7, turn: 0.2, shR: 34, elR: -148, wrR: 20, handR: 'grip', shL: 20, elL: -108, handL: 'relax' }, itemR: <BrocFork />, members: ['jake'] },
+  { id: 'table-fling', p: { ...SIT, ...JOY, eyes: 0, mouthOpen: 0.9, shR: 170, elR: -10, wrR: 10, handR: 'open', shL: 20, elL: -108, handL: 'relax', lookX: 0.6, lookY: 0.3 }, members: ['jake'] },
+  { id: 'table-beer', p: { ...SIT, ...JOY, eyes: 1, shL: 128, elL: 40, wrL: -6, handL: 'grip', shR: 20, elR: -108, handR: 'relax' }, itemL: <BeerMug />, members: ['jake'] },
+  // Jailbreak: Jake shuffling right, still cuffed (screen-left wrist, as in The Radiator) to the radiator behind him
+  { id: 'chain-a', p: walk(A, { ...STRAIN, red: 0.3, mouthOpen: 0.5, smile: 0.5, turn: 0.45, lookX: 0.6, shL: 34, elL: -8, wrL: 0, handL: 'fist' }), plant: true, itemL: <Cuff />, members: ['jake'] },
+  { id: 'chain-b', p: walk(B, { ...STRAIN, red: 0.3, mouthOpen: 0.5, smile: 0.5, turn: 0.45, lookX: 0.6, shL: 34, elL: -8, wrL: 0, handL: 'fist' }), plant: true, itemL: <Cuff />, members: ['jake'] },
+  { id: 'chain-thumbs', p: { ...JOY, eyes: 0, shR: 70, elR: 100, handR: 'thumb', shL: 34, elL: -8, handL: 'fist', sweat: 0.6 }, itemL: <Cuff />, members: ['jake'] },
+  // Early Spring: Phil checks for his shadow, then shades on in the beach chair
+  { id: 'look-down', p: { ...CONFUSED, lookY: 1, lookX: 0.3, head: 9, shL: 26, elL: -100, handL: 'relax', shR: 26, elR: -100, handR: 'relax' }, members: ['phil'] },
+  { id: 'shades', p: { ...SMUG, lid: 0, mouthOpen: 0.5, shR: 70, elR: 100, handR: 'thumb', handL: 'relax' }, headExtra: <Shades />, members: ['phil'] },
+  { id: 'beach', p: { ...SIT, ...SMUG, lid: 0.1, mouthOpen: 0.3, head: -4, shL: 156, elL: 150, handL: 'relax', shR: 156, elR: 150, handR: 'relax', armZL: 'back', armZR: 'back' }, headExtra: <Shades />, members: ['phil'] },
+  // War Hero: the crew carrying him (anonymous colourways), and him up top with his fists in the air
+  { id: 'carry-a', p: walk(A, { ...JOY, eyes: 0, mouthOpen: 0.8, turn: 0.3, lookX: 0.4, lookY: -0.6, shL: 166, elL: -12, handL: 'open', shR: 166, elR: -12, handR: 'open' }), plant: true, members: ['anon', 'anon2'] },
+  { id: 'carry-b', p: walk(B, { ...JOY, eyes: 0, mouthOpen: 0.8, turn: 0.3, lookX: 0.4, lookY: -0.6, shL: 166, elL: -12, handL: 'open', shR: 166, elR: -12, handR: 'open' }), plant: true, members: ['anon', 'anon2'] },
+  { id: 'champ-sit', p: { ...SIT, ...JOY, eyes: 1, shL: 152, elL: -24, shR: 152, elR: -24, handL: 'fist', handR: 'fist', shrugL: 12, shrugR: 12 } },
 ];
 
 /** Props the clips place on their own: exported as prop-<id>.svg on a 600x600 canvas centred at 0,0. */

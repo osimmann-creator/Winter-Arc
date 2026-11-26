@@ -1,0 +1,175 @@
+<!doctype html>
+<!--
+  The Volcano (joke-volcano): 4:59 AM. Two headlamps zigzag up a dark volcano. 5:00: the camera pushes in on the
+  summit as the sun comes up, and Dean and Dylan climb over the rim in their headlamp beanies. Champ pose. Then the
+  crater burps (BURP) and both beanies blow clean off.
+  Beats (30 fps): climb 0-44, 5:00 44, push in 44-64, sunrise 48-90, over the rim 62-76, champ 78, burp 92, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #vo-back, #vo-front { position: absolute; inset: 0; transform-origin: 540px 1300px; }
+  .vo-lamp { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  .vo-lamp i { position: absolute; left: -46px; top: -46px; width: 92px; height: 92px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,240,170,1) 0%, rgba(255,226,120,.9) 18%, rgba(255,210,90,0) 70%); }
+  .vo-time { position: absolute; left: 90px; top: 560px; font-family: 'Luckiest Guy'; font-size: 64px; color: #FFF6D6; opacity: 0;
+    -webkit-text-stroke: 8px #341720; paint-order: stroke fill; letter-spacing: 2px; }
+  .vo-hats { position: absolute; inset: 0; }
+  .vo-fly { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
+  #vo-puff { position: absolute; left: 540px; top: 1300px; width: 0; height: 0; opacity: 0; }
+  #vo-puff svg { position: absolute; left: -300px; top: -520px; overflow: visible; transform-origin: 300px 520px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-volcano" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="vo-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#101A38">
+  <div id="vo-back">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs>
+      <linearGradient id="vo-night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0C1330"/><stop offset="1" stop-color="#2C2F66"/></linearGradient>
+      <linearGradient id="vo-dawn-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6FA8E8"/><stop offset=".55" stop-color="#FFB38A"/><stop offset="1" stop-color="#FFD98E"/></linearGradient>
+    </defs>
+    <rect x="-400" y="-400" width="1880" height="3200" fill="url(#vo-night)"/>
+    <rect id="vo-dawn" x="-400" y="-400" width="1880" height="3200" fill="url(#vo-dawn-g)" opacity="0"/>
+    <g id="vo-stars" fill="#FFF6D6"><circle cx="90" cy="420" r="5"/><circle cx="260" cy="760" r="4"/><circle cx="470" cy="520" r="5"/><circle cx="700" cy="380" r="4"/><circle cx="900" cy="640" r="5"/><circle cx="1000" cy="900" r="3"/><circle cx="140" cy="1100" r="4"/><circle cx="820" cy="1120" r="3"/><circle cx="360" cy="980" r="3"/></g>
+    <g id="vo-sun"><circle cx="760" cy="1840" r="140" fill="#FFE9A8" opacity=".35"/><circle cx="760" cy="1840" r="96" fill="#FFE08A" stroke="#341720" stroke-width="9"/></g>
+  </svg>
+  </div>
+  <div id="vo-dylan"></div>
+  <div id="vo-dean"></div>
+  <div id="vo-front">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <path d="M-280 2380 L330 1296 Q352 1262 392 1268 L468 1276 Q540 1304 612 1276 L688 1268 Q728 1262 750 1296 L1360 2380 Z" fill="#2A2234" stroke="#341720" stroke-width="10" stroke-linejoin="round"/>
+    <path id="vo-lit" d="M-280 2380 L330 1296 Q352 1262 392 1268 L468 1276 Q540 1304 612 1276 L688 1268 Q728 1262 750 1296 L1360 2380 Z" fill="#7A4F5E" opacity="0"/>
+    <path id="vo-rim" d="M688 1268 Q728 1262 750 1296 L1360 2380" fill="none" stroke="#FFB38A" stroke-width="16" opacity="0"/>
+    <path d="M468 1276 Q540 1304 612 1276 Q540 1286 468 1276 Z" fill="#E05A47" stroke="#341720" stroke-width="6"/>
+    <g fill="#3B3046" opacity=".9"><path d="M120 2200 L250 2060 L300 2200 Z M760 2160 L880 2010 L960 2180 Z M430 1700 L520 1600 L560 1720 Z"/></g>
+    <polyline points="250,2300 720,2120 330,1940 690,1760 400,1600 640,1450 480,1330 540,1278" fill="none" stroke="#5A4D6A" stroke-width="10" stroke-dasharray="20 18" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div class="vo-lamp" id="vo-l0"><i></i></div>
+  <div class="vo-lamp" id="vo-l1"><i></i></div>
+  </div>
+  <div class="vo-time" id="vo-t0">4:59 AM</div>
+  <div class="vo-time" id="vo-t1">5:00 AM</div>
+  <div id="vo-puff"><svg width="600" height="560" viewBox="-300 -520 600 560">
+    <g stroke="#341720" stroke-width="10" fill="#F4F1F7">
+      <circle cx="-90" cy="-120" r="110"/><circle cx="90" cy="-140" r="120"/><circle cx="0" cy="-260" r="140"/><circle cx="-60" cy="-380" r="100"/><circle cx="80" cy="-400" r="90"/>
+    </g>
+    <g fill="#FFFFFF"><circle cx="-20" cy="-290" r="70"/><circle cx="80" cy="-170" r="50"/><circle cx="-110" cy="-140" r="40"/></g>
+    <g fill="#DCD6E4"><circle cx="-130" cy="-90" r="34"/><circle cx="130" cy="-100" r="40"/></g>
+  </svg></div>
+  <div class="vo-fly" id="vo-fh0"></div><div class="vo-fly" id="vo-fh1"></div>
+  <div class="word" id="vo-burp" style="left:540px;top:500px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="190" style="fill:#FF8FB1">BURP!</text></svg></div></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"THE VOLCANO","pts":"5","unit":"AM","sub":"UP BEFORE THE SUN","color":"#E05A47","dark":"#A8362A","light":"#FFE0D6"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  var S = 0.5, Y = 1256;
+  // the beanie with a headlamp, in pose-canvas px, (0,0) = top of the head
+  function beanie(c, dk, s) {
+    return '<svg width="' + 360 * s + '" height="' + 290 * s + '" viewBox="-180 -160 360 290" style="position:absolute;overflow:visible">' +
+      '<path d="M-150 110 Q-162 -70 0 -82 Q162 -70 150 110 Z" fill="' + c + '" stroke="#341720" stroke-width="12" stroke-linejoin="round"/>' +
+      '<rect x="-168" y="70" width="336" height="64" rx="26" fill="' + dk + '" stroke="#341720" stroke-width="12"/>' +
+      '<circle cx="0" cy="-96" r="34" fill="#FFFFFF" stroke="#341720" stroke-width="10"/>' +
+      '<rect x="-40" y="80" width="80" height="46" rx="14" fill="#2B2236" stroke="#341720" stroke-width="8"/><circle cx="0" cy="103" r="16" fill="#FFF3B0"/></svg>';
+  }
+  var HEAD = { 'walk-a': [666, 387], 'walk-b': [614, 387], champ: [640, 362] };
+  function hats(id, c, dk) {
+    var wrap = document.createElement('div');
+    wrap.className = 'vo-hats';
+    Object.keys(HEAD).forEach(function (p) {
+      var d = document.createElement('div');
+      d.className = 'pose';
+      d.dataset.pose = p;
+      d.innerHTML = beanie(c, dk, S);
+      var svg = d.firstChild;
+      svg.style.left = (HEAD[p][0] - 180) * S + 'px';
+      svg.style.top = (HEAD[p][1] - 160 + 40) * S + 'px';
+      wrap.appendChild(d);
+    });
+    document.querySelector('#' + id + ' .jit').appendChild(wrap);
+  }
+  WA.actor('vo-dylan', ['walk-a', 'walk-b', 'champ', 'scared'], { x: 330, y: Y, s: S, member: 'dylan', tag: 'DYLAN', color: '#1FA3A0' });
+  WA.actor('vo-dean', ['walk-a', 'walk-b', 'champ', 'scared'], { x: 750, y: Y, s: S, member: 'dean', tag: 'DEAN', color: '#EE5982', flip: true });
+  hats('vo-dylan', '#1FA3A0', '#136E6C');
+  hats('vo-dean', '#EE5982', '#A83560');
+  WA.pose(tl, '#vo-dylan', 'walk-a', 0);
+  WA.pose(tl, '#vo-dean', 'walk-b', 0);
+  gsap.set(['#vo-dylan', '#vo-dean'], { y: 520, opacity: 0 });
+  gsap.set(['#vo-dylan .tag', '#vo-dean .tag'], { opacity: 0 });
+  tl.set(['#vo-dylan', '#vo-dean'], { opacity: 1 }, 62 * F);
+  tl.to(['#vo-dylan .tag', '#vo-dean .tag'], { opacity: 1, duration: 6 * F }, 74 * F);
+
+  // 4:59 -> 5:00
+  gsap.set('#vo-t0', { opacity: 1 });
+  tl.set('#vo-t0', { opacity: 0 }, 44 * F);
+  tl.set('#vo-t1', { opacity: 1 }, 44 * F);
+  tl.fromTo('#vo-t1', { scale: 1.3 }, { scale: 1, duration: 6 * F, ease: 'back.out(3)', immediateRender: false }, 44 * F);
+  tl.to(['#vo-t1'], { opacity: 0, duration: 8 * F }, 70 * F);
+
+  // the headlamps zigzag up the trail
+  var pts = [[250, 2300], [720, 2120], [330, 1940], [690, 1760], [400, 1600], [640, 1450], [480, 1330], [540, 1278]];
+  function climb(sel, start, end, dx) {
+    var len = [], tot = 0;
+    for (var i = 1; i < pts.length; i++) { var l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); len.push(l); tot += l; }
+    gsap.set(sel, { x: pts[0][0] + dx, y: pts[0][1] });
+    var t = start;
+    for (var j = 1; j < pts.length; j++) {
+      var d = (end - start) * len[j - 1] / tot;
+      tl.to(sel, { x: pts[j][0] + dx, y: pts[j][1], duration: d * F, ease: 'none' }, t * F);
+      t += d;
+    }
+  }
+  climb('#vo-l0', 0, 42, 18);
+  climb('#vo-l1', 5, 46, -18);
+  [0, 1].forEach(function (i) { tl.fromTo('#vo-l' + i + ' i', { scale: 1 }, { scale: 1.25, duration: 5 * F, ease: 'sine.inOut', yoyo: true, repeat: 7, immediateRender: false }, (i * 3) * F); });
+  tl.to(['#vo-l0', '#vo-l1'], { opacity: 0, duration: 6 * F }, 60 * F);
+
+  // push in on the summit; the sun comes up
+  tl.fromTo(['#vo-back', '#vo-front'], { scale: 1 }, { scale: 1.5, duration: 20 * F, ease: 'power2.inOut', immediateRender: false }, 44 * F);
+  tl.to('#vo-dawn', { opacity: 1, duration: 30 * F, ease: 'sine.inOut' }, 48 * F);
+  tl.to('#vo-stars', { opacity: 0, duration: 20 * F }, 48 * F);
+  tl.to('#vo-lit', { opacity: 1, duration: 30 * F, ease: 'sine.inOut' }, 52 * F);
+  tl.to('#vo-rim', { opacity: 0.9, duration: 20 * F }, 66 * F);
+  tl.to('#vo-sun', { y: -840, duration: 46 * F, ease: 'power1.out' }, 48 * F);
+
+  // over the rim
+  tl.to('#vo-dylan', { y: 0, duration: 14 * F, ease: 'power2.out' }, 62 * F);
+  tl.to('#vo-dean', { y: 0, duration: 14 * F, ease: 'power2.out' }, 64 * F);
+  WA.cycle(tl, '#vo-dylan', ['walk-a', 'walk-b'], 62 * F, 76 * F, 4, 10);
+  WA.cycle(tl, '#vo-dean', ['walk-b', 'walk-a'], 64 * F, 78 * F, 4, 10);
+  WA.take(tl, '#vo-dylan', 'champ', 78 * F, 0.1);
+  WA.take(tl, '#vo-dean', 'champ', 79 * F, 0.1);
+
+  // BURP: the puff, the beanies go
+  tl.fromTo('#vo-puff', { scale: 0.15, opacity: 1, y: 40 }, { scale: 0.55, opacity: 1, y: -60, duration: 10 * F, ease: 'back.out(1.6)', immediateRender: false }, 92 * F);
+  tl.to('#vo-puff', { scale: 0.8, opacity: 0, y: -420, duration: 22 * F, ease: 'power1.in' }, 102 * F);
+  WA.word(tl, '#vo-burp', 93 * F, 30, { rot: -6, rot0: 14, seed: 2, amp: 8 });
+  WA.shake(tl, '#vo-scene', 92 * F, 12 * F, 14, { seed: 6, decay: true });
+  tl.set('.vo-hats', { opacity: 0 }, 93 * F);
+  [['#vo-fh0', 330, '#1FA3A0', '#136E6C', -16, -1], ['#vo-fh1', 750, '#EE5982', '#A83560', 18, 1]].forEach(function (h) {
+    var el = document.querySelector(h[0]);
+    el.innerHTML = beanie(h[2], h[3], S);
+    el.firstChild.style.left = -180 * S + 'px'; el.firstChild.style.top = -160 * S + 'px';
+    var hx = h[1], hy = Y + (362 + 40 - 1340) * S;
+    WA.toss(tl, h[0], 93 * F, { x0: hx, y0: hy, vx: h[4], vy: -34, g: 1.1, frames: 34, spin: h[5] * 16 });
+  });
+  WA.take(tl, '#vo-dylan', 'scared', 94 * F, 0.12);
+  WA.take(tl, '#vo-dean', 'scared', 94 * F, 0.12);
+  WA.hop(tl, '#vo-dylan', 94 * F, 50, 10);
+  WA.hop(tl, '#vo-dean', 95 * F, 50, 10);
+
+  window.__timelines['joke-volcano'] = tl;
+})();
+</script>
+</body>
+</html>

@@ -1053,6 +1053,25 @@ const App = (() => {
       if (!short.length) return 'Happy Valentine’s Day. Everyone’s already safe this week.';
       return `Happy Valentine’s Day. ${d.sunday ? 'It’s Sunday, and ' : ''}${names(short)} ${they(short) ? 'are' : 'is'} still short. A date is worth ${fmtPts(CATS.date.pts)}.`;
     }
+    // round 3
+    if (e.type === 'signal') return `${realName(d.who)} hasn’t logged anything in ${Math.max(3, Math.floor((d.hours || 72) / 24))} days. Mission control lost the signal. ${realName(d.who)}, come in.`;
+    if (e.type === 'besties') return post
+      ? `${realName(d.who)} logged ${catName(post.cat)} at ${clock(post.at)}. Out at 3 AM again, making friends.`
+      : `${realName(d.who)} logged something in the middle of the night. Out at 3 AM again, making friends.`;
+    if (e.type === 'lockedout') {
+      const left = Math.max(0, (d.goal || 0) - (d.pts || 0));
+      return `Everyone still in has hit his goal this week except ${realName(d.who)}, who still needs ${fmtPts(left)} ${ptsWord(left)}. Locked out. The code was on his phone.`;
+    }
+    if (e.type === 'volcano') return `${names(d.who)} are tied at ${fmtPts(d.pts)} points this week. Up before the sun, top of the volcano.`;
+    if (e.type === 'bestof40') return `${names(d.who)} are tied for the ${d.n === 3 || !d.n ? 'third' : d.n + 'th'} week this season. No more coin flips: rock paper scissors, best of 40. Still tied.`;
+    if (e.type === 'la4') return `${realName(d.who)} hit exactly ${fmtPts(d.pts || 4)} points for the ${d.n === 3 || !d.n ? 'third' : d.n + 'th'} week this season. La4. They’re retiring the number.`;
+    if (e.type === 'diet') return `${realName(d.who)} logged beers with the fellas. The broccoli never stood a chance.`;
+    if (e.type === 'pullout') return `${realName(d.who)} had the fellas over for beers last night. Somebody woke up on his pull-out. One star.`;
+    if (e.type === 'jailbreak') return `${realName(d.who)} logged ${post ? catName(post.cat) : 'something'}${d.days ? ` after ${d.days} days off` : ''}. He broke out. The radiator came with him.`;
+    if (e.type === 'fridge') return `${realName(d.who)} hit his weekly goal on ${post ? weekday(post.at) : 'a weekday'}. Safe by Friday. That one’s going on the fridge.`;
+    if (e.type === 'cleared') return `${realName(d.who)} is off the injury report. Cleared to play.`;
+    if (e.type === 'spring') return `${realName(d.who)} logged something ${d.days > 3 ? d.days : 'three'} days in a row. No shadow. Early spring.`;
+    if (e.type === 'warhero') return `${realName(d.who)} logged the first date in ${d.days} days. The drought is over.`;
     return '';
   }
   const JOKE_EYEBROW = {
@@ -1065,6 +1084,10 @@ const App = (() => {
     basement: 'Late night', nomap: 'Missing persons', grandtheft: 'First place stolen', wanted: 'Disputed',
     busted: 'Post voided', wasted: 'Eliminated', parole: 'Back in action', partners: 'Witnesses',
     xmas: 'The votes are in', nye: 'Holiday special', groundhog: 'Holiday special', valentine: 'Holiday special',
+    signal: 'Missing person', besties: 'Late night', lockedout: 'Last one out', volcano: 'Tied',
+    bestof40: 'Tied again', la4: 'La4', diet: 'Beers with the fellas', pullout: 'The morning after',
+    jailbreak: 'Back in action', fridge: 'Weekday win', cleared: 'Injury report', spring: 'Three in a row',
+    warhero: 'Date drought over',
   };
   /** Every inside joke that has happened goes in the feed (config: feed). */
   const inFeed = e => (e.type === 'hoat' ? HOAT.feed !== false : !!(INSIDE_JOKES[e.type] && INSIDE_JOKES[e.type].feed));

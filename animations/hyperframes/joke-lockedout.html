@@ -1,0 +1,162 @@
+<!doctype html>
+<!--
+  Locked Out (joke-lockedout): night. Connor stands on the lawn with his 24/7 fries bag, looking up at a dark
+  window where someone snores (Zzz). He tosses a pebble: PLINK. Again: PLINK. A big one: PLINK! Nothing. All the
+  while the phone tucked in his belt buzzes and glows DOOR CODE, and he never once looks at it.
+  Beats (30 fps): look 0, throws 20/44/66 (plinks 28/52/74), buzzes 32/58/84, stare 92, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  .lo-peb { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
+  .lo-peb svg { position: absolute; left: -14px; top: -12px; overflow: visible; }
+  .lo-hit { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
+  .lo-hit svg { position: absolute; left: -60px; top: -60px; overflow: visible; }
+  .lo-z { position: absolute; width: 0; height: 0; opacity: 0; }
+  .lo-z span { position: absolute; left: -30px; top: -40px; font-family: 'Luckiest Guy'; font-size: 70px; color: #FFF6D6;
+    -webkit-text-stroke: 8px #341720; paint-order: stroke fill; }
+  #lo-phone { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  #lo-phone svg { position: absolute; left: -26px; top: -60px; overflow: visible; }
+  #lo-glow { position: absolute; left: -70px; top: -100px; width: 140px; height: 140px; border-radius: 50%; opacity: 0;
+    background: radial-gradient(circle, rgba(124,240,169,.85) 0%, rgba(124,240,169,0) 70%); }
+  #lo-note { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; transform-origin: 0 0; }
+  #lo-note svg { position: absolute; left: -40px; top: -250px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-lockedout" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="lo-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#1C2A52">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <defs><linearGradient id="lo-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#101A38"/><stop offset="1" stop-color="#2E4078"/></linearGradient></defs>
+    <rect width="1080" height="2000" fill="url(#lo-sky)"/>
+    <g fill="#FFF6D6"><circle cx="90" cy="520" r="5"/><circle cx="240" cy="660" r="4"/><circle cx="420" cy="540" r="5"/><circle cx="160" cy="900" r="4"/><circle cx="380" cy="820" r="3"/><circle cx="980" cy="520" r="4"/><circle cx="60" cy="1180" r="3"/><circle cx="300" cy="1060" r="4"/></g>
+    <circle cx="200" cy="420" r="90" fill="#FFF6D6" stroke="#341720" stroke-width="8"/>
+    <circle cx="236" cy="396" r="80" fill="#1A2448"/>
+    <!-- the house -->
+    <g stroke="#341720" stroke-width="10" stroke-linejoin="round">
+      <rect x="500" y="900" width="640" height="1060" fill="#8E9CC2"/>
+      <path d="M440 920 L820 600 L1200 920 Z" fill="#5A2E3E"/>
+      <rect x="640" y="660" width="70" height="140" fill="#6B4A52"/>
+    </g>
+    <path d="M520 1000 L1080 1000 M520 1180 L1080 1180 M520 1360 L1080 1360 M520 1540 L1080 1540 M520 1720 L1080 1720" stroke="#7D8AB0" stroke-width="8"/>
+    <!-- the upstairs window: dark, someone asleep -->
+    <g stroke="#341720" stroke-width="10" stroke-linejoin="round">
+      <rect x="650" y="980" width="240" height="220" rx="10" fill="#1B2338"/>
+      <path d="M650 980 Q700 1060 690 1200 L650 1200 Z M890 980 Q840 1060 850 1200 L890 1200 Z" fill="#6E3B5A"/>
+      <path d="M770 980 L770 1200 M650 1090 L890 1090" stroke-width="8"/>
+      <rect x="636" y="1196" width="268" height="24" rx="6" fill="#C9CED8"/>
+    </g>
+    <!-- the front door and its keypad -->
+    <g stroke="#341720" stroke-width="10" stroke-linejoin="round">
+      <rect x="820" y="1540" width="200" height="420" rx="8" fill="#B04A4A"/>
+      <rect x="850" y="1580" width="140" height="150" rx="6" fill="#9A3A3D"/><rect x="850" y="1760" width="140" height="150" rx="6" fill="#9A3A3D"/>
+      <rect x="760" y="1700" width="44" height="70" rx="8" fill="#2B2236" stroke-width="7"/>
+    </g>
+    <circle cx="782" cy="1716" r="7" fill="#FF3B4A"/>
+    <g fill="#7D8494"><rect x="771" y="1730" width="8" height="8"/><rect x="785" y="1730" width="8" height="8"/><rect x="771" y="1744" width="8" height="8"/><rect x="785" y="1744" width="8" height="8"/></g>
+    <circle cx="840" cy="1760" r="10" fill="#FFD064" stroke="#341720" stroke-width="5"/>
+    <!-- lawn and path -->
+    <path d="M-20 1950 Q540 1910 1100 1950 L1100 2360 L-20 2360 Z" fill="#2F5A4A" stroke="#341720" stroke-width="10"/>
+    <path d="M800 1960 L1040 1960 L1100 2360 L640 2360 Z" fill="#9AA3B8" stroke="#341720" stroke-width="8"/>
+    <g stroke="#244738" stroke-width="10" stroke-linecap="round"><path d="M80 2100 L96 2070 M110 2100 L104 2064 M300 2240 L316 2210 M330 2240 L324 2204 M520 2120 L536 2090 M550 2120 L544 2084"/></g>
+    <!-- a bush -->
+    <path d="M500 1960 Q480 1880 540 1870 Q560 1820 620 1840 Q680 1820 700 1880 Q750 1890 730 1960 Z" fill="#3E7A5E" stroke="#341720" stroke-width="9" stroke-linejoin="round"/>
+  </svg>
+  <div class="lo-z" id="lo-z0" style="left:820px;top:960px"><span>Z</span></div>
+  <div class="lo-z" id="lo-z1" style="left:880px;top:900px"><span style="font-size:56px">z</span></div>
+  <div class="lo-z" id="lo-z2" style="left:930px;top:850px"><span style="font-size:46px">z</span></div>
+  <div class="lo-hit" id="lo-hit"><svg width="120" height="120" viewBox="-60 -60 120 120">
+    <path d="M0 -50 L10 -12 L48 -14 L16 6 L30 44 L0 20 L-30 44 L-16 6 L-48 -14 L-10 -12 Z" fill="#FFFFFF" stroke="#341720" stroke-width="6" stroke-linejoin="round"/>
+  </svg></div>
+  <div id="lo-connor"></div>
+  <div id="lo-phone"><div id="lo-glow"></div><svg width="52" height="90" viewBox="-26 -60 52 90">
+    <rect x="-22" y="-56" width="44" height="80" rx="9" fill="#2B2236" stroke="#341720" stroke-width="6"/>
+    <rect id="lo-scr-off" x="-15" y="-48" width="30" height="58" rx="4" fill="#1B1F33"/>
+    <rect id="lo-scr" x="-15" y="-48" width="30" height="58" rx="4" fill="#7CF0A9" opacity="0"/>
+  </svg></div>
+  <div class="lo-peb" id="lo-p0"><svg width="28" height="24" viewBox="-14 -12 28 24"><ellipse rx="12" ry="9" fill="#B5BAC6" stroke="#341720" stroke-width="5"/></svg></div>
+  <div class="lo-peb" id="lo-p1"><svg width="28" height="24" viewBox="-14 -12 28 24"><ellipse rx="12" ry="9" fill="#B5BAC6" stroke="#341720" stroke-width="5"/></svg></div>
+  <div class="lo-peb" id="lo-p2"><svg width="28" height="24" viewBox="-14 -12 28 24"><ellipse rx="16" ry="12" fill="#B5BAC6" stroke="#341720" stroke-width="5"/></svg></div>
+  <div id="lo-note"><svg width="420" height="260" viewBox="-40 -250 420 260">
+    <path d="M10 -240 L360 -240 Q380 -240 380 -220 L380 -110 Q380 -90 360 -90 L70 -90 L-40 0 L36 -90 L10 -90 Q-10 -90 -10 -110 L-10 -220 Q-10 -240 10 -240 Z" fill="#341720" transform="translate(6 10)"/>
+    <path d="M10 -240 L360 -240 Q380 -240 380 -220 L380 -110 Q380 -90 360 -90 L70 -90 L-40 0 L36 -90 L10 -90 Q-10 -90 -10 -110 L-10 -220 Q-10 -240 10 -240 Z" fill="#FFFFFF" stroke="#341720" stroke-width="8" stroke-linejoin="round"/>
+    <rect x="10" y="-222" width="56" height="56" rx="12" fill="#45B87A" stroke="#341720" stroke-width="5"/>
+    <path d="M24 -194 L38 -180 L54 -208" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="82" y="-180" font-family="Luckiest Guy" font-size="46" fill="#341720">DOOR CODE</text>
+    <text x="82" y="-122" font-family="Luckiest Guy" font-size="50" fill="#2F66E6" letter-spacing="6">7391</text>
+  </svg></div>
+  <div class="word" id="lo-k0" style="left:590px;top:950px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="90" style="fill:#FFFFFF">PLINK</text></svg></div></div>
+  <div class="word" id="lo-k1" style="left:880px;top:880px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="100" style="fill:#FFFFFF">PLINK</text></svg></div></div>
+  <div class="word" id="lo-k2" style="left:760px;top:1300px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="150" style="fill:#FFD064">PLINK!</text></svg></div></div>
+  <div class="word" id="lo-bz0" style="left:500px;top:1930px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="70" style="fill:#7CF0A9">BZZT</text></svg></div></div>
+  <div class="word" id="lo-bz1" style="left:500px;top:1930px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="70" style="fill:#7CF0A9">BZZT</text></svg></div></div>
+  <div class="word" id="lo-bz2" style="left:500px;top:1930px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="80" style="fill:#7CF0A9">BZZZT</text></svg></div></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"LOCKED OUT","pts":"1","unit":"CODE","sub":"IT WAS ON HIS PHONE","color":"#2F66E6","dark":"#1C46A8","light":"#D6E2FF"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  var X = 300, Y = 2060, S = 0.7;
+  WA.actor('lo-connor', ['bag-look', 'bag-windup', 'bag-throw'], { x: X, y: Y, s: S, member: 'connor', tag: 'CONNOR', color: '#2F66E6' });
+  WA.pose(tl, '#lo-connor', 'bag-look', 0);
+  // the phone, tucked in his belt (his left hip as we see it: canvas ~ 720, 990)
+  var px = X + (722 - 640) * S, py = Y + (1000 - 1340) * S;
+  gsap.set('#lo-phone', { left: px, top: py, rotation: 8 });
+  gsap.set('#lo-note', { left: px + 50, top: py - 70 });
+
+  // Zzz from the window, all along
+  ['#lo-z0', '#lo-z1', '#lo-z2'].forEach(function (z, i) {
+    for (var t = i * 8; t < 165; t += 30) {
+      tl.fromTo(z, { opacity: 0, y: 20, x: 0 }, { opacity: 1, y: -30, x: 10, duration: 14 * F, ease: 'sine.out', immediateRender: t === 0 && i === 0 }, t * F);
+      tl.to(z, { opacity: 0, y: -60, x: 20, duration: 10 * F, ease: 'sine.in' }, (t + 14) * F);
+    }
+  });
+
+  // three pebbles: windup, throw, PLINK on the glass
+  var hand = [X + (952 - 640) * S, Y + (483 - 1340) * S];
+  var hits = [[700, 1040, 28, '#lo-k0'], [840, 1010, 52, '#lo-k1'], [770, 1110, 76, '#lo-k2']];
+  [[12, 20], [36, 44], [58, 66]].forEach(function (b, i) {
+    WA.take(tl, '#lo-connor', 'bag-windup', b[0] * F, 0.06);
+    WA.take(tl, '#lo-connor', 'bag-throw', b[1] * F, i === 2 ? 0.12 : 0.08);
+    var h = hits[i], n = h[2] - b[1], g = 1.4, vx = (h[0] - hand[0]) / n, vy = (h[1] - hand[1] - 0.5 * g * n * n) / n;
+    WA.toss(tl, '#lo-p' + i, b[1] * F, { x0: hand[0], y0: hand[1], vx: vx, vy: vy, g: g, frames: n, spin: 30, fade: false });
+    tl.set('#lo-p' + i, { opacity: 0 }, h[2] * F);
+    gsap.set('#lo-hit', { opacity: 0 });
+    tl.set('#lo-hit', { left: h[0], top: h[1] }, h[2] * F);
+    tl.fromTo('#lo-hit', { scale: 0.3, opacity: 1, rotation: 0 }, { scale: i === 2 ? 2.6 : 1.8, opacity: 0, rotation: 40, duration: 9 * F, ease: 'power2.out', immediateRender: false }, h[2] * F);
+    WA.word(tl, h[3], (h[2] + 1) * F, i === 2 ? 30 : 22, { rot: i % 2 ? 8 : -8, rot0: i % 2 ? -14 : 14, seed: 3 + i });
+    WA.pose(tl, '#lo-connor', 'bag-look', (b[1] + 10) * F);
+    if (i === 2) WA.shake(tl, '#lo-scene', h[2] * F, 6 * F, 6, { seed: 4, decay: true });
+  });
+
+  // the phone buzzes: glow, shake, DOOR CODE (and he looks at the window the whole time)
+  [[32, '#lo-bz0', false], [58, '#lo-bz1', false], [84, '#lo-bz2', true]].forEach(function (b) {
+    var t = b[0] * F;
+    tl.set('#lo-scr', { opacity: 1 }, t);
+    tl.fromTo('#lo-glow', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1.2, duration: 4 * F, ease: 'power2.out', immediateRender: false }, t);
+    WA.shake(tl, '#lo-phone svg', t, 12 * F, 5, { seed: b[0], rot: 10, step: 1 });
+    WA.word(tl, b[1], t, 20, { rot: -10, rot0: 6, seed: 9, amp: 3 });
+    WA.popIn(tl, '#lo-note', t + 2 * F, 8, { rot0: -12, rot: 0 });
+    if (!b[2]) {
+      tl.to('#lo-note', { scale: 0, opacity: 0, duration: 5 * F, ease: 'back.in(2)' }, t + 18 * F);
+      tl.to('#lo-glow', { opacity: 0, duration: 6 * F }, t + 16 * F);
+      tl.set('#lo-scr', { opacity: 0 }, t + 20 * F);
+    }
+  });
+  // the last one stays lit, pulsing, right there
+  tl.fromTo('#lo-glow', { scale: 1.2 }, { scale: 0.9, duration: 8 * F, ease: 'sine.inOut', yoyo: true, repeat: 5, immediateRender: false }, 92 * F);
+  WA.bob(tl, '#lo-note', 96 * F, 2, 8, 0.7);
+
+  window.__timelines['joke-lockedout'] = tl;
+})();
+</script>
+</body>
+</html>

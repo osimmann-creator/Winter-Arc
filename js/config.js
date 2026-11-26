@@ -120,6 +120,20 @@ const INSIDE_JOKES = {
   nye: { video: 'joke-nye', title: 'New Year’s Eve', users: [], feed: true, playFor: 24 },        // Dec 31
   groundhog: { video: 'joke-groundhog', title: 'Groundhog Day', users: [], feed: true, playFor: 24, host: 'phil' }, // Feb 2; Phil has spoken
   valentine: { video: 'joke-valentine', title: 'Valentine’s Day', users: [], feed: true, playFor: 24 }, // Feb 14; names everyone still short
+  /* Round 3 (animations/hyperframes, NEW-ANIMATIONS-3). */
+  signal: { video: 'joke-signal', title: 'Signal Lost', users: ['connor'], feed: true, playFor: 48, hours: 72 }, // still in, 72+ hours without a log (No Map instead if Dylan has gone quiet too)
+  besties: { video: 'joke-besties', title: '3 AM Besties', users: ['connor'], feed: true, playFor: 24, from: 22, to: 5 }, // Connor logs something timed 10 PM-4:59 AM
+  lockedout: { video: 'joke-lockedout', title: 'Locked Out', users: ['connor'], feed: true, playFor: 48 }, // everyone still in has reached his goal except Connor
+  volcano: { video: 'joke-volcano', title: 'The Volcano', users: ['dean', 'dylan'], feed: true, playFor: 72 }, // tied for the week, above 0
+  bestof40: { video: 'joke-bestof40', title: 'Best of 40', users: ['dean', 'jake'], feed: true, playFor: 72, ties: 3 }, // the third week they tie: plays instead of The Coin
+  la4: { video: 'joke-retire', title: 'Retire the Number', users: ['dylan'], feed: true, playFor: 72, points: 4, weeks: 3 }, // the third week he hits exactly 4 (La4); once a season
+  diet: { video: 'joke-diet', title: 'Balanced Diet', users: ['jake'], feed: true, playFor: 24 }, // Jake logs Beers with the fellas
+  pullout: { video: 'joke-pullout', title: 'The Pull-Out', users: ['jake'], feed: true, playFor: 12, hour: 6 }, // the morning after a Jake beers post, from 6 AM
+  jailbreak: { video: 'joke-jailbreak', title: 'Jailbreak', users: ['jake'], feed: true, playFor: 48 }, // his first post after The Radiator's four days
+  fridge: { video: 'joke-fridge', title: 'Mom’s Fridge', users: ['jake'], feed: true, playFor: 48, days: [1, 2, 3, 4, 5] }, // the post that gets Jake to his goal is dated Mon-Fri
+  cleared: { video: 'joke-cleared', title: 'Cleared to Play', users: ['phil'], feed: true, playFor: 48 }, // the commissioner marks Phil recovered
+  spring: { video: 'joke-spring', title: 'Early Spring', users: ['phil'], feed: true, playFor: 48, days: 3 }, // Phil logs on three days in a row
+  warhero: { video: 'joke-warhero', title: 'War Hero', users: [], feed: true, playFor: 72 }, // the first date after a Scared of Girls drought
 };
 
 /* Christmas: Naughty or Nice. Everyone votes on everyone else on Dec 24 (group timezone); the results come out

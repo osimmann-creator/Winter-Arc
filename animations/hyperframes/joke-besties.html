@@ -1,0 +1,190 @@
+<!doctype html>
+<!--
+  3 AM Besties (joke-besties): our own 24/7 burger spot. The neon buzzes on, the wall clock ticks over to 3:00, and
+  Connor and his 3 AM friend (bearded, puffer coat, not in the app: no tag) slide into the booth from both sides.
+  A mountain of fries drops onto the table. They munch, then raise their cups: CLINK. A heart.
+  Beats (30 fps): neon 4, 3:00 18, slide in 20-32, fries 40 (thud 46), munch 54, cheers 84, clink 90, heart 100, card 120.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=2348" />
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/kit.js"></script>
+<script src="assets/buddy.js"></script>
+<link rel="stylesheet" href="assets/kit.css" />
+<style>
+  #ab-friend { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  #ab-cup { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
+  #ab-cup svg { position: absolute; left: -60px; top: -250px; overflow: visible; }
+  #ab-fries { position: absolute; left: 540px; top: 1918px; width: 0; height: 0; }
+  #ab-fries svg { position: absolute; left: -230px; top: -400px; overflow: visible; transform: scale(0.78); transform-origin: 230px 400px; }
+  .ab-neon { filter: drop-shadow(0 0 10px var(--g)) drop-shadow(0 0 22px var(--g)); }
+  #ab-heart { position: absolute; left: 540px; top: 1150px; width: 0; height: 0; opacity: 0; }
+  #ab-heart svg { position: absolute; left: -90px; top: -80px; overflow: visible; }
+  #ab-spark { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; }
+  #ab-spark svg { position: absolute; left: -90px; top: -90px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="joke-besties" data-start="0" data-duration="5.5" data-width="1080" data-height="2348">
+ <div id="ab-scene" class="clip" data-start="0" data-duration="5.5" data-track-index="0" style="position:absolute;inset:0;overflow:hidden;background:#3B2A4F">
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <rect width="1080" height="2348" fill="#3B2A4F"/>
+    <path d="M0 1460 L1080 1460" stroke="#2E2040" stroke-width="20"/>
+    <g fill="#45325C"><rect x="0" y="1470" width="1080" height="40"/></g>
+    <!-- the window onto the night -->
+    <rect x="70" y="500" width="940" height="780" rx="24" fill="#2B1F38" stroke="#341720" stroke-width="12"/>
+    <rect x="96" y="526" width="888" height="728" rx="12" fill="#142038"/>
+    <g fill="#FFF6D6"><circle cx="180" cy="590" r="5"/><circle cx="330" cy="640" r="4"/><circle cx="820" cy="600" r="5"/><circle cx="930" cy="700" r="4"/><circle cx="640" cy="580" r="3"/><circle cx="250" cy="760" r="3"/></g>
+    <path d="M96 1150 L300 1150 L300 1060 L420 1060 L420 1110 L560 1110 L560 1020 L700 1020 L700 1130 L984 1130 L984 1254 L96 1254 Z" fill="#1B2A48"/>
+    <g fill="#F2C94C" opacity=".7"><rect x="330" y="1080" width="20" height="20"/><rect x="590" y="1050" width="20" height="20"/><rect x="630" y="1050" width="20" height="20"/><rect x="740" y="1160" width="20" height="20"/></g>
+    <path d="M540 526 L540 1254 M96 890 L984 890" stroke="#2B1F38" stroke-width="16"/>
+    <!-- the neon: OPEN 24/7 and a burger -->
+    <g id="ab-neon-off" opacity="1">
+      <text x="540" y="760" text-anchor="middle" font-family="Luckiest Guy" font-size="130" fill="none" stroke="#6A3550" stroke-width="7">OPEN</text>
+      <text x="540" y="900" text-anchor="middle" font-family="Luckiest Guy" font-size="110" fill="none" stroke="#2F5A66" stroke-width="7">24/7</text>
+    </g>
+    <g id="ab-neon" opacity="0">
+      <g class="ab-neon" style="--g:#FF4FA0"><text x="540" y="760" text-anchor="middle" font-family="Luckiest Guy" font-size="130" fill="none" stroke="#FF8CC6" stroke-width="7">OPEN</text></g>
+      <g class="ab-neon" style="--g:#3FE8FF"><text x="540" y="900" text-anchor="middle" font-family="Luckiest Guy" font-size="110" fill="none" stroke="#9CF6FF" stroke-width="7">24/7</text></g>
+      <g class="ab-neon" style="--g:#FFC23F" fill="none" stroke="#FFE08A" stroke-width="7" stroke-linecap="round">
+        <path d="M430 1000 Q540 920 650 1000 Z"/><path d="M420 1028 L660 1028"/><path d="M430 1056 Q540 1080 650 1056"/>
+      </g>
+    </g>
+    <!-- the clock -->
+    <circle cx="900" cy="430" r="86" fill="#FFFFFF" stroke="#341720" stroke-width="10"/>
+    <g stroke="#341720" stroke-width="8" stroke-linecap="round"><path d="M900 358 L900 374 M972 430 L956 430 M900 502 L900 486 M828 430 L844 430"/></g>
+    <text x="900" y="478" text-anchor="middle" font-family="Luckiest Guy" font-size="26" fill="#7A6A8A">AM</text>
+    <path d="M900 430 L950 430" stroke="#341720" stroke-width="14" stroke-linecap="round"/>
+    <path id="ab-mhand" d="M900 430 L900 362" stroke="#E05A47" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="900" cy="430" r="10" fill="#341720"/>
+    <!-- the booth back -->
+    <path d="M30 1680 Q30 1620 90 1620 L990 1620 Q1050 1620 1050 1680 L1050 1920 L30 1920 Z" fill="#D9434A" stroke="#341720" stroke-width="12" stroke-linejoin="round"/>
+    <path d="M200 1640 L200 1910 M380 1640 L380 1910 M700 1640 L700 1910 M880 1640 L880 1910" stroke="#B02F3A" stroke-width="10"/>
+    <path d="M70 1660 Q540 1640 1010 1660" stroke="#F07A7F" stroke-width="14" fill="none" stroke-linecap="round" opacity=".7"/>
+  </svg>
+  <div id="ab-connor"></div>
+  <div id="ab-friend"><div id="ab-f0"></div><div id="ab-f1"></div><div id="ab-f2"></div>
+    <div id="ab-cup"><svg width="120" height="260" viewBox="-60 -250 120 260">
+      <path d="M-46 -200 L46 -200 L38 -10 Q36 2 24 2 L-24 2 Q-36 2 -38 -10 Z" fill="#FFFFFF" stroke="#341720" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M-43 -130 L43 -130 L40 -80 L-40 -80 Z" fill="#E2384D"/>
+      <rect x="-54" y="-222" width="108" height="24" rx="10" fill="#E9E4F2" stroke="#341720" stroke-width="7"/>
+      <path d="M-10 -222 L-24 -280 L-52 -288" fill="none" stroke="#341720" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M-10 -222 L-24 -280 L-52 -288" fill="none" stroke="#FFD064" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg></div>
+  </div>
+  <!-- the table, in front of them -->
+  <svg class="abs" style="left:0;top:0" width="1080" height="2348" viewBox="0 0 1080 2348">
+    <path d="M60 1960 L1020 1960 L980 2360 L100 2360 Z" fill="#7E7396" stroke="#341720" stroke-width="10"/>
+    <path d="M110 2010 L970 2010" stroke="#6A5F82" stroke-width="18" stroke-linecap="round"/>
+    <rect x="30" y="1900" width="1020" height="70" rx="20" fill="#E9E4F2" stroke="#341720" stroke-width="10"/>
+    <path d="M70 1918 L1010 1918" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity=".8"/>
+    <!-- napkins and ketchup -->
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="90" y="1820" width="110" height="86" rx="10" fill="#C9CED8"/><path d="M110 1820 L110 1780 L180 1780 L180 1820" fill="#FFFFFF"/>
+      <path d="M920 1906 L920 1820 Q920 1800 936 1790 L936 1750 L964 1750 L964 1790 Q980 1800 980 1820 L980 1906 Z" fill="#D9363E"/>
+    </g>
+  </svg>
+  <div id="ab-fries"><svg width="460" height="420" viewBox="-230 -400 460 420">
+    <g stroke="#341720" stroke-width="8" stroke-linejoin="round">
+      <rect x="-150" y="-330" width="26" height="200" rx="7" fill="#F7C94B" transform="rotate(-24 -137 -130)"/>
+      <rect x="-80" y="-380" width="26" height="250" rx="7" fill="#F7C94B" transform="rotate(-10 -67 -130)"/>
+      <rect x="-20" y="-396" width="26" height="270" rx="7" fill="#FFD964" transform="rotate(4 -7 -130)"/>
+      <rect x="40" y="-370" width="26" height="240" rx="7" fill="#F7C94B" transform="rotate(14 53 -130)"/>
+      <rect x="100" y="-320" width="26" height="190" rx="7" fill="#FFD964" transform="rotate(26 113 -130)"/>
+      <rect x="-120" y="-300" width="26" height="170" rx="7" fill="#FFD964" transform="rotate(-38 -107 -130)"/>
+      <rect x="70" y="-300" width="26" height="170" rx="7" fill="#F7C94B" transform="rotate(40 83 -130)"/>
+      <path d="M-200 -160 Q-120 -230 0 -240 Q120 -230 200 -160 Z" fill="#F7C94B"/>
+      <path d="M-210 -170 L210 -170 L170 0 L-170 0 Z" fill="#E2384D"/>
+      <path d="M-150 -170 L-122 0 M-50 -170 L-40 0 M50 -170 L40 0 M150 -170 L122 0" stroke="#FFFFFF" stroke-width="22"/>
+      <path d="M-210 -170 L210 -170 L170 0 L-170 0 Z" fill="none"/>
+      <circle cx="0" cy="-86" r="46" fill="#FFFFFF"/>
+    </g>
+    <text x="0" y="-70" text-anchor="middle" font-family="Luckiest Guy" font-size="44" fill="#E2384D">24</text>
+    <path id="ab-steam" d="M-80 -300 Q-100 -340 -80 -370 M20 -330 Q0 -370 20 -400 M110 -290 Q90 -330 110 -360" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity=".7"/>
+  </svg></div>
+  <div id="ab-spark"><svg width="180" height="180" viewBox="-90 -90 180 180">
+    <g stroke="#341720" stroke-width="7" stroke-linejoin="round"><path d="M0 -80 L14 -14 L80 0 L14 14 L0 80 L-14 14 L-80 0 L-14 -14 Z" fill="#FFF3B0"/></g>
+  </svg></div>
+  <div class="word" id="ab-clink" style="left:560px;top:1270px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="140" style="fill:#9CF6FF">CLINK!</text></svg></div></div>
+  <div class="word" id="ab-thud" style="left:560px;top:1500px"><div class="jit"><svg width="1" height="1"><text class="wt" font-size="120" style="fill:#FFD064">THUD</text></svg></div></div>
+  <div id="ab-heart"><svg width="180" height="160" viewBox="-90 -80 180 160">
+    <path d="M0 70 Q-90 10 -80 -36 Q-70 -78 -28 -74 Q-6 -70 0 -40 Q6 -70 28 -74 Q70 -78 80 -36 Q90 10 0 70 Z" fill="#FF5FA2" stroke="#341720" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M-52 -40 Q-44 -56 -28 -56" stroke="#FFFFFF" stroke-width="10" fill="none" stroke-linecap="round" opacity=".7"/>
+  </svg></div>
+ </div>
+
+ <div id="card" data-composition-id="endcard" data-composition-src="compositions/endcard.html" data-start="4.0" data-duration="1.5" data-track-index="2" data-width="1080" data-height="2348"
+      data-variable-values='{"title":"3 AM BESTIES","pts":"1","unit":"FRIEND","sub":"FRIENDS SINCE 3:00 AM","color":"#2F66E6","dark":"#1C46A8","light":"#D6E2FF"}'></div>
+</div>
+<script>
+(function () {
+  var F = WA.F, tl = gsap.timeline({ paused: true });
+  // Connor on the left, his friend (no tag: not in the app) on the right; the table hides their legs
+  WA.actor('ab-connor', ['booth', 'booth-fry', 'booth-cheers'], { x: 250, y: 2252, s: 0.8, member: 'connor', tag: 'CONNOR', color: '#2F66E6' });
+  WA.pose(tl, '#ab-connor', 'booth', 0);
+  var fr = { skin: '#C98B5E', hair: 'short', hairColor: '#2B1B14', beard: true, coat: 'puffer', top: '#3E8E6F', pants: '#2B2236', legs: 'none', arms: 'down', face: 'smile' };
+  WA.buddyIn('ab-f0', fr, 840, 2237, 0.75);
+  WA.buddyIn('ab-f1', Object.assign({}, fr, { face: 'bliss', blush: true }), 840, 2237, 0.75);
+  WA.buddyIn('ab-f2', Object.assign({}, fr, { face: 'grin', arms: 'wave', blush: true }), 840, 2237, 0.75, true);
+  gsap.set(['#ab-f1', '#ab-f2'], { opacity: 0 });
+  // his cup sits in the raised hand (flipped 'wave' arm: hand at -308, -914 of the Buddy canvas)
+  gsap.set('#ab-cup', { left: 840 - 308 * 0.75, top: 2237 - 900 * 0.75, rotation: -26, scale: 0.85 });
+
+  // the neon flickers on; the clock ticks over to 3:00
+  [[4, 1], [6, 0], [8, 1], [11, 0], [13, 1]].forEach(function (k) {
+    if (k[0] === 4) gsap.set('#ab-neon', { opacity: 0 });
+    tl.set('#ab-neon', { opacity: k[1] }, k[0] * F);
+  });
+  tl.set('#ab-neon-off', { opacity: 0 }, 13 * F);
+  gsap.set('#ab-mhand', { rotation: -30, svgOrigin: '900 430' });
+  [[2, -24], [6, -18], [10, -12], [14, -6], [18, 0]].forEach(function (k) {
+    tl.to('#ab-mhand', { rotation: k[1], duration: 2 * F, ease: 'back.out(3)' }, k[0] * F);
+  });
+
+  // slide into the booth from both sides
+  gsap.set('#ab-connor', { x: -700 });
+  gsap.set('#ab-friend', { x: 760 });
+  tl.to('#ab-connor', { x: 0, duration: 12 * F, ease: 'power3.out' }, 20 * F);
+  tl.to('#ab-friend', { x: 0, duration: 12 * F, ease: 'power3.out' }, 22 * F);
+  WA.squash(tl, '#ab-connor', 31 * F, 0.08, 10);
+  WA.squash(tl, '#ab-f0', 33 * F, 0.08, 10);
+
+  // the fries mountain lands
+  gsap.set('#ab-fries', { y: -2400 });
+  tl.to('#ab-fries', { y: 0, duration: 7 * F, ease: 'power2.in' }, 39 * F);
+  WA.squash(tl, '#ab-fries', 46 * F, 0.2, 14);
+  WA.shake(tl, '#ab-scene', 46 * F, 8 * F, 10, { seed: 2, decay: true });
+  WA.word(tl, '#ab-thud', 46 * F, 24, { rot: -8, rot0: 10, seed: 6 });
+  WA.hop(tl, '#ab-connor', 46 * F, 40, 8);
+  WA.hop(tl, '#ab-friend', 47 * F, 40, 8);
+  tl.fromTo('#ab-steam', { y: 10, opacity: 0.3 }, { y: -14, opacity: 0.8, duration: 0.6, ease: 'sine.inOut', yoyo: true, repeat: 5, immediateRender: false }, 50 * F);
+
+  // munch
+  WA.take(tl, '#ab-connor', 'booth-fry', 54 * F, 0.08);
+  tl.set('#ab-f0', { opacity: 0 }, 56 * F);
+  tl.set('#ab-f1', { opacity: 1 }, 56 * F);
+  WA.squash(tl, '#ab-f1', 56 * F, 0.06, 8);
+  [62, 70, 78].forEach(function (f) { WA.squash(tl, '#ab-connor', f * F, 0.05, 6); WA.squash(tl, '#ab-f1', (f + 3) * F, 0.05, 6); });
+
+  // cheers: cups up, lean in, CLINK
+  WA.take(tl, '#ab-connor', 'booth-cheers', 84 * F, 0.08);
+  tl.set('#ab-f1', { opacity: 0 }, 84 * F);
+  tl.set(['#ab-f2', '#ab-cup'], { opacity: 1 }, 84 * F);
+  tl.to('#ab-connor', { x: 22, duration: 4 * F, ease: 'power2.in' }, 86 * F);
+  tl.to('#ab-friend', { x: -22, duration: 4 * F, ease: 'power2.in' }, 86 * F);
+  tl.to('#ab-connor', { x: 0, duration: 8 * F, ease: 'back.out(2)' }, 90 * F);
+  tl.to('#ab-friend', { x: 0, duration: 8 * F, ease: 'back.out(2)' }, 90 * F);
+  gsap.set('#ab-spark', { left: 548, top: 1400 });
+  WA.popIn(tl, '#ab-spark', 90 * F, 6, { rot0: -40, rot: 0 });
+  tl.to('#ab-spark', { scale: 0, rotation: 60, opacity: 0, duration: 8 * F, ease: 'power1.in' }, 97 * F);
+  WA.word(tl, '#ab-clink', 90 * F, 28, { rot: -6, rot0: 12, seed: 3 });
+  WA.popIn(tl, '#ab-heart', 102 * F, 10, { rot0: -20, rot: 0 });
+  WA.bob(tl, '#ab-heart', 112 * F, 1.2, 12, 0.6);
+
+  window.__timelines['joke-besties'] = tl;
+})();
+</script>
+</body>
+</html>
