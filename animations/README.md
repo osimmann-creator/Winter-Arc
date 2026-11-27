@@ -137,6 +137,23 @@ The soundtrack skill's sync checker works on our videos too. Give it the moments
 node ../.claude/skills/soundtrack/scripts/sync-check.mjs ../assets/celebrations/gym-7.mp4 --cues-file times.json
 ```
 
+## 3D (Three.js)
+
+All ten gym celebrations have 3D versions, `gym-1-3d` … `gym-10-3d`, built with [Three.js](https://threejs.org) through `@remotion/three` (React Three Fiber). Each keeps its 2D clip's beats and end card, so the sound cues line up the same way, and the app's gym list now plays these. Flexander is the same model in every clip, and the clips share two sets: the temple hall from `gym/beast.webp` (Beast Mode, Gun Show, Leg Day, Mirror Check, and Atlas Mode at night) and the Winter Arc Gym (Raise the Bar, Box Jump, Rope Storm, Gains Shake, Hammer Time).
+
+| Path | What it is |
+|---|---|
+| `src/three/Gym3D.tsx` | One Remotion component per clip, plus `Preview3D` (half size, `--props='{"clip":"gym-4-3d"}'`). Compositions: `Gym3D` (gym-1-3d), `GunShow3D`, `LegDay3D`, `AtlasMode3D`, `MirrorCheck3D`, `RaiseTheBar3D`, `BoxJump3D`, `RopeStorm3D`, `GainsShake3D`, `HammerTime3D`, all 1080×2348. |
+| `src/three/clips/*.tsx` | The clips. Each is a `ClipDef`: its set, camera keys, a `state(frame)` that poses Flexander and places the props, the bursts and glints, and the card. |
+| `src/three/kit/stage.tsx` | The shell every clip renders in: set and lights, an environment map of the empty set, Flexander, props, light shafts and chalk, the end card, the film finish. |
+| `src/three/kit/rig.ts`, `moves.ts` | The skeleton, two-bone IK for arms and legs, expressions on a timeline, arm poses in torso space (`ARMS`), time remaps (slow motion, freezes). |
+| `src/three/kit/Flexander.tsx` | Flexander in 3D: torso and head sculpted as smooth unions of ellipsoids (`sdf.ts`, meshed once with surface nets), arms and legs swept as tubes through the joints every frame, hands that grip, make a fist, open or point, a skirt skinned to the thighs, and a `pump` for the muscles. |
+| `src/three/sets/TempleHall.tsx`, `WinterGym.tsx` | The two sets (the hall has a night version with fire bowls). |
+| `src/three/kit/Plaque.tsx`, `RibbonCard.tsx` | The two end cards in 3D: the gym plaque and the ribbon with the points coin. |
+| `src/three/kit/Atmosphere.tsx`, `Post.tsx`, `camera.tsx`, `build.tsx`, `props.tsx`, `textures.ts` | Light shafts, dust and chalk; bloom, vignette and tone mapping; the camera; the reflective floor; dumbbells and other small props; painted textures. |
+
+Rendering needs WebGL in headless Chrome: `npx remotion render GunShow3D out/videos/gym-2-3d.mp4 --gl=swangle` (or `--gl=angle` on a machine with a GPU), or `ONLY="GunShow3D LegDay3D" ./scripts/build_app_assets.sh`. A clip takes 6–10 minutes on two CPU cores with SwiftShader. The `debug` prop (`noreflect`, `noair`, `noplatform`, `nocols`, `flatfloor`) switches parts of a set off when chasing a lighting problem.
+
 ## Sound
 
 Each video's soundtrack is built from short sound effects placed on frames, then muxed into the finished mp4. The picture is copied, not re-encoded.
