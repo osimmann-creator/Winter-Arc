@@ -177,7 +177,7 @@ const Logic = (() => {
   /* What a draft post still needs before it counts (rules 2, 4, 5, 6, 7). */
   function draftProblems(d) {
     const out = [];
-    if (!d.photo && !(d.witnesses && d.witnesses.length)) out.push('Add a photo or tag a witness. No proof = no points.');
+    if (!d.photo && !d.photos?.length && !d.witnesses?.length) out.push('Add a photo or tag a witness. No proof = no points.');
     if (!d.cat) out.push('Pick what you did.');
     if (d.cat === 'gym') { if (!(d.minutes >= 45)) out.push('Gym needs 45+ minutes.'); if (!d.checks.lifted) out.push('Confirm you actually lifted.'); }
     if (d.cat === 'run' && !(d.miles >= 2)) out.push('Runs need 2+ miles.');

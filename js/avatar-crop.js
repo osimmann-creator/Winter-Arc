@@ -3,7 +3,7 @@
 const AvatarCrop = (() => {
   let editing = false;
 
-  function loadPhoto(url) {
+  function loadImage(url) {
     return new Promise((resolve, reject) => {
       const image = new Image();
       image.onload = () => resolve(image);
@@ -18,28 +18,35 @@ const AvatarCrop = (() => {
     return header.slice(4, 8) === 'ftyp' && /hei[cmxs]|hevc|hevx|mif1|msf1/.test(header.slice(8));
   }
 
-  async function edit(source, save) {
-    if (editing) return;
-    editing = true;
+  async function loadPhoto(source) {
     const isFile = source instanceof Blob;
     const url = isFile ? URL.createObjectURL(source) : source;
-    let image;
     try {
       try {
-        image = await loadPhoto(url);
+        return await loadImage(url);
       } catch (error) {
         if (!isFile || !await isHeic(source)) throw error;
         try {
           const { decodeHeic } = await import('./avatar-heic.mjs');
-          image = await decodeHeic(source);
+          return await decodeHeic(source);
         } catch {
           throw new Error('That HEIC photo couldn’t be opened. Try a JPEG or PNG copy.');
         }
       }
+    } finally {
+      if (isFile) URL.revokeObjectURL(url);
+    }
+  }
+
+  async function edit(source, save) {
+    if (editing) return;
+    editing = true;
+    let image;
+    try {
+      image = await loadPhoto(source);
       await show(image, save);
     } finally {
       image?.close?.();
-      if (isFile) URL.revokeObjectURL(url);
       editing = false;
     }
   }
@@ -131,5 +138,5 @@ const AvatarCrop = (() => {
     });
   }
 
-  return { edit };
+  return { edit, loadPhoto };
 })();

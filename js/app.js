@@ -25,6 +25,7 @@ const App = (() => {
   const displayName = m => m ? Logic.displayName(m, S.calc) : 'Someone';
   const nameOf = id => (S.me && id === S.me.id ? 'You' : displayName(member(id)));
   const catName = cat => CATS[cat].short || CATS[cat].label;
+  const postPhotos = post => post?.photos ?? (post?.photo ? [post.photo] : []);
   const fmtDay = d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: cfg().timezone });
   const fmtRange = (a, b) => fmtDay(a) + ' – ' + fmtDay(Logic.addDays(b, -1, cfg().timezone));
   function fmtLeft(ms) {
@@ -332,13 +333,16 @@ const App = (() => {
     </div>`;
   }
   function postCard(p) {
+    const photos = postPhotos(p);
     const C0 = CATS[p.cat], mine = p.memberId === S.me.id, caps = (p.reactions[CAP] || []).length, se = S.calc.season;
     const thisWeek = Logic.weekIdx(p.at, se.start, se.timezone) === se.idx;
     const details = [p.cat === 'gym' && p.minutes ? p.minutes + ' min' : '', p.miles ? p.miles + ' mi' : '', p.paceSeconds ? fmtPace(p.paceSeconds) + ' /mi' : ''].filter(Boolean).join(' · ');
     const wit = (p.witnesses || []).map(id => esc(nameOf(id))).join(', ');
     return `<article class="post card${p.voided ? ' voided' : ''}" data-id="${p.id}" style="--c:${C0.color}">
   <header>${profileButton(p.memberId, `${avatar(p.memberId, 44)}<span class="who"><b>${esc(nameOf(p.memberId))}</b><span>${catChip(p.cat)}<em>${ago(p.at)}</em></span></span>`, 'post-author')}${coin(postPoints(p))}</header>
-  ${p.photo ? `<button class="photo" data-act="photo" data-id="${p.id}" aria-label="Open the proof photo"><img src="${esc(Art.photo(p.photo))}" alt="Proof for ${esc(C0.label)}" loading="lazy"></button>` : ''}
+  ${photos.length ? `<div class="post-photos">
+    ${photos.map((photo, index) => `<button class="photo" data-act="photo" data-id="${p.id}" data-index="${index}" aria-label="Open photo ${index + 1} of ${photos.length}"><img src="${esc(Art.photo(photo))}" alt="Proof for ${esc(C0.label)}" loading="lazy"></button>`).join('')}
+  </div>` : ''}
   ${p.voided ? `<p class="stamp">${p.fraud ? 'Voided · fraud · 0-point week' : 'Voided · 0 points'}</p>` : ''}
   ${S.calc.cappedPosts.has(p.id) ? '<p class="note">Weekly limit reached for this activity.</p>' : ''}
   ${p.caption ? `<p class="cap">${esc(p.caption)}</p>` : ''}
@@ -854,7 +858,8 @@ const App = (() => {
     if (!original && se.status === 'over') return toast('The Winter Arc is over. No more logging.');
     const cat = original?.cat;
     S.draft = {
-      original, cat, photo: original?.photo || null, witnesses: [...(original?.witnesses || [])],
+      original, cat, photos: postPhotos(original).map(url => ({ preview: url, url })), readingPhotos: false,
+      witnesses: [...(original?.witnesses || [])],
       minutes: original?.minutes ?? 60, miles: original?.cat === 'run' ? original.miles ?? 2 : 2,
       bikeMiles: original?.cat === 'bike' ? String(original.miles ?? '') : '', caption: original?.caption || '',
       pace: original?.paceSeconds ? fmtPace(original.paceSeconds) : '',
@@ -888,10 +893,14 @@ const App = (() => {
   function refreshProof() {
     const d = S.draft, el = $('#shProof'); if (!el) return;
     const others = S.members.filter(m => m.id !== S.me.id);
-    el.innerHTML = (d.photo
-      ? `<figure class="shot"><img src="${esc(Art.photo(d.photo))}" alt="Your proof photo"></figure><div class="shot-actions"><button class="btn" data-act="pick-photo">${ic('camera')}Change photo</button><button class="btn" data-act="clear-photo">${ic('trash')}Remove</button></div>`
-      : `<button class="drop" data-act="pick-photo"><span class="drop-ic">${ic('camera')}</span><b>Add a photo or screenshot</b><span>Workout tracker, a gym pic, your run app, the date spot…</span></button>`)
-      + `<div class="wit"><p>${d.photo ? 'Tag witnesses too (optional)' : 'No photo? Tag witnesses instead'}</p><div class="chips">${others.map(m => `<button data-act="wit" data-id="${m.id}" aria-pressed="${d.witnesses.includes(m.id)}">${avatar(m.id, 26)}${esc(m.name)}</button>`).join('')}</div></div>`;
+    const count = d.photos.length, limit = CONFIG.maxPostPhotos;
+    el.innerHTML = `
+      ${count ? `<div class="proof-photos">${d.photos.map(({ preview }, index) => `
+        <figure class="shot"><img src="${esc(Art.photo(preview))}" alt="Proof photo ${index + 1}">
+          <button type="button" class="remove-proof" data-act="clear-photo" data-index="${index}" aria-label="Remove photo ${index + 1}">${ic('x')}</button>
+        </figure>`).join('')}</div>` : ''}
+      ${count < limit ? `<button class="drop" data-act="pick-photo"${d.readingPhotos ? ' disabled' : ''}><span class="drop-ic">${ic('camera')}</span><b>${d.readingPhotos ? 'Opening photos…' : count ? 'Add more photos' : 'Add photos or screenshots'}</b><span>${count} of ${limit} photos</span></button>` : `<p class="note">${count} of ${limit} photos</p>`}
+      <div class="wit"><p>${count ? 'Tag witnesses too (optional)' : 'No photo? Tag witnesses instead'}</p><div class="chips">${others.map(m => `<button data-act="wit" data-id="${m.id}" aria-pressed="${d.witnesses.includes(m.id)}">${avatar(m.id, 26)}${esc(m.name)}</button>`).join('')}</div></div>`;
   }
   function refreshCats() {
     const el = $('#shCats'); if (!el) return;
@@ -933,19 +942,21 @@ const App = (() => {
     const d = S.draft, el = $('#shFoot'); if (!el) return;
     const probs = draftProblems(d), C0 = d.cat ? CATS[d.cat] : null;
     el.innerHTML = `${probs.length ? `<ul class="need${d.tried ? ' tried' : ''}" aria-live="polite">${probs.map(p => `<li>${ic('alert')}${esc(p)}</li>`).join('')}</ul>` : ''}
-      <button class="btn btn-primary submit" data-act="submit"${probs.length ? ' aria-disabled="true"' : ''}>${d.original ? 'Save changes' : C0 ? `Claim +${fmtPts(C0.pts)} ${ptsWord(C0.pts)}` : 'Claim points'}</button>`;
+      <button class="btn btn-primary submit" data-act="submit"${d.readingPhotos ? ' disabled' : probs.length ? ' aria-disabled="true"' : ''}>${d.original ? 'Save changes' : C0 ? `Claim +${fmtPts(C0.pts)} ${ptsWord(C0.pts)}` : 'Claim points'}</button>`;
   }
-  function downscale(file, max = 1100, q = 0.8) {
-    return new Promise((res, rej) => {
-      const url = URL.createObjectURL(file), img = new Image();
-      img.onload = () => {
-        const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), cv = document.createElement('canvas');
-        cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
-        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url); res(cv.toDataURL('image/jpeg', q));
-      };
-      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('That file couldn’t be opened as an image. Try a JPG or PNG screenshot.')); };
-      img.src = url;
-    });
+  async function downscale(file) {
+    const image = await AvatarCrop.loadPhoto(file);
+    try {
+      const width = image.naturalWidth ?? image.width, height = image.naturalHeight ?? image.height;
+      const scale = Math.min(1, 1100 / Math.max(width, height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg', 0.8);
+    } finally {
+      image.close?.();
+    }
   }
   function whenISO(key) {
     const now = new Date(), timezone = cfg().timezone;
@@ -955,20 +966,23 @@ const App = (() => {
   async function submit() {
     const d = S.draft, probs = draftProblems(d);
     if (probs.length) { d.tried = true; refreshFoot(); const b = $('.submit'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; }
-    if (S.busy) return;
+    if (S.busy || d.readingPhotos) return;
     S.busy = true;
     const before = S.calc.by[S.me.id], oldPts = before.thisWeek, oldBadges = new Set(before.badges);
     const original = d.original;
     const sameDay = original && d.day === Logic.dayKey(original.at, cfg().timezone);
     const post = {
       id: original?.id || `p_${crypto.randomUUID()}`, cat: d.cat, at: sameDay ? original.at : whenISO(d.day),
-      witnesses: d.witnesses.slice(), caption: d.caption.trim(), photo: null,
+      witnesses: d.witnesses.slice(), caption: d.caption.trim(), photos: [],
     };
     if (d.cat === 'gym') post.minutes = d.minutes;
     if (d.cat === 'run') { post.miles = d.miles; post.paceSeconds = parsePace(d.pace); }
     if (d.cat === 'bike') post.miles = Number(d.bikeMiles);
     try {
-      if (d.photo) post.photo = d.photo === original?.photo ? d.photo : await Store.uploadPhoto(d.photo);
+      for (const photo of d.photos) {
+        photo.url ??= await Store.uploadPhoto(photo.preview);
+        post.photos.push(photo.url);
+      }
       if (original) await Store.editPost({ ...post, editVersion: original.editVersion });
       else await Store.addPost(post);
     } catch (e) { S.busy = false; toast('Couldn’t save that post: ' + e.message); return; }
@@ -1532,7 +1546,11 @@ const App = (() => {
       updateReactionButton(el, p.reactions[el.dataset.e] || []);
       if (el.dataset.e === CAP) { const card = el.closest('.post'); setTimeout(() => { if (card && card.isConnected) card.outerHTML = postCard(p); }, 650); }
     },
-    photo(el) { const p = S.posts.find(x => x.id === el.dataset.id); if (p) modal(`<img class="full" src="${esc(Art.photo(p.photo))}" alt="Proof photo"><button class="btn" data-close>Close</button>`, 'photo-modal'); },
+    photo(el) {
+      const p = S.posts.find(x => x.id === el.dataset.id);
+      const photo = postPhotos(p)[Number(el.dataset.index)];
+      if (photo) modal(`<img class="full" src="${esc(Art.photo(photo))}" alt="Proof photo"><button class="btn" data-close>Close</button>`, 'photo-modal');
+    },
     edit(el) {
       const post = S.posts.find(p => p.id === el.dataset.id && p.memberId === S.me.id && !p.voided && !p.fraud);
       if (post) openLog(post);
@@ -1572,8 +1590,11 @@ const App = (() => {
     },
     ...AUTH_ACT,
     'close-sheet': () => closeSheet(),
-    'pick-photo': () => $('#photoInput').click(),
-    'clear-photo': () => { S.draft.photo = null; refreshProof(); refreshFoot(); },
+    'pick-photo': () => { if (!S.busy && !S.draft.readingPhotos) $('#photoInput').click(); },
+    'clear-photo': el => {
+      if (S.busy) return;
+      S.draft.photos.splice(Number(el.dataset.index), 1); refreshProof(); refreshFoot();
+    },
     wit(el) { const w = S.draft.witnesses, id = el.dataset.id, i = w.indexOf(id); if (i >= 0) w.splice(i, 1); else w.push(id); el.setAttribute('aria-pressed', String(i < 0)); refreshFoot(); },
     cat(el) { S.draft.cat = el.dataset.cat; if (!S.draft.original) Celebrate.prepare(el.dataset.cat, S.me && S.me.username); refreshCats(); refreshDetails(); refreshFoot(); },
     step(el) {
@@ -1595,8 +1616,26 @@ const App = (() => {
     document.addEventListener('change', async e => {
       const t = e.target;
       if (t.id === 'photoInput') {
-        const f = t.files && t.files[0]; t.value = ''; if (!f || !S.draft) return;
-        try { S.draft.photo = await downscale(f); refreshProof(); refreshFoot(); } catch (err) { toast(err.message, 'shrug'); }
+        const files = [...(t.files || [])], draft = S.draft;
+        t.value = '';
+        if (!files.length || !draft || draft.readingPhotos || S.busy) return;
+        const room = CONFIG.maxPostPhotos - draft.photos.length;
+        if (files.length > room) { toast(`You can add ${room} more ${room === 1 ? 'photo' : 'photos'}.`, 'shrug'); return; }
+        draft.readingPhotos = true;
+        refreshProof();
+        refreshFoot();
+        let failed = 0;
+        for (const file of files) {
+          if (draft !== S.draft || $('#sheet').hidden || $('#sheet').classList.contains('bye')) break;
+          try { draft.photos.push({ preview: await downscale(file) }); }
+          catch { failed++; }
+        }
+        draft.readingPhotos = false;
+        if (draft === S.draft && !$('#sheet').hidden && !$('#sheet').classList.contains('bye')) {
+          refreshProof();
+          refreshFoot();
+          if (failed) toast(`${failed === 1 ? 'One photo' : failed + ' photos'} couldn’t be opened. Try a JPG or PNG.`, 'shrug');
+        }
       } else if (t.id === 'avatarInput') {
         const file = t.files?.[0]; if (!file) return;
         try { await editAvatar(file, '#avatarInput'); } catch (err) { toast(err.message, 'shrug'); }

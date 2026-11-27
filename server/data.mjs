@@ -70,12 +70,19 @@ function prefsShape(row) {
   return { sundayReminder: row ? Boolean(row.sunday_reminder) : true, capAlerts: row ? Boolean(row.cap_alerts) : true };
 }
 
+const extraPhotoKeys = row => JSON.parse(row.extra_photo_keys || '[]');
+const postPhotoKeys = row => [row.photo_key, ...extraPhotoKeys(row)].filter(Boolean);
+const hasPhotoKey = key => `(posts.photo_key = ${key} OR EXISTS (
+  SELECT 1 FROM json_each(posts.extra_photo_keys) WHERE value = ${key}
+))`;
+
 function postShape(row) {
   return {
     id: row.id, memberId: row.member_id, cat: row.cat, at: row.at,
     minutes: row.minutes ?? undefined, miles: row.miles ?? undefined,
     paceSeconds: row.pace_seconds ?? undefined,
     caption: row.caption ?? undefined, photo: photoUrl(row.photo_key),
+    photos: postPhotoKeys(row).map(photoUrl),
     editVersion: row.edit_version ?? null,
     witnesses: [], reactions: {}, voided: Boolean(row.voided), fraud: Boolean(row.fraud),
   };
@@ -181,10 +188,10 @@ async function deleteUnusedPhoto(env, key) {
   if (!key) return;
   const discarded = await statement(env, `
     UPDATE uploads SET discarded_at = coalesce(discarded_at, CURRENT_TIMESTAMP) WHERE key = ?
-      AND NOT EXISTS (SELECT 1 FROM posts WHERE photo_key = ?)
+      AND NOT EXISTS (SELECT 1 FROM posts WHERE ${hasPhotoKey('uploads.key')})
       AND NOT EXISTS (SELECT 1 FROM members WHERE photo_key = ?)
     RETURNING key
-  `, key, key, key).first();
+  `, key, key).first();
   if (!discarded) return;
   await env.BUCKET.delete(key);
   await statement(env, 'DELETE FROM uploads WHERE key = ? AND discarded_at IS NOT NULL', key).run();
@@ -203,10 +210,10 @@ export async function servePhoto(request, env, session, key) {
   const visible = await statement(env, `
     SELECT 1 AS visible FROM uploads
     WHERE key = ? AND discarded_at IS NULL AND (
-      EXISTS (SELECT 1 FROM posts WHERE photo_key = ?)
+      EXISTS (SELECT 1 FROM posts WHERE ${hasPhotoKey('uploads.key')})
       OR EXISTS (SELECT 1 FROM members WHERE photo_key = ?)
     )
-  `, key, key, key).first();
+  `, key, key).first();
   if (!visible) return unavailable();
 
   const object = request.method === 'HEAD' ? await env.BUCKET.head(key) : await env.BUCKET.get(key);
@@ -331,7 +338,7 @@ function postTime(input, start, end, now, message) {
   return new Date(time).toISOString();
 }
 
-function postFields(input, session) {
+function postFields(input, session, before) {
   const { cat } = input;
   if (typeof cat !== 'string' || !Object.hasOwn(CATS, cat)) fail('Pick what you did.');
   const minutes = cat === 'gym' ? input.minutes : null;
@@ -352,10 +359,17 @@ function postFields(input, session) {
     fail('Choose witnesses from the group.');
   }
   const witnessIds = JSON.stringify([...new Set(witnesses)]);
-  const key = typeof input.photo === 'string' && input.photo.startsWith('/') ? input.photo.slice(1) : null;
-  if (input.photo && (!key || !PHOTO_KEY.test(key))) fail('Upload a proof photo first.');
-  if (!key && !witnesses.length) fail('Add a photo or tag a witness. No proof means no points.');
-  return { cat, minutes, miles, paceSeconds, caption, witnessIds, key };
+  // Older clients still submit a single cover photo. Keep the additional photos on those edits.
+  const photos = Object.hasOwn(input, 'photos') ? input.photos : [
+    ...(input.photo ? [input.photo] : []), ...(before ? extraPhotoKeys(before).map(photoUrl) : []),
+  ];
+  if (!Array.isArray(photos) || photos.length > CONFIG.maxPostPhotos) fail(`Choose up to ${CONFIG.maxPostPhotos} photos.`);
+  if (photos.some(photo => typeof photo !== 'string' || !photo.startsWith('/') || !PHOTO_KEY.test(photo.slice(1)))) {
+    fail('Upload each proof photo first.');
+  }
+  const keys = [...new Set(photos.map(photo => photo.slice(1)))];
+  if (!keys.length && !witnesses.length) fail('Add a photo or tag a witness. No proof means no points.');
+  return { cat, minutes, miles, paceSeconds, caption, witnessIds, keys };
 }
 
 const WEEKLY_POSTS = 'SELECT 1 FROM posts WHERE member_id = ? AND cat = ? AND voided = 0 AND at >= ? AND at < ? AND id <> ?';
@@ -363,24 +377,28 @@ const VALID_WITNESSES = `NOT EXISTS (
   SELECT 1 FROM json_each(?) AS witness
   WHERE NOT EXISTS (SELECT 1 FROM members WHERE id = witness.value)
 )`;
-const AVAILABLE_PROOF = `
-  EXISTS (SELECT 1 FROM uploads WHERE key = ? AND member_id = ?
-    AND discarded_at IS NULL AND created_at >= datetime('now', '-1 day'))
-  AND NOT EXISTS (SELECT 1 FROM posts WHERE photo_key = ?)
-  AND NOT EXISTS (SELECT 1 FROM members WHERE photo_key = ?)
-`;
+const VALID_PROOF = `NOT EXISTS (
+  SELECT 1 FROM json_each(?) AS proof
+  WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = ? AND ${hasPhotoKey('proof.value')})
+    AND (
+      NOT EXISTS (SELECT 1 FROM uploads WHERE key = proof.value AND member_id = ?
+        AND discarded_at IS NULL AND created_at >= datetime('now', '-1 day'))
+      OR EXISTS (SELECT 1 FROM posts WHERE ${hasPhotoKey('proof.value')})
+      OR EXISTS (SELECT 1 FROM members WHERE photo_key = proof.value)
+    )
+)`;
 
 async function checkPostFailure(env, limit, scope, cat) {
   if (limit && await statement(env, WEEKLY_POSTS, ...scope).first()) {
     fail(`You’ve already logged ${CATS[cat].short || CATS[cat].label} that week.`, 409);
   }
-  fail('Use your own uploaded photo and choose witnesses who are in the group.');
+  fail('Use your own uploaded photos and choose witnesses who are in the group.');
 }
 
 async function addPost(env, session, input, ctx) {
   const { id = `p_${crypto.randomUUID()}` } = input;
   requireId(id, 'a post');
-  const { cat, minutes, miles, paceSeconds, caption, witnessIds, key } = postFields(input, session);
+  const { cat, minutes, miles, paceSeconds, caption, witnessIds, keys } = postFields(input, session);
   const now = new Date();
   const group = await getGroup(env);
   const week = currentWeek(group, now);
@@ -391,17 +409,17 @@ async function addPost(env, session, input, ctx) {
   const weeklyScope = [session.member_id, cat, week.start.toISOString(), week.end.toISOString(), id];
   const [inserted] = await env.DB.batch([
     statement(env, `
-      INSERT INTO posts (id, member_id, cat, at, minutes, miles, pace_seconds, caption, photo_key, voided, fraud)
-      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0
+      INSERT INTO posts (id, member_id, cat, at, minutes, miles, pace_seconds, caption, photo_key, extra_photo_keys, voided, fraud)
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0
       WHERE EXISTS (SELECT 1 FROM members WHERE id = ?)
         AND EXISTS (SELECT 1 FROM group_settings WHERE season_start = ? AND season_weeks = ? AND timezone = ?)
         AND (? = 0 OR NOT EXISTS (${WEEKLY_POSTS}))
         AND ${VALID_WITNESSES}
-        AND (? IS NULL OR (${AVAILABLE_PROOF}))
+        AND ${VALID_PROOF}
       ON CONFLICT (id) DO NOTHING
-    `, id, session.member_id, cat, at, minutes, miles, paceSeconds, caption, key,
+    `, id, session.member_id, cat, at, minutes, miles, paceSeconds, caption, keys[0] ?? null, JSON.stringify(keys.slice(1)),
     session.member_id, group.seasonStart, group.seasonWeeks, group.timezone, oncePerWeek, ...weeklyScope,
-    witnessIds, key, key, session.member_id, key, key),
+    witnessIds, JSON.stringify(keys), null, session.member_id),
     statement(env, `
       INSERT INTO witnesses (post_id, member_id)
       SELECT ?, value FROM json_each(?) WHERE changes() > 0
@@ -421,7 +439,7 @@ async function editPost(env, session, input, ctx) {
   if (before.voided || before.fraud) fail('This post has been voided.', 409);
   if (before.edit_version !== editVersion) fail('This post changed. Reopen it to edit the latest version.', 409);
 
-  const { cat, minutes, miles, paceSeconds, caption, witnessIds, key } = postFields(input, session);
+  const { cat, minutes, miles, paceSeconds, caption, witnessIds, keys } = postFields(input, session, before);
   const { timezone } = await getGroup(env);
   const start = Logic.mondayOf(before.at, timezone), end = Logic.addDays(start, 7, timezone);
   const at = postTime(input.at, start, end, new Date(), 'Pick a date in the original game week.');
@@ -431,15 +449,15 @@ async function editPost(env, session, input, ctx) {
   const savedEdit = 'EXISTS (SELECT 1 FROM posts WHERE id = ? AND edit_version = ?)';
   const [updated] = await env.DB.batch([
     statement(env, `
-      UPDATE posts SET cat = ?, at = ?, minutes = ?, miles = ?, pace_seconds = ?, caption = ?, photo_key = ?, edit_version = ?
+      UPDATE posts SET cat = ?, at = ?, minutes = ?, miles = ?, pace_seconds = ?, caption = ?, photo_key = ?, extra_photo_keys = ?, edit_version = ?
       WHERE id = ? AND member_id = ? AND edit_version IS ? AND voided = 0 AND fraud = 0
         AND EXISTS (SELECT 1 FROM group_settings WHERE id = 1 AND timezone = ?)
         AND (? = 0 OR NOT EXISTS (${WEEKLY_POSTS}))
         AND ${VALID_WITNESSES}
-        AND (? IS NULL OR ? = posts.photo_key OR (${AVAILABLE_PROOF}))
+        AND ${VALID_PROOF}
       RETURNING id
-    `, cat, at, minutes, miles, paceSeconds, caption, key, nextVersion, id, session.member_id, editVersion, timezone,
-    oncePerWeek, ...scope, witnessIds, key, key, key, session.member_id, key, key),
+    `, cat, at, minutes, miles, paceSeconds, caption, keys[0] ?? null, JSON.stringify(keys.slice(1)), nextVersion, id, session.member_id, editVersion, timezone,
+    oncePerWeek, ...scope, witnessIds, JSON.stringify(keys), id, session.member_id),
     statement(env, `DELETE FROM witnesses WHERE post_id = ? AND ${savedEdit}`, id, id, nextVersion),
     statement(env, `INSERT INTO witnesses (post_id, member_id)
       SELECT ?, value FROM json_each(?) WHERE ${savedEdit}`, id, witnessIds, id, nextVersion),
@@ -451,7 +469,8 @@ async function editPost(env, session, input, ctx) {
     }
     await checkPostFailure(env, oncePerWeek, scope, cat);
   }
-  if (before.photo_key && before.photo_key !== key) await runInBackground(ctx, deleteUnusedPhoto(env, before.photo_key));
+  const removed = postPhotoKeys(before).filter(key => !keys.includes(key));
+  await runInBackground(ctx, Promise.all(removed.map(key => deleteUnusedPhoto(env, key))));
   await runInBackground(ctx, runEvents(env));
   const [post] = await listPosts(env, id);
   return post;
@@ -459,10 +478,10 @@ async function editPost(env, session, input, ctx) {
 
 async function deletePost(env, session, id, ctx) {
   requireId(id, 'a post');
-  const row = await statement(env, 'DELETE FROM posts WHERE id = ? AND member_id = ? RETURNING photo_key',
+  const row = await statement(env, 'DELETE FROM posts WHERE id = ? AND member_id = ? RETURNING photo_key, extra_photo_keys',
     id, session.member_id).first();
   if (!row) fail('Only the author can delete this post.', 403);
-  await runInBackground(ctx, deleteUnusedPhoto(env, row.photo_key));
+  await runInBackground(ctx, Promise.all(postPhotoKeys(row).map(key => deleteUnusedPhoto(env, key))));
   await runInBackground(ctx, runEvents(env));
   return null;
 }
@@ -736,7 +755,7 @@ export async function runEvents(env, now = new Date()) {
 export async function sweepPhotos(env) {
   const { results } = await statement(env, `
     SELECT key FROM uploads WHERE (discarded_at IS NOT NULL OR created_at < datetime('now', '-1 day'))
-      AND NOT EXISTS (SELECT 1 FROM posts WHERE posts.photo_key = uploads.key)
+      AND NOT EXISTS (SELECT 1 FROM posts WHERE ${hasPhotoKey('uploads.key')})
       AND NOT EXISTS (SELECT 1 FROM members WHERE members.photo_key = uploads.key)
     LIMIT 100
   `).all();

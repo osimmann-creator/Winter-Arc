@@ -10,6 +10,7 @@ const CONFIG = {
   strikesOut: 2,               // strikes that eliminate you
   timezone: 'America/New_York',
   insideJokesStart: '2026-11-23',
+  maxPostPhotos: 6,
 };
 
 /* Point system. Colors match the celebration videos. */
