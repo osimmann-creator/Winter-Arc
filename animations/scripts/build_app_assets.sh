@@ -18,6 +18,15 @@ mkdir -p out/videos out/frames "$APP/celebrations" "$APP/intro" "$APP/mascot" "$
 MAP="
 Gym:gym-1:3.8:1
 Gym3D:gym-1-3d:3.8:0
+GunShow3D:gym-2-3d:3.9:0
+LegDay3D:gym-3-3d:3.9:0
+AtlasMode3D:gym-4-3d:3.9:0
+MirrorCheck3D:gym-5-3d:4.0:0
+RaiseTheBar3D:gym-6-3d:3.9:0
+BoxJump3D:gym-7-3d:3.9:0
+RopeStorm3D:gym-8-3d:3.9:0
+GainsShake3D:gym-9-3d:3.9:0
+HammerTime3D:gym-10-3d:3.9:0
 GunShow:gym-2:2.3:0
 LegDay:gym-3:2.55:0
 Atlas:gym-4:2.4:0
@@ -82,15 +91,15 @@ for row in $MAP; do
   poster_quality=80
   extra=()
   case "$comp" in
-    Gym|Atlas|Mirror|Gym3D)
+    Gym|Atlas|Mirror|*3D)
       master=(--crf=17 --x264-preset=medium --image-format=png)
       mobile=(-crf 20 -preset slow)
       downscale=scale=720:1566:flags=lanczos,setsar=1
       poster_quality=90
       ;;
   esac
-  # the Three.js clip needs WebGL in headless Chrome (GL=angle on a machine with a GPU)
-  [ "$comp" = "Gym3D" ] && extra=(--gl="${GL:-swangle}")
+  # the Three.js clips (*3D) need WebGL in headless Chrome (GL=angle on a machine with a GPU)
+  [[ "$comp" == *3D ]] && extra=(--gl="${GL:-swangle}")
   $R render "$comp" "out/videos/$id.mp4" --codec=h264 "${master[@]}" "${extra[@]}" --browser-executable="$CHROME" --log=error $CONC
   ffmpeg -y -loglevel error -i "out/videos/$id.mp4" -vf "$downscale" -c:v libx264 "${mobile[@]}" \
     -pix_fmt yuv420p -movflags +faststart -an "$APP/celebrations/$id.mp4"

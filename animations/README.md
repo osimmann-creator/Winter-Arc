@@ -139,17 +139,20 @@ node ../.claude/skills/soundtrack/scripts/sync-check.mjs ../assets/celebrations/
 
 ## 3D (Three.js)
 
-`gym-1-3d` is Beast Mode (`gym-1`) rebuilt in 3D with [Three.js](https://threejs.org) through `@remotion/three` (React Three Fiber). It keeps the 2D clip's beats — the pull from frame 22, the catch at 50, the dip at 68, the lockout at 76 — then slows to a third of real speed for the bar whip and the chalk cloud while the camera arcs around, and lands on the same BEAST MODE plaque. It is not in the app's celebration list yet.
+All ten gym celebrations have 3D versions, `gym-1-3d` … `gym-10-3d`, built with [Three.js](https://threejs.org) through `@remotion/three` (React Three Fiber). Each keeps its 2D clip's beats and end card, so the sound cues line up the same way, and the app's gym list now plays these. Flexander is the same model in every clip, and the clips share two sets: the temple hall from `gym/beast.webp` (Beast Mode, Gun Show, Leg Day, Mirror Check, and Atlas Mode at night) and the Winter Arc Gym (Raise the Bar, Box Jump, Rope Storm, Gains Shake, Hammer Time).
 
 | Path | What it is |
 |---|---|
-| `src/three/BeastMode3D.tsx` | The composition (`Gym3D`, 1080×2348; `Gym3DSmall` is a half-size preview). |
-| `src/three/gym3d/pose.ts` | The lift: the 2D clip's bar and leg keys mapped onto a 3D rig, two-bone IK for arms and legs, the expressions, and the slow-motion time remap (`math.ts`). |
-| `src/three/gym3d/Flexander.tsx` | Flexander in 3D. Torso and head are sculpted as smooth unions of ellipsoids (`sdf.ts`, meshed once with surface nets); the arms and legs are tubes swept through the joints every frame; the skirt is skinned to the thighs. |
-| `src/three/gym3d/Hall.tsx` | The temple gym from `gym/beast.webp`: reflective plank floor, sunlit windows, arches onto the painted Acropolis, vaulted ceiling, columns, lights. |
-| `src/three/gym3d/Atmosphere.tsx`, `Plaque.tsx`, `Post.tsx`, `CameraRig.tsx` | Light shafts, dust and chalk; the 3D plaque; bloom, vignette and tone mapping; the camera move. |
+| `src/three/Gym3D.tsx` | One Remotion component per clip, plus `Preview3D` (half size, `--props='{"clip":"gym-4-3d"}'`). Compositions: `Gym3D` (gym-1-3d), `GunShow3D`, `LegDay3D`, `AtlasMode3D`, `MirrorCheck3D`, `RaiseTheBar3D`, `BoxJump3D`, `RopeStorm3D`, `GainsShake3D`, `HammerTime3D`, all 1080×2348. |
+| `src/three/clips/*.tsx` | The clips. Each is a `ClipDef`: its set, camera keys, a `state(frame)` that poses Flexander and places the props, the bursts and glints, and the card. |
+| `src/three/kit/stage.tsx` | The shell every clip renders in: set and lights, an environment map of the empty set, Flexander, props, light shafts and chalk, the end card, the film finish. |
+| `src/three/kit/rig.ts`, `moves.ts` | The skeleton, two-bone IK for arms and legs, expressions on a timeline, arm poses in torso space (`ARMS`), time remaps (slow motion, freezes). |
+| `src/three/kit/Flexander.tsx` | Flexander in 3D: torso and head sculpted as smooth unions of ellipsoids (`sdf.ts`, meshed once with surface nets), arms and legs swept as tubes through the joints every frame, hands that grip, make a fist, open or point, a skirt skinned to the thighs, and a `pump` for the muscles. |
+| `src/three/sets/TempleHall.tsx`, `WinterGym.tsx` | The two sets (the hall has a night version with fire bowls). |
+| `src/three/kit/Plaque.tsx`, `RibbonCard.tsx` | The two end cards in 3D: the gym plaque and the ribbon with the points coin. |
+| `src/three/kit/Atmosphere.tsx`, `Post.tsx`, `camera.tsx`, `build.tsx`, `props.tsx`, `textures.ts` | Light shafts, dust and chalk; bloom, vignette and tone mapping; the camera; the reflective floor; dumbbells and other small props; painted textures. |
 
-Rendering needs WebGL in headless Chrome: `npx remotion render Gym3D out/videos/gym-1-3d.mp4 --gl=swangle` (or `--gl=angle` on a machine with a GPU), or `ONLY=Gym3D ./scripts/build_app_assets.sh`. The `debug` prop (`noreflect`, `noair`, `noplatform`, `nocols`, `flatfloor`) switches parts of the scene off when chasing a lighting problem.
+Rendering needs WebGL in headless Chrome: `npx remotion render GunShow3D out/videos/gym-2-3d.mp4 --gl=swangle` (or `--gl=angle` on a machine with a GPU), or `ONLY="GunShow3D LegDay3D" ./scripts/build_app_assets.sh`. A clip takes 6–10 minutes on two CPU cores with SwiftShader. The `debug` prop (`noreflect`, `noair`, `noplatform`, `nocols`, `flatfloor`) switches parts of a set off when chasing a lighting problem.
 
 ## Sound
 

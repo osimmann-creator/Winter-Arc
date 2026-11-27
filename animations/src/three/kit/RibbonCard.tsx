@@ -201,7 +201,9 @@ export const RibbonCardOverlay: React.FC<{ f: number; start: number; title: stri
       w: 0.014 + r() * 0.01,
       delay: r() * 10,
     }));
-    return { fs, W, H, body, shadow, bodyTex, tails: [tail(-1), tail(1)], folds: [fold(-1), fold(1)], letters, coin, coinTex, coinR, confetti };
+    // the back gets its own face, the right way round, so the flip never reads mirrored
+    const coinBack = new THREE.ShapeGeometry(starShape(coinR + 8, coinR - 6, 24), 4);
+    return { fs, W, H, body, shadow, bodyTex, tails: [tail(-1), tail(1)], folds: [fold(-1), fold(1)], letters, coin, coinBack, coinTex, coinR, confetti };
   }, [title, pts, color, dark, light, unit]);
 
   const mats = useMemo(
@@ -286,6 +288,7 @@ export const RibbonCardOverlay: React.FC<{ f: number; start: number; title: stri
         <group position={[0, coinY, 0.2]}>
           <group rotation={[0, ang, ((1 - clamp(ck)) * 40 * Math.PI) / 180]} scale={[K * Math.max(0.0001, ck), K * Math.max(0.0001, ck), K * Math.max(0.0001, ck)]}>
             <mesh geometry={parts.coin} material={[mats.coinFace, mats.coinSide]} position={[0, 0, -9]} />
+            <mesh geometry={parts.coinBack} material={mats.coinFace} position={[0, 0, -13.4]} rotation-y={Math.PI} />
           </group>
           {[0, 1, 2].map((i) => {
             const tt = clamp((ct - 16 - i * 7) / 16);

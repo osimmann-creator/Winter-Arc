@@ -668,16 +668,18 @@ export const Flexander: React.FC<{ pose: Pose }> = ({ pose }) => {
   return (
     <group>
       <group position={pose.pelvis} quaternion={pose.torsoQ}>
-        <mesh geometry={G.torso} material={M.skin} scale={[1 + (pose.pump - 1) * 0.55, 1 + (pose.pump - 1) * 0.15, 1 + (pose.pump - 1) * 0.6]} position={[0, -(pose.pump - 1) * 0.02, 0]} castShadow receiveShadow />
-        <mesh geometry={G.clothCore} material={M.cloth} castShadow receiveShadow />
-        <Skirt pose={pose} />
-        <mesh geometry={G.sash} material={M.sash} castShadow receiveShadow />
-        <mesh geometry={G.belt} material={M.gold} castShadow receiveShadow />
-        <group position={[0, 0.068, 0.168]}>
-          <mesh geometry={G.buckle} material={M.gold} castShadow />
-          <mesh geometry={G.bolt} material={M.goldDeep} position={[0, 0, 0.008]} />
+        <group scale={[1 + (pose.pump - 1) * 0.55, 1 + (pose.pump - 1) * 0.15, 1 + (pose.pump - 1) * 0.6]}>
+          <mesh geometry={G.torso} material={M.skin} castShadow receiveShadow />
+          <mesh geometry={G.clothCore} material={M.cloth} castShadow receiveShadow />
+          <mesh geometry={G.sash} material={M.sash} castShadow receiveShadow />
+          <mesh geometry={G.belt} material={M.gold} castShadow receiveShadow />
+          <group position={[0, 0.068, 0.168]}>
+            <mesh geometry={G.buckle} material={M.gold} castShadow />
+            <mesh geometry={G.bolt} material={M.goldDeep} position={[0, 0, 0.008]} />
+          </group>
+          <mesh geometry={G.brooch} material={M.goldDeep} position={[0.19, 0.548, 0.03]} rotation={[0.9, 0, -0.5]} scale={[0.62, 0.5, 0.62]} castShadow />
         </group>
-        <mesh geometry={G.brooch} material={M.goldDeep} position={[0.19, 0.548, 0.03]} rotation={[0.9, 0, -0.5]} scale={[0.62, 0.5, 0.62]} castShadow />
+        <Skirt pose={pose} />
         {[1, -1].map((s) => (
           <mesh key={s} geometry={G.deltoid} material={M.skin} scale={1 + (pose.pump - 1) * 1.1} position={[s * (SK.shoulderX + 0.012 + (pose.pump - 1) * 0.05), SK.shoulderY + pose.shrug * 0.055 + 0.01, SK.shoulderZ]} castShadow receiveShadow />
         ))}

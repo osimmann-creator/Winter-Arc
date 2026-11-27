@@ -32,10 +32,11 @@ const CAT_ORDER = ['gym', 'run', 'bike', 'mma', 'jickle', 'volo', 'soccer', 'dat
    users: only plays when one of those usernames logs it (the gallery still shows it). */
 const CELEBRATIONS = {
   gym: [
-    { id: 'gym-1', name: 'Beast Mode' }, { id: 'gym-2', name: 'Gun Show' }, { id: 'gym-3', name: 'Leg Day' },
-    { id: 'gym-4', name: 'Atlas Mode' }, { id: 'gym-5', name: 'Mirror Check' },
-    { id: 'gym-6', name: 'Raise the Bar' }, { id: 'gym-7', name: 'Box Jump' }, { id: 'gym-8', name: 'Rope Storm' },
-    { id: 'gym-9', name: 'Gains Shake' }, { id: 'gym-10', name: 'Hammer Time' },
+    // the 3D versions (animations/src/three/clips); the 2D gym-N files are still in assets/celebrations
+    { id: 'gym-1-3d', name: 'Beast Mode' }, { id: 'gym-2-3d', name: 'Gun Show' }, { id: 'gym-3-3d', name: 'Leg Day' },
+    { id: 'gym-4-3d', name: 'Atlas Mode' }, { id: 'gym-5-3d', name: 'Mirror Check' },
+    { id: 'gym-6-3d', name: 'Raise the Bar' }, { id: 'gym-7-3d', name: 'Box Jump' }, { id: 'gym-8-3d', name: 'Rope Storm' },
+    { id: 'gym-9-3d', name: 'Gains Shake' }, { id: 'gym-10-3d', name: 'Hammer Time' },
   ],
   run: [
     { id: 'run-1', name: 'Speed Demon' }, { id: 'run-2', name: 'Frost Miles' }, { id: 'run-3', name: 'Torch Bearer' },

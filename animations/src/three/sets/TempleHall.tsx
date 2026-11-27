@@ -2,10 +2,10 @@ import { useLoader, useThree } from '@react-three/fiber';
 import React, { useLayoutEffect, useMemo } from 'react';
 import { staticFile } from 'remotion';
 import * as THREE from 'three';
-import { Reflector } from 'three/examples/jsm/objects/Reflector.js';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Beam, Mote } from '../kit/Atmosphere';
+import { ReflectiveFloor, wallWithHoles } from '../kit/build';
 import { noise1, rng } from '../kit/math';
 import { friezeTexture, marbleTexture, nightSkyTexture, platformWoodTexture, rubberTexture, sideSkyTexture, softDotWarm, woodTexture } from '../kit/textures';
 
@@ -53,73 +53,6 @@ const makeMats = () => {
 };
 export const hallMats = () => (MATS ??= makeMats());
 
-// ---------------------------------------------------------------- floor with planar reflections
-const ReflectiveFloor: React.FC = () => {
-  const size = useThree((s) => s.size);
-  const { reflector, floor } = useMemo(() => {
-    const geo = new THREE.PlaneGeometry(40, 40);
-    const reflector = new Reflector(geo, { textureWidth: Math.round(size.width * 0.5), textureHeight: Math.round(size.height * 0.5), clipBias: 0.003, multisample: 0 });
-    reflector.rotation.x = -Math.PI / 2;
-    reflector.position.y = FLOOR_Y;
-    const rm = reflector.material as THREE.ShaderMaterial;
-    rm.colorWrite = false;
-    rm.depthWrite = false;
-    reflector.renderOrder = -100; // render the reflection before anything samples it
-    const wood = woodTexture().clone();
-    wood.wrapS = wood.wrapT = THREE.RepeatWrapping;
-    wood.repeat.set(10, 10);
-    wood.needsUpdate = true;
-    const mat = new THREE.MeshStandardMaterial({ map: wood, roughness: 0.66, metalness: 0, envMapIntensity: 0.25 });
-    mat.onBeforeCompile = (shader) => {
-      shader.uniforms.tReflect = { value: reflector.getRenderTarget().texture };
-      shader.uniforms.uReflectMatrix = { value: rm.uniforms.textureMatrix.value };
-      shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', '#include <common>\nuniform mat4 uReflectMatrix;\nvarying vec4 vReflectUv;')
-        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvReflectUv = uReflectMatrix * vec4( position, 1.0 );');
-      shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform sampler2D tReflect;\nvarying vec4 vReflectUv;')
-        .replace(
-          '#include <tonemapping_fragment>',
-          `{
-            vec2 ruv = vReflectUv.xy / vReflectUv.w;
-            vec3 refl = vec3( 0.0 );
-            float wsum = 0.0;
-            for ( int i = -2; i <= 2; i ++ ) {
-              for ( int j = -2; j <= 2; j ++ ) {
-                float w = exp( - float( i * i + j * j ) * 0.35 );
-                refl += texture2D( tReflect, ruv + vec2( float( i ) * 0.0016, float( j ) * 0.0026 ) ).rgb * w;
-                wsum += w;
-              }
-            }
-            refl /= wsum;
-            float ndv = clamp( dot( normalize( vViewPosition ), normal ), 0.0, 1.0 );
-            float fres = 0.06 + 0.94 * pow( 1.0 - ndv, 4.0 );
-            float lum = dot( diffuseColor.rgb, vec3( 0.3, 0.59, 0.11 ) );
-            gl_FragColor.rgb += min( refl, vec3( 2.5 ) ) * fres * smoothstep( 0.015, 0.12, lum ) * 0.7;
-          }
-          #include <tonemapping_fragment>`,
-        );
-    };
-    const floor = new THREE.Mesh(geo, mat);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = FLOOR_Y;
-    floor.receiveShadow = true;
-    const draw = reflector.onBeforeRender.bind(reflector);
-    reflector.onBeforeRender = (...args) => {
-      floor.visible = false;
-      draw(...args);
-      floor.visible = true;
-    };
-    return { reflector, floor };
-  }, [size.width, size.height]);
-  return (
-    <>
-      <primitive object={reflector} />
-      <primitive object={floor} />
-    </>
-  );
-};
-
 // ---------------------------------------------------------------- geometry builders
 const fluted = (r: number, h: number) => {
   const g = new THREE.CylinderGeometry(r, r * 1.04, h, 120, 24, true);
@@ -148,33 +81,6 @@ const columnParts = () => {
     new RoundedBoxGeometry(1.5, 0.2, 1.5, 2, 0.03).translate(0, 0.62, 0),
   ]);
   return { base, capital, shaft: fluted(0.46, 1) };
-};
-
-/** A wall slab with rectangular / arched openings, extruded for thickness. */
-const wallWithHoles = (w0: number, w1: number, h0: number, h1: number, holes: { c: number; w: number; y0: number; y1: number; arch?: boolean }[], depth: number) => {
-  const s = new THREE.Shape();
-  s.moveTo(w0, h0);
-  s.lineTo(w1, h0);
-  s.lineTo(w1, h1);
-  s.lineTo(w0, h1);
-  s.closePath();
-  for (const h of holes) {
-    const p = new THREE.Path();
-    const x0 = h.c - h.w / 2;
-    const x1 = h.c + h.w / 2;
-    p.moveTo(x0, h.y0);
-    p.lineTo(x1, h.y0);
-    if (h.arch) {
-      p.lineTo(x1, h.y1 - h.w / 2);
-      p.absarc(h.c, h.y1 - h.w / 2, h.w / 2, 0, Math.PI, false);
-    } else {
-      p.lineTo(x1, h.y1);
-      p.lineTo(x0, h.y1);
-    }
-    p.closePath();
-    s.holes.push(p);
-  }
-  return new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: false, curveSegments: 24 });
 };
 
 // ---------------------------------------------------------------- the hall
@@ -322,7 +228,7 @@ export const TempleHall: React.FC<{ debug?: string; night?: boolean; f?: number 
           {debug.includes('flatfloor') ? <meshBasicMaterial color="#402010" /> : <meshStandardMaterial color="#6A3020" roughness={0.4} />}
         </mesh>
       ) : (
-        <ReflectiveFloor />
+        <ReflectiveFloor texture={woodTexture()} repeat={10} y={FLOOR_Y} />
       )}
       <mesh rotation-x={-Math.PI / 2} position={[0, FLOOR_Y + 0.002, 0]} receiveShadow>
         <ringGeometry args={[2.62, 2.7, 160]} />
@@ -351,6 +257,19 @@ export const TempleHall: React.FC<{ debug?: string; night?: boolean; f?: number 
       <mesh geometry={parts.bars} material={M.iron} castShadow />
       <mesh geometry={parts.frames} material={M.bronze} castShadow />
       <mesh geometry={parts.right} material={M.redWall} receiveShadow />
+      {/* front wall (behind the usual cameras; seen in mirrors) */}
+      <mesh position={[0, 5.2, 6.9]} receiveShadow>
+        <boxGeometry args={[18, 10.6, 0.5]} />
+        <primitive object={M.redWall} attach="material" />
+      </mesh>
+      <mesh position={[0, 1.7, 6.6]} receiveShadow>
+        <boxGeometry args={[18, 3.6, 0.2]} />
+        <primitive object={M.marbleWall} attach="material" />
+      </mesh>
+      <mesh position={[0, 3.25, 6.48]}>
+        <boxGeometry args={[18, 0.42, 0.06]} />
+        <primitive object={M.frieze} attach="material" />
+      </mesh>
       {/* back wall: marble lower panels, frieze, balcony, arches */}
       <mesh position={[0, 1.7, BACK_Z - 0.3]} receiveShadow castShadow>
         <boxGeometry args={[18, 3.6, 0.6]} />
@@ -473,18 +392,19 @@ export const HallLights: React.FC<{ boost: number; night?: boolean; f?: number }
       scene.remove(sun.target);
     };
   }, [scene, sun]);
-  sun.intensity = (night ? 2.4 : 5.2) * boost;
-  sun.color.set(night ? '#A9BEFF' : '#FFD3A6');
+  sun.intensity = (night ? 1.6 : 5.2) * boost;
+  sun.color.set(night ? '#C6BFF0' : '#FFD3A6');
   if (night) {
     const flick = (i: number) => 1 + 0.12 * noise1(f * 0.45 + i * 9, 21) + 0.06 * noise1(f * 1.7 + i * 5, 22);
     return (
       <>
         <primitive object={sun} />
-        <hemisphereLight args={['#4A5C9A', '#3A2632', 0.75]} />
+        {/* skin goes grey under a blue fill: keep the sky purple and the front fill warm */}
+        <hemisphereLight args={['#8C74A0', '#5A3A30', 0.72]} />
         <directionalLight position={[5, 3.2, -6]} intensity={0.7} color="#B9CCFF" />
-        <directionalLight position={[2, 3, 6]} intensity={0.35} color="#FFD2B0" />
+        <directionalLight position={[2, 3, 6]} intensity={0.85} color="#FFC49A" />
         {BRAZIERS.map(([x, z], i) => (
-          <pointLight key={i} position={[x, 1.25, z]} intensity={9 * flick(i)} distance={9} decay={1.6} color="#FF9A45" />
+          <pointLight key={i} position={[x, 1.25, z]} intensity={11 * flick(i)} distance={9} decay={1.6} color="#FF9A45" />
         ))}
       </>
     );
@@ -522,44 +442,4 @@ export const templeMotes = (): Mote[] => {
     const p = start.addScaledVector(SUN_DIR, r() * sMax);
     return { p, seed: r() * 100, size: 0.008 + r() * 0.02, tw: r() * 6.28, b: 0.3 + r() * 0.7 };
   });
-};
-
-/** Capture the empty hall into an environment map so chrome and gold reflect it. */
-export const HallEnvironment: React.FC<{ hide: React.RefObject<THREE.Object3D | null>[]; overlay: THREE.Scene }> = ({ hide, overlay }) => {
-  const { gl, scene } = useThree();
-  useLayoutEffect(() => {
-    const rt = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType });
-    const cam = new THREE.CubeCamera(0.1, 60, rt);
-    cam.position.set(0, 1.6, 1.2);
-    const objs = hide.map((r) => r.current).filter((o): o is THREE.Object3D => !!o);
-    const vis = objs.map((o) => o.visible);
-    objs.forEach((o) => (o.visible = false));
-    // the sky planes are HDR-bright on screen; in reflections they would blow
-    // out every polished surface, so they are captured at a fraction of that
-    const dimmed: [THREE.MeshBasicMaterial, THREE.Color][] = [];
-    scene.traverse((o) => {
-      const m = (o as THREE.Mesh).material as THREE.MeshBasicMaterial | undefined;
-      if (m && (m as THREE.Material).type === 'MeshBasicMaterial' && Math.max(m.color.r, m.color.g, m.color.b) > 1 && !dimmed.some(([d]) => d === m)) {
-        dimmed.push([m, m.color.clone()]);
-        m.color.multiplyScalar(0.38);
-      }
-    });
-    cam.update(gl, scene);
-    dimmed.forEach(([m, c]) => m.color.copy(c));
-    objs.forEach((o, i) => (o.visible = vis[i]));
-    const pmrem = new THREE.PMREMGenerator(gl);
-    const env = pmrem.fromCubemap(rt.texture).texture;
-    scene.environment = env;
-    scene.environmentIntensity = 0.85;
-    overlay.environment = env;
-    overlay.environmentIntensity = 1.1;
-    pmrem.dispose();
-    rt.dispose();
-    return () => {
-      scene.environment = null;
-      overlay.environment = null;
-      env.dispose();
-    };
-  }, [gl, scene, hide, overlay]);
-  return null;
 };

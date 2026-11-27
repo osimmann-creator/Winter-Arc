@@ -137,7 +137,7 @@ CUES['gym-1'] = [  # Beast Mode: clean and jerk in the gym theatre (BeastMode.ts
     C(74, 'whoosh_fast', -7), C(76, 'clank', -3), C(76, 'boom', -4), C(77, 'growl', -15, d=1.2, fo=0.4), ooh(78),
     *gym_card(88),
 ]
-CUES['gym-1-3d'] = [  # Beast Mode 3D (src/three/BeastMode3D.tsx): plates leave the floor 23, rack 50.5, LOCK 76 then slow motion to 98, plaque 92, wink 120
+CUES['gym-1-3d'] = [  # Beast Mode 3D (src/three/clips/beastMode.tsx): plates leave the floor 23, rack 50.5, LOCK 76 then slow motion to 98, plaque 92, wink 120
     C(0, 'wind_soft', -25, d=4.6, fi=0.4, fo=1.2), C(0, 'bed_warm', -24, d=2.4, fi=0.6, fo=0.9), C(2, 'heartbeat', -19, d=2.3, fo=0.6),
     C(3, 'whoosh_big', -15, a='st'),
     C(21, 'db_grab', -8), C(23, 'chain', -18, d=0.5), C(23, 'powder', -13),
@@ -150,6 +150,37 @@ CUES['gym-1-3d'] = [  # Beast Mode 3D (src/three/BeastMode3D.tsx): plates leave 
     C(82, 'sparkle', -15), C(96, 'whoosh', -11),
     *gym_card(92), applause(104, -15, d=1.9),
     C(120, 'twinkle', -10),
+]
+CUES['gym-2-3d'] = [  # Gun Show 3D (src/three/clips/gunShow.tsx): curls topping out 24/38, dumbbells tossed 50, POW flex 61, CLONK 75/78, kiss 92, card 98
+    C(0, 'bed_warm', -24, d=2.0, fi=0.4, fo=0.8), opening(-11),
+    C(20, 'swish', -15), C(24, 'db_grab', -14), C(34, 'swish', -15), C(38, 'db_grab', -14, r=1.06),
+    C(47, 'whoosh_heavy', -9), C(50, 'whoosh', -10), *impact(61), C(61, 'growl', -15, r=0.9, d=0.8, fo=0.4), ooh(62, -12),
+    C(63, 'sparkle', -14), C(75, 'db_place', -4), C(75, 'thud', -12), C(78, 'db_place', -6, r=1.06),
+    C(92, 'kiss', -3), C(94, 'twinkle', -14), *card(98),
+]
+CUES['gym-3-3d'] = [  # Leg Day 3D (clips/legDay.tsx): squats bottom 14/34/56, ONE 22, TWO 46, stall 57, bail 70, CLANG 80, SPLAT 91, card 100
+    C(0, 'bed_warm', -25, d=2.0, fi=0.4, fo=0.8), opening(-11), C(14, 'whoosh_heavy', -14), C(22, 'pop_pluck', -9),
+    C(34, 'whoosh_heavy', -14), C(46, 'pop_pluck', -8, r=1.12),
+    C(57, 'pop_pluck', -8, r=1.26), C(58, 'power_down', -11), C(62, 'heartbeat', -18, d=0.8, fo=0.3),
+    C(70, 'whoosh', -8), C(71, 'gasp', -16), C(80, 'metal_drop', -3), C(80, 'clank', -6), C(81, 'boom_short', -12),
+    C(88, 'whoosh_fast', -8), C(91, 'crit', -3), C(91, 'cloth_tear', -5), C(92, 'boom', -6), ooh(91),
+    *card(100),
+]
+CUES['gym-4-3d'] = [  # Atlas Mode 3D (clips/atlasMode.tsx): night hall, heave 15-34, press 51, spin on a finger 62-89, flick 89, new star 104, plaque 105
+    C(0, 'pad', -20, d=4.4, fi=0.4, fo=0.8), C(0, 'night', -24, d=4.0, fi=0.5, fo=1.0), C(0, 'fire_loop', -27, d=4.4, fi=0.6, fo=1.0),
+    C(3, 'whoosh_big', -12, a='st'), C(16, 'rumble', -16, d=0.9, fo=0.3), C(20, 'whoosh_heavy', -9), C(34, 'thud', -14),
+    C(44, 'whoosh_heavy', -9), C(51, 'boom_short', -7), C(51, 'braam', -14, d=1.2, fo=0.6), C(55, 'magic', -13),
+    C(60, 'sparkle', -14), C(64, 'spin', -11, d=1.0, fo=0.3), C(76, 'spin', -12, r=1.15, d=0.8, fo=0.3),
+    C(89, 'whoosh_fast', -6), C(90, 'sparkle', -12), C(96, 'twinkle', -12), C(104, 'gem', -7), C(105, 'sting_reveal', -12, d=1.6, fo=0.6),
+    *gym_card(105),
+]
+CUES['gym-5-3d'] = [  # Mirror Check 3D (clips/mirrorCheck.tsx): the vanity mirror, three selfies 31/51/73, freeze, print 82, polaroid slap + plaque 105
+    C(0, 'bed_warm', -24, d=2.4, fi=0.4, fo=0.9), C(1, 'whoosh_big', -11, a='st'), C(18, 'swish', -15),
+    C(23, 'swish', -14), C(31, 'shutter', -3), C(32, 'twinkle', -15),
+    C(41, 'swish', -15), C(51, 'shutter', -3), C(52, 'twinkle', -15),
+    C(62, 'swish', -15), C(71, 'kiss', -12), C(73, 'shutter_big', -2), C(74, 'whoosh', -10),
+    C(82, 'whoosh_out', -10), C(84, 'paper_crumple', -20, d=0.4), C(100, 'swish', -12), C(105, 'card_slap', -4),
+    *gym_card(105),
 ]
 CUES['gym-2'] = [  # Gun Show: curls, POW flex at 61, CLONK dumbbells, MWAH, card 98
     opening(), C(20, 'swish', -15), C(32, 'swish', -15), word(44, -13),
@@ -180,6 +211,52 @@ CUES['gym-5'] = [  # Mirror Check: three selfies (31, 51, 73), the polaroid land
     C(73, 'shutter_big', -2), C(74, 'whoosh', -8),
     C(84, 'whoosh_out', -10), C(100, 'swish', -12), C(105, 'card_slap', -4),
     *gym_card(105),
+]
+CUES['gym-6-3d'] = [  # Raise the Bar 3D (clips/raiseTheBar.tsx): chin over 13/23/33, kip 41-44, let go 49, HUP 56, lands ON the bar 62, flex 76, card 92
+    C(0, 'bed_warm', -25, d=2.0, fi=0.4, fo=0.8), opening(-11), C(3, 'powder', -16),
+    C(9, 'swish', -15), C(13, 'pop_pluck', -9), C(19, 'swish', -15), C(23, 'pop_pluck', -9, r=1.12),
+    C(29, 'swish', -15), C(33, 'pop_pluck', -9, r=1.26), C(41, 'whoosh', -11), C(44, 'whoosh_heavy', -8),
+    C(49, 'jump', -6), C(49, 'powder', -12), C(56, 'whoosh_big', -11),
+    C(62, 'land', -3), C(62, 'clank', -9), C(63, 'thud', -8), C(64, 'squeak', -16), ooh(64, -13),
+    *impact(76, -2), C(77, 'boing', -9),
+    *card(92),
+]
+CUES['gym-7-3d'] = [  # Box Jump 3D (clips/boxJump.tsx): hops 9/25/41 land 20/36/52 as boxes slide in, monster jump 63, BONK the lamp 73, land 81, STUCK IT 88, card 96
+    C(0, 'bed_warm', -25, d=2.0, fi=0.4, fo=0.8), opening(-11),
+    C(9, 'jump', -9), C(13, 'door_slide', -15, d=0.4), C(20, 'cajon', -4), C(21, 'thud', -12),
+    C(25, 'jump', -9, r=1.06), C(29, 'door_slide', -15, r=1.08, d=0.4), C(36, 'cajon', -4),
+    C(41, 'jump', -9, r=1.12), C(45, 'door_slide', -15, r=1.16, d=0.4), C(52, 'cajon', -4),
+    C(57, 'whoosh_heavy', -12), C(63, 'jump', -6, r=1.2), C(64, 'door_slide', -13, d=0.3), C(67, 'door_slide', -13, r=1.1, d=0.3), C(70, 'door_slide', -13, r=1.2, d=0.3),
+    C(73, 'pot_clang', -2), C(73, 'boom', -7), C(74, 'boing', -9), C(76, 'twinkle', -14), ooh(74, -13),
+    C(81, 'land', -3), C(82, 'cajon', -6), C(88, 'stamp', -6),
+    *card(96),
+]
+CUES['gym-8-3d'] = [  # Rope Storm 3D (clips/ropeStorm.tsx): waves speeding up, storm 46, double slam 62, KA-WHOOM into the camera 70, drop 74, hands on hips 82, card 94
+    C(0, 'bed_warm', -25, d=2.0, fi=0.4, fo=0.8), opening(-11),
+    C(8, 'rope', -12), C(20, 'rope', -12, p=0.3), C(32, 'rope', -11, p=-0.3), C(40, 'rope', -10, r=1.1),
+    C(46, 'rumble', -13, d=1.0, fo=0.4), C(46, 'rope', -8), C(52, 'rope', -8, p=0.3, r=1.15),
+    C(57, 'whoosh_heavy', -9), *impact(62), C(62, 'slam', -6),
+    C(68, 'whoosh_big', -8), C(70, 'explosion', -5), C(70, 'rumble', -12, d=0.7, fo=0.3), ooh(71, -12),
+    C(74, 'drop_sack', -6), C(75, 'thud', -12), C(82, 'cloth', -12),
+    *card(94),
+]
+_shaker3d = [C(f, 'cabasa', -9 if i % 2 == 0 else -11, p=(0.2 if i % 2 else -0.2)) for i, f in enumerate(range(6, 34, 4))]
+CUES['gym-9-3d'] = [  # Gains Shake 3D (clips/gainsShake.tsx): shake 6-34, POP the lid 38, chug 45-64, burp 66, pump 70, toss 72 (lands 86), flex 82, card 96
+    C(0, 'bed_warm', -25, d=2.0, fi=0.4, fo=0.8), opening(-11), *_shaker3d,
+    C(38, 'cork', -6), C(39, 'powder', -15), C(45, 'pour', -13, d=0.9, r=0.85),
+    *[C(f, 'bubble', -9, r=0.8 + 0.05 * i) for i, f in enumerate((48, 53, 58, 62))],
+    C(66, 'burp', -6), C(70, 'steam', -12, d=0.9, fo=0.4), C(71, 'growl', -15, r=0.85, d=0.7, fo=0.3), C(72, 'whoosh_fast', -9),
+    *impact(82, -3), C(83, 'sparkle', -12), C(86, 'bottle_clink', -12), C(87, 'bounce', -16),
+    *card(96),
+]
+CUES['gym-10-3d'] = [  # Hammer Time 3D (clips/hammerTime.tsx): bonk 22, BWANG 40 (tyre launches), UH OH 54, hammer CLUNK 58, RINGER 68, flex 80, card 96
+    C(0, 'bed_warm', -25, d=2.0, fi=0.4, fo=0.8), opening(-11),
+    C(17, 'whoosh_heavy', -8), C(22, 'boom_short', -3), C(22, 'drop_sack', -7), C(23, 'boing', -14),
+    C(35, 'whoosh_heavy', -6), *impact(40), C(40, 'clang', -3), C(41, 'boing', -7), C(44, 'whoosh_big', -10), C(46, 'spin', -10, d=0.9),
+    C(54, 'gasp', -10), C(58, 'car_door', -6), C(58, 'clank', -12),
+    C(62, 'whoosh_fast', -9), C(68, 'clank', -3), C(68, 'bell_desk', -7), C(69, 'thud', -8), ooh(68),
+    C(80, 'whoosh', -10), C(81, 'sparkle', -13),
+    *card(96),
 ]
 CUES['gym-6'] = [  # Raise the Bar: reps 13/23/33, kip 40, release 49, HUP 56, land 62, flex 76, card 92
     opening(), C(10, 'swish', -15), C(13, 'pop_pluck', -9), C(20, 'swish', -15), C(23, 'pop_pluck', -9, r=1.12),

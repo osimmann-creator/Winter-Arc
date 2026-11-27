@@ -632,3 +632,140 @@ export const softDotWarm = () =>
     c.bezierCurveTo(8, 120, 28, 70, 64, 4);
     c.fill();
   }, { srgb: false });
+
+/** Snowy view through the Winter Arc Gym's windows: sky, mountains, pines. */
+export const snowViewTexture = () =>
+  make('snowview', 2048, 1024, (c, w, h) => {
+    const sky = c.createLinearGradient(0, 0, 0, h * 0.62);
+    sky.addColorStop(0, '#8FB8E6');
+    sky.addColorStop(1, '#E6F0FA');
+    c.fillStyle = sky;
+    c.fillRect(0, 0, w, h);
+    const r = rng(717);
+    // winter sun, low on the left
+    const sun = c.createRadialGradient(w * 0.22, h * 0.3, 0, w * 0.22, h * 0.3, 260);
+    sun.addColorStop(0, 'rgba(255,250,232,1)');
+    sun.addColorStop(0.25, 'rgba(255,244,214,0.8)');
+    sun.addColorStop(1, 'rgba(255,244,214,0)');
+    c.fillStyle = sun;
+    c.fillRect(0, 0, w, h);
+    for (let i = 0; i < 14; i++) {
+      c.fillStyle = `rgba(255,255,255,${0.25 + r() * 0.3})`;
+      c.beginPath();
+      c.ellipse(r() * w, h * (0.08 + r() * 0.3), 120 + r() * 220, 26 + r() * 30, 0, 0, Math.PI * 2);
+      c.fill();
+    }
+    // far mountains
+    c.fillStyle = '#C9D9EE';
+    c.beginPath();
+    c.moveTo(0, h * 0.62);
+    for (let x = 0; x <= w; x += 64) c.lineTo(x, h * (0.46 + 0.1 * Math.abs(Math.sin(x * 0.0031 + 1.3)) + 0.04 * Math.sin(x * 0.011)));
+    c.lineTo(w, h);
+    c.lineTo(0, h);
+    c.fill();
+    // snowy hills
+    c.fillStyle = '#F4F8FD';
+    c.beginPath();
+    c.moveTo(0, h);
+    for (let x = 0; x <= w; x += 32) c.lineTo(x, h * (0.66 + 0.05 * Math.sin(x * 0.004 + 2)));
+    c.lineTo(w, h);
+    c.fill();
+    // pines with snow on their boughs
+    const pine = (x: number, y: number, s: number, shade: string) => {
+      c.fillStyle = '#5B4030';
+      c.fillRect(x - s * 0.06, y - s * 0.15, s * 0.12, s * 0.18);
+      for (let k = 0; k < 4; k++) {
+        const ty = y - s * (0.15 + k * 0.22);
+        const tw = s * (0.5 - k * 0.1);
+        c.fillStyle = shade;
+        c.beginPath();
+        c.moveTo(x - tw, ty);
+        c.lineTo(x, ty - s * 0.36);
+        c.lineTo(x + tw, ty);
+        c.closePath();
+        c.fill();
+        c.fillStyle = '#FFFFFF';
+        c.beginPath();
+        c.moveTo(x - tw * 0.55, ty - s * 0.16);
+        c.lineTo(x, ty - s * 0.36);
+        c.lineTo(x + tw * 0.55, ty - s * 0.16);
+        c.quadraticCurveTo(x, ty - s * 0.1, x - tw * 0.55, ty - s * 0.16);
+        c.fill();
+      }
+    };
+    for (let i = 0; i < 26; i++) pine(r() * w, h * (0.68 + r() * 0.04), 60 + r() * 70, '#3E6A5A');
+    for (let i = 0; i < 16; i++) pine(r() * w, h * (0.8 + r() * 0.12), 140 + r() * 110, '#2F5A4A');
+  });
+
+/** Dark slate floor tiles with light grout. */
+export const tileTexture = () =>
+  make('tiles', 1024, 1024, (c, w, h) => {
+    const r = rng(821);
+    const n = 4;
+    const s = w / n;
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++) {
+        const l = 30 + r() * 6;
+        c.fillStyle = `hsl(${238 + r() * 8}, ${14 + r() * 6}%, ${l}%)`;
+        c.fillRect(i * s, j * s, s, s);
+        for (let k = 0; k < 40; k++) {
+          c.fillStyle = `rgba(255,255,255,${r() * 0.03})`;
+          c.fillRect(i * s + r() * s, j * s + r() * s, 3 + r() * 40, 2 + r() * 4);
+        }
+      }
+    c.strokeStyle = 'rgba(205,200,225,0.55)';
+    c.lineWidth = 6;
+    for (let i = 0; i <= n; i++) {
+      c.beginPath();
+      c.moveTo(i * s, 0);
+      c.lineTo(i * s, h);
+      c.moveTo(0, i * s);
+      c.lineTo(w, i * s);
+      c.stroke();
+    }
+  });
+
+/** The WINTER ARC GYM sign: purple plate, cream letters, gold stars. */
+export const gymSignTexture = () =>
+  make('gymsign', 2048, 320, (c, w, h) => {
+    c.fillStyle = '#5B3FB8';
+    c.beginPath();
+    c.roundRect(10, 10, w - 20, h - 20, 70);
+    c.fill();
+    c.lineWidth = 16;
+    c.strokeStyle = '#FFF6E8';
+    c.beginPath();
+    c.roundRect(34, 34, w - 68, h - 68, 54);
+    c.stroke();
+    c.font = '170px "Luckiest Guy"';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillStyle = '#2A1846';
+    c.fillText('WINTER ARC GYM', w / 2 + 6, h / 2 + 16);
+    c.fillStyle = '#FFF6E8';
+    c.fillText('WINTER ARC GYM', w / 2, h / 2 + 8);
+    const star = (x: number, y: number, r1: number) => {
+      c.fillStyle = '#FFD064';
+      c.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const rr = i % 2 ? r1 * 0.45 : r1;
+        const a = -Math.PI / 2 + (i * Math.PI) / 5;
+        c.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a));
+      }
+      c.fill();
+    };
+    star(120, h / 2, 44);
+    star(w - 120, h / 2, 44);
+  });
+
+/** Warm cream plaster for the gym walls. */
+export const plasterTexture = () =>
+  make('plaster', 512, 512, (c, w, h) => {
+    c.fillStyle = '#F6EDE0';
+    c.fillRect(0, 0, w, h);
+    const r = rng(931);
+    for (let i = 0; i < 2600; i++) {
+      c.fillStyle = `rgba(${200 + r() * 40},${180 + r() * 40},${170 + r() * 40},${r() * 0.08})`;
+      c.fillRect(r() * w, r() * h, 2 + r() * 6, 2 + r() * 6);
+    }
+  }, { repeat: [1, 1] });
