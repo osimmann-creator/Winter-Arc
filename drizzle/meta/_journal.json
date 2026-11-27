@@ -85,6 +85,13 @@
       "when": 1795330800000,
       "tag": "0011_round2_jokes",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1795773600000,
+      "tag": "0012_feed_polls",
+      "breakpoints": true
     }
   ]
 }

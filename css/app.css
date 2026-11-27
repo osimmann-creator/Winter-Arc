@@ -274,6 +274,18 @@ body.signed-out #app { padding-bottom: calc(40px + var(--keyboard-bottom, 0px));
 .seg button[aria-selected="true"] { background: var(--ink); color: #fff; }
 
 /* ---------------------------------------------------------------- feed */
+.poll-composer summary { cursor: pointer; font-weight: 800; }
+.poll-composer form { margin-top: 12px; }
+.feed-poll h2 { margin: 6px 0 12px; overflow-wrap: anywhere; }
+.poll-choices { display: grid; gap: 8px; margin-bottom: 8px; }
+.poll-choices button {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 44px; padding: 8px 12px; border: 2px solid var(--ink);
+  border-radius: 12px; text-align: left; font-weight: 800;
+}
+.poll-choices button[aria-pressed="true"] { background: var(--gold2); }
+.poll-choices button span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.poll-choices button span:last-child { flex: none; font-size: .875rem; }
 .feed-refresh {
   display: inline-flex; align-items: center; gap: 5px; justify-content: center; min-height: 44px;
   padding-inline: 10px; border: 2px solid var(--ink); border-radius: 12px; background: var(--paper);

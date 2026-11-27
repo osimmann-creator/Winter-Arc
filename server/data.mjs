@@ -1,4 +1,5 @@
 import { CATS, CONFIG, HOAT, INSIDE_JOKES, Jokes, Logic } from './shared.mjs';
+import { createPoll, votePoll } from './polls.mjs';
 import { addFeedComment, addTextPost, createInjuryReport, injuryPeriods, injuryReportQuery, listSocial, resolveInjuryReport, setCommentHeart, setFeedReaction } from './social.mjs';
 
 const COLORS = new Set(['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F']);
@@ -758,6 +759,8 @@ export async function handleData(action, request, env, payload, session, ctx) {
       break;
     case 'listSocial': data = await listSocial(env, new Date(), session.member_id); break;
     case 'addTextPost': data = await addTextPost(env, session, payload); break;
+    case 'createPoll': data = await createPoll(env, session, payload); break;
+    case 'votePoll': data = await votePoll(env, session, payload); break;
     case 'addFeedComment': data = await addFeedComment(env, session, payload); break;
     case 'setCommentHeart': data = await setCommentHeart(env, session, payload); break;
     case 'setFeedReaction':

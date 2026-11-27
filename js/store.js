@@ -87,6 +87,8 @@ const Store = (() => {
     listPosts: () => call('listPosts', { includeBike: true }),
     listSocial: () => call('listSocial'),
     addTextPost: body => call('addTextPost', { body }),
+    createPoll: input => call('createPoll', input),
+    votePoll: (id, choice) => call('votePoll', { id, choice }),
     addFeedComment: comment => call('addFeedComment', comment),
     setCommentHeart: (commentId, hearted) => call('setCommentHeart', { commentId, hearted }),
     createInjuryReport: report => call('createInjuryReport', report),

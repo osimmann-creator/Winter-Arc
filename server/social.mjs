@@ -1,4 +1,5 @@
 import { Logic } from './shared.mjs';
+import { listPolls } from './polls.mjs';
 
 const targets = {
   activity: { table: 'posts', column: 'activity_id' },
@@ -70,12 +71,12 @@ export async function listSocial(env, now = new Date(), viewerId = null) {
   const group = await env.DB.prepare('SELECT timezone FROM group_settings WHERE id = 1').first();
   if (!group) return { messages: [], comments: [], activeInjuries: [], feedReactions: {} };
   await publishInjuryReports(env, group.timezone, now);
-  const [messages, comments, injuries, reactions] = await env.DB.batch([
+  const [[messages, comments, injuries, reactions], polls] = await Promise.all([env.DB.batch([
     env.DB.prepare('SELECT * FROM feed_messages ORDER BY at DESC, id DESC'),
     env.DB.prepare(`SELECT c.*, ${commentHeartColumns} FROM feed_comments AS c ORDER BY c.at, c.id`).bind(viewerId),
     injuryReportQuery(env, now),
     env.DB.prepare('SELECT message_id, event_id, member_id, emoji FROM feed_reactions ORDER BY member_id'),
-  ]);
+  ]), listPolls(env, viewerId)]);
   const feedReactions = {};
   for (const row of reactions.results) {
     const key = row.message_id ? `message:${row.message_id}` : `event:${row.event_id}`;
@@ -84,6 +85,7 @@ export async function listSocial(env, now = new Date(), viewerId = null) {
   }
   return {
     messages: messages.results.map(messageShape),
+    polls,
     feedReactions,
     activeInjuries: injuries.results.filter(row => !row.resolved_at).map(row => ({ id: row.id, memberId: row.member_id, name: row.name })),
     injuryPeriods: injuryPeriods(injuries.results),

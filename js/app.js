@@ -11,6 +11,7 @@ const App = (() => {
     acct: null, prefs: null, lastUser: '', profileTrail: [] };
   const pendingCommentHearts = new Set();
   const pendingFeedReactions = new Set();
+  const pendingPollVotes = new Set();
   let feedRefreshing = false;
   const COLORS = ['#7254DC', '#F2853A', '#2FA36B', '#2F66E6', '#EE5982', '#1FA3A0', '#B45AC8', '#E39A2E', '#D9644F'];
   const isDemo = () => Store.mode === 'demo';
@@ -79,6 +80,7 @@ const App = (() => {
     S.posts = posts;
     S.events = events;
     S.messages = social.messages;
+    S.polls = social.polls || [];
     S.feedReactions = social.feedReactions || {};
     S.activeInjuries = social.activeInjuries;
     S.injuryPeriods = social.injuryPeriods || [];
@@ -381,16 +383,37 @@ const App = (() => {
     </div>`;
   }
   const newestFirst = (a, b) => new Date(b.at) - new Date(a.at);
+  function pollComposer() {
+    return `<details class="card poll-composer"><summary>Create a poll</summary>
+      <form class="form" id="pollFeedForm" data-feed-form>
+        <label class="fld"><span>Question</span><input name="question" maxlength="240" required></label>
+        ${[1, 2, 3, 4].map(number => `<label class="fld"><span>Choice ${number}${number > 2 ? ' (optional)' : ''}</span><input name="choice" maxlength="80"${number <= 2 ? ' required' : ''}></label>`).join('')}
+        <button class="btn btn-primary" type="submit">Post poll</button>
+      </form>
+    </details>`;
+  }
+  function pollCard(poll) {
+    const total = poll.choices.reduce((sum, choice) => sum + choice.votes, 0);
+    return `<article class="post card feed-poll" data-poll-id="${esc(poll.id)}">
+      <p class="eyebrow">Poll · ${esc(ago(poll.at))}</p>
+      <h2>${esc(poll.question)}</h2>
+      <div class="poll-choices">${poll.choices.map(({ label, votes }, index) => `<button type="button" data-act="poll-vote" data-id="${esc(poll.id)}" data-choice="${index}" aria-pressed="${poll.myChoice === index}">
+        <span>${esc(label)}</span><span>${votes} ${votes === 1 ? 'vote' : 'votes'}</span>
+      </button>`).join('')}</div>
+      <p class="note">${total} ${total === 1 ? 'vote' : 'votes'} · ${poll.myChoice === null ? 'Choose one' : 'Tap another option to change your vote'}</p>
+    </article>`;
+  }
   const renderPost = p => p.isEvent ? jokeCard(p) : p.kind ? messageCard(p) : postCard(p);
   function vFeed() {
     const evs = S.events.filter(inFeed).map(e => ({ ...e, isEvent: true }));
-    const list = [...S.posts, ...evs, ...S.messages].sort(newestFirst);
+    const list = [...S.posts, ...evs, ...S.messages, ...S.polls].sort(newestFirst);
     return `<section class="screen feed"><div class="screen-h"><h1>Feed</h1>
     <button class="feed-refresh" type="button" data-act="refresh-feed" aria-disabled="${feedRefreshing}">${ic('refresh')}<span>${feedRefreshing ? 'Refreshing…' : 'Refresh'}</span></button>
   </div>
   ${xmasBallotHTML()}
   ${feedComposer()}
-  ${list.length ? list.map(renderPost).join('') : `<div class="card empty"><img src="${Art.mascot('point')}" alt="" width="104" height="160"><h2>Nothing here yet</h2><p class="note">Log something and it shows up here for the fellas.</p></div>`}
+  ${isComm() ? pollComposer() : ''}
+  ${list.length ? list.map(post => post.kind === 'poll' ? pollCard(post) : renderPost(post)).join('') : `<div class="card empty"><img src="${Art.mascot('point')}" alt="" width="104" height="160"><h2>Nothing here yet</h2><p class="note">Log something and it shows up here for the fellas.</p></div>`}
   <p class="cap-hint">Think a post is fake? Tap ${CAP} to call cap. ${CAP_DISPUTE} caps marks it disputed.</p>
 </section>`;
   }
@@ -799,6 +822,11 @@ const App = (() => {
     async textFeedForm(form) {
       await Store.addTextPost(new FormData(form).get('body'));
       await load(); renderView(); toast('Posted to the feed.');
+    },
+    async pollFeedForm(form) {
+      const data = new FormData(form);
+      await Store.createPoll({ question: data.get('question'), choices: data.getAll('choice').map(choice => choice.trim()).filter(Boolean) });
+      await load(); renderView(); toast('Poll posted.');
     },
     async injuryFeedForm(form) {
       await Store.createInjuryReport(Object.fromEntries(new FormData(form)));
@@ -1435,6 +1463,28 @@ const App = (() => {
   const ACT = {
     tab: el => go(el.dataset.tab),
     'refresh-feed': () => refreshFeed(),
+    async 'poll-vote'(button) {
+      const { id, choice } = button.dataset;
+      if (pendingPollVotes.has(id) || button.getAttribute('aria-pressed') === 'true') return;
+      const card = button.closest('.feed-poll');
+      pendingPollVotes.add(id);
+      card.setAttribute('aria-busy', 'true');
+      try {
+        await Store.votePoll(id, Number(choice));
+        const { polls } = await Store.listSocial();
+        S.polls = polls;
+        const poll = polls.find(item => item.id === id);
+        if (poll && card.isConnected) {
+          const focused = document.activeElement === button;
+          card.insertAdjacentHTML('afterend', pollCard(poll));
+          if (focused) card.nextElementSibling.querySelector(`[data-choice="${Number(choice)}"]`).focus({ preventScroll: true });
+          card.remove();
+        }
+      } finally {
+        pendingPollVotes.delete(id);
+        card.removeAttribute('aria-busy');
+      }
+    },
     'member-profile': el => openMemberProfile(el.dataset.id),
     'profile-back': () => backFromProfile(),
     'profile-posts'() {
@@ -1610,7 +1660,7 @@ const App = (() => {
     tick.j = Date.now();
     checkJokes();
     Store.subscribe(async () => {
-      if (feedRefreshing || quiet() || pendingCommentHearts.size || pendingFeedReactions.size || pendingXmas.size || editingFeed()) return false;
+      if (feedRefreshing || quiet() || pendingCommentHearts.size || pendingFeedReactions.size || pendingPollVotes.size || pendingXmas.size || editingFeed()) return false;
       const wasInApp = inApp();
       await load();
       if (inApp() !== wasInApp) render();

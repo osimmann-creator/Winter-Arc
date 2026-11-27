@@ -49,7 +49,10 @@ async function api(request, env, ctx, action) {
   }
   if (action === 'bootstrap' || action === 'uploadMedia') {
     const bootstrap = equalSecret(request.headers.get('X-Winter-Arc-Bootstrap'), env.BOOTSTRAP_SECRET);
-    const mediaUpload = action === 'uploadMedia' && equalSecret(request.headers.get('X-Winter-Arc-Media-Secret'), env.MEDIA_UPLOAD_SECRET);
+    const suppliedMediaSecret = request.headers.get('X-Winter-Arc-Media-Secret');
+    const releasesUntil = Number(env.MEDIA_RELEASE_SECRET?.split('.')[0]);
+    const releaseUpload = Date.now() < releasesUntil && equalSecret(suppliedMediaSecret, env.MEDIA_RELEASE_SECRET);
+    const mediaUpload = action === 'uploadMedia' && (equalSecret(suppliedMediaSecret, env.MEDIA_UPLOAD_SECRET) || releaseUpload);
     if (!bootstrap && !mediaUpload) {
       return fail(404, 'Page not found.');
     }
